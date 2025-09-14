@@ -29,7 +29,7 @@ class Plotter:
         self._cnt_linestyles = 0
         self._cnt_markers = 0
         self._plot_style = None
-        self._color_theme = None
+        self._color_style = None
         self._offset_text = None
         self._xmin = None
         self._xmax = None
@@ -50,6 +50,7 @@ class Plotter:
         num: int = 6,
         plot_separately: bool = False,
         ax: Axes | None = None,
+        offset_text: dict[str, float] | None = None,
         **kwargs,
     ) -> tuple[Figure | SubFigure, Axes] | tuple[list[Figure], list[Axes]]:
         """
@@ -123,8 +124,12 @@ class Plotter:
         elif isinstance(wells, Well):
             wells = [wells]
 
+        if not wells:
+            logger.error("No wells available to plot.")
+            raise ValueError("No wells available to plot.")
+
         # Validate and store the plot styles
-        self._validate_plot_styles(plot_style, color_theme, offset_text)
+        self._validate_plot_styles(plot_style, color_style, offset_text)
 
         # Get the figsize
         figsize = kwargs.pop("figsize", (10, 6))
@@ -166,9 +171,10 @@ class Plotter:
 
             if save_path is not None:
                 # Handle both Figure and SubFigure cases
-                if hasattr(fig, "savefig"):
+                if isinstance(fig, Figure):
                     fig.savefig(save_path, **kwargs)
                 else:
+                    # For SubFigure, use the parent figure's savefig
                     plt.savefig(save_path, **kwargs)
                 logger.info(f"Plot saved to {save_path}")
         else:
@@ -185,6 +191,7 @@ class Plotter:
                 plt.savefig(save_path, **kwargs)
                 logger.info(f"Plot saved to {save_path}")
 
+        assert ax is not None  # Type narrowing for type checker
         return fig, ax
 
     def plot_fits(
@@ -201,6 +208,7 @@ class Plotter:
         num: int = 6,
         plot_separately: bool = False,
         ax: Axes | None = None,
+        offset_text: dict[str, float] | None = None,
         **kwargs,
     ) -> tuple[Figure | SubFigure, Axes] | tuple[list[Figure], list[Axes]]:
         """
@@ -285,7 +293,7 @@ class Plotter:
             fits = [fits]
 
         # Validate and store the plot styles
-        self._validate_plot_styles(plot_style, color_theme, offset_text)
+        self._validate_plot_styles(plot_style, color_style, offset_text)
 
         # Get the figsize
         figsize = kwargs.pop("figsize", (10, 6))
@@ -345,9 +353,10 @@ class Plotter:
 
             if save_path is not None:
                 # Handle both Figure and SubFigure cases
-                if hasattr(fig, "savefig"):
+                if isinstance(fig, Figure):
                     fig.savefig(save_path, **kwargs)
                 else:
+                    # For SubFigure, use the parent figure's savefig
                     plt.savefig(save_path, **kwargs)
                 logger.info(f"Plot saved to {save_path}")
         else:
@@ -372,11 +381,12 @@ class Plotter:
                 plt.savefig(save_path, **kwargs)
                 logger.info(f"Plot saved to {save_path}")
 
+        assert ax is not None  # Type narrowing for type checker
         return fig, ax
 
     def _set_plot_labels(self, ax, title, xlabel, ylabel):
         """Set plot labels with conditional font styling."""
-        if self.plot_style is not None:
+        if self._plot_style is not None:
             ax.set_title(title, **tfont)
             ax.set_xlabel(xlabel, **afont)
             ax.set_ylabel(ylabel, **afont)
@@ -385,7 +395,7 @@ class Plotter:
             ax.set_xlabel(xlabel)
             ax.set_ylabel(ylabel)
 
-    def _validate_plot_styles(self, plot_style, color_style):
+    def _validate_plot_styles(self, plot_style, color_style, offset_text):
         # Store the plot style
         if plot_style not in ["fancy", "scientific", None]:
             logger.error("Invalid plot_style. Must be 'fancy', 'scientific', or None.")
@@ -394,12 +404,12 @@ class Plotter:
 
         # Store the color style
         if color_style not in ["color", "monochrome", None]:
-            logger.error("Invalid color_theme. Must be 'color', 'monochrome', or None.")
-            raise ValueError("color_theme must be 'color', 'monochrome', or None")
-        if self._color_theme is not None and self._color_theme != color_style:
+            logger.error("Invalid color_style. Must be 'color', 'monochrome', or None.")
+            raise ValueError("color_style must be 'color', 'monochrome', or None")
+        if self._color_style is not None and self._color_style != color_style:
             logger.warning(
-                "Color theme has changed from "
-                f"'{self._color_theme}' to '{color_style}'. "
+                "Color style has changed from "
+                f"'{self._color_style}' to '{color_style}'. "
                 "Plot attributes will be reset and reassigned."
             )
             self._cnt_colors = 0
@@ -409,7 +419,7 @@ class Plotter:
                 well.color = None
                 well.linestyle = None
                 well.marker = None
-        self._color_theme = color_style
+        self._color_style = color_style
 
         self._offset_text = offset_text
 
@@ -472,10 +482,10 @@ class Plotter:
             fit = fit[0]
         outliers = fit.fit_outliers()
         well_outliers = well.timeseries[outliers]
-        if self.color_style is None:
+        if self._color_style is None:
             edgecolor = "red"  # Use matplotlib default
         else:
-            edgecolor = "red" if self._color_theme == "color" else "black"
+            edgecolor = "red" if self._color_style == "color" else "black"
         if well_outliers is not None and not well_outliers.empty:
             ax.scatter(
                 well_outliers.index,
@@ -507,9 +517,9 @@ class Plotter:
     def _set_plot_attributes(self, well):
         """Set default plot attributes for a well if not already set."""
         # Set default plot attributes if not already set
-        if well.color is None and self.color_style is not None:
-            cnt = self.cnt_colors
-            if self.color_style == "monochrome":
+        if well.color is None and self._color_style is not None:
+            cnt = self._cnt_colors
+            if self._color_style == "monochrome":
                 well.color = DEFAULT_MONOCHROME_COLORS[
                     cnt % len(DEFAULT_MONOCHROME_COLORS)
                 ]
@@ -546,7 +556,7 @@ class Plotter:
             self._plot_settings_fancy(ax)
         elif self._plot_style == "scientific":
             self._plot_settings_scientific(ax)
-        elif self.plot_style is None:
+        elif self._plot_style is None:
             # Skip custom styling, use matplotlib defaults
             pass
 
