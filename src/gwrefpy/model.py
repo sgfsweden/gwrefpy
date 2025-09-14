@@ -21,6 +21,16 @@ logger = logging.getLogger(__name__)
 
 
 class Model(Plotter):
+    """
+    A class representing a groundwater model that can contain multiple wells.
+
+    Parameters
+    ----------
+    name : str
+        The name of the model. If the name ends with ".gwref", it is treated as a
+        filename and the model is loaded from that file.
+    """
+
     def __init__(self, name: str):
         super().__init__()
         self.name = name
@@ -30,6 +40,10 @@ class Model(Plotter):
 
         # Fit attributes
         self.fits: list[FitResultData] = []
+
+        # Check if the name ends with the .gwref extension
+        if name.endswith(".gwref"):
+            self.open_project(name)
 
     def __str__(self):
         """String representation of the Model object."""
@@ -310,10 +324,9 @@ class Model(Plotter):
         if isinstance(well, list):
             for w in well:
                 self._add_well(w)
-            logger.info(f"Added {len(well)} wells to model '{self.name}'.")
+            logger.debug(f"Added {len(well)} wells to model '{self.name}'.")
         else:
             self._add_well(well)
-            logger.info(f"Added one well to model '{self.name}'.")
 
     def _add_well(self, well):
         """
@@ -408,6 +421,7 @@ class Model(Plotter):
                 and ipython.__class__.__name__ == "ZMQInteractiveShell"
             ):
                 # We're in Jupyter - don't print, let the return value display
+                logger.debug(result)  # Log at debug level instead of printing
                 return
         except ImportError:
             # IPython not available, definitely not in Jupyter
@@ -570,7 +584,7 @@ class Model(Plotter):
             raise NotImplementedError(f"Fitting method '{method}' is not implemented.")
 
         self.fits.append(fit)
-        logger.info(f"Fit completed for model '{self.name}' with RMSE {fit.rmse}.")
+        logger.debug(f"Fit completed for model '{self.name}' with RMSE {fit.rmse}.")
         return fit
 
     def best_fit(
@@ -810,8 +824,9 @@ class Model(Plotter):
             filename = f"{self.name}.gwref"
 
         # Save the model dictionary to a file
-        save(filename, model_dict, overwrite=overwrite)
-        logger.info(f"Model '{self.name}' saved to '{filename}'.")
+        saved = save(filename, model_dict, overwrite=overwrite)
+        if saved:
+            logger.info(f"Model '{self.name}' saved to '{filename}'.")
 
     def open_project(self, filepath):
         """

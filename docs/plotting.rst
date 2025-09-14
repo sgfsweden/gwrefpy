@@ -9,6 +9,11 @@ The gwrefpy package has several plotting capabilities to visualize groundwater d
 
    Example plot generated with gwrefpy.
 
+Creating a plot 📊
+-----------------------
+in gwrefpy ther are currently two main plotting functions: ``plot_wells()`` and ``plot_fits()``. The ``plot_wells()`` function is used to plot the timeseries data from well objects, while the ``plot_fits()`` function is used to plot the fitted models for the well data.
+
+
 
 Setting plotting style
 ----------------------
