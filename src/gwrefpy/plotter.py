@@ -438,7 +438,6 @@ class Plotter:
         )
         self._update_axis_limits(well)
         if self._plot_style == "fancy":
-            well_name = f" {well.name}"
             offset = (
                 self._offset_text.get(well.name, 0.0)
                 if (self._offset_text is not None)
