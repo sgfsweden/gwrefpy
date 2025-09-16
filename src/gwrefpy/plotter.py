@@ -447,7 +447,7 @@ class Plotter:
             ax.text(
                 well.timeseries.index[-1],
                 well.timeseries.values[-1] + offset,
-                well_name,
+                f" {well.name}"
                 color=well.color,
                 horizontalalignment="left",
                 verticalalignment="center",
