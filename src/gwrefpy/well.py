@@ -162,7 +162,7 @@ class Well:
         float_index = self.timeseries.index.map(lambda dt: datetime_to_float(dt))
         return pd.Series(self.timeseries.values, index=float_index).to_dict()
 
-    def to_dict(self):
+    def _to_dict(self):
         """
         Convert the Well object to a dictionary representation.
 
@@ -189,7 +189,7 @@ class Well:
             "elevation": self.elevation,
         }
 
-    def unpack_dict(self, data):
+    def _unpack_dict(self, data):
         """
         Unpack a dictionary representation to set the Well object's attributes.
 

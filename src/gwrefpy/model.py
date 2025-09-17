@@ -728,7 +728,7 @@ class Model(Plotter):
 
     # ======================== Load and Save Methods ========================
 
-    def to_dict(self):
+    def _to_dict(self):
         """
         Convert the model to a dictionary representation.
 
@@ -746,16 +746,16 @@ class Model(Plotter):
         # Create a dictionary representation of each well
         wells_dict = {}
         for well in self.wells:
-            wells_dict[well.name] = well.to_dict()
+            wells_dict[well.name] = well._to_dict()
         model_dict["wells_dict"] = wells_dict
 
         # Add fits if they exist
         if self.fits:
-            model_dict["fits"] = [fit.to_dict() for fit in self.fits]
+            model_dict["fits"] = [fit._to_dict() for fit in self.fits]
 
         return model_dict
 
-    def unpack_dict(self, data):
+    def _unpack_dict(self, data):
         """
         Unpack a dictionary representation of the model and set the model's attributes.
 
@@ -776,7 +776,7 @@ class Model(Plotter):
         for w in wells_dict.items():
             well_obj = w[1]
             well = Well(name=well_obj["name"], is_reference=well_obj["is_reference"])
-            well.unpack_dict(well_obj)
+            well._unpack_dict(well_obj)
             self.add_well(well)
 
         # Unpack fits
@@ -817,7 +817,7 @@ class Model(Plotter):
         """
 
         # Convert the model to a dictionary
-        model_dict = self.to_dict()
+        model_dict = self._to_dict()
 
         # Set default filename if not provided
         if filename is None:
@@ -844,5 +844,5 @@ class Model(Plotter):
         """
         # Placeholder for load logic
         data = load(filepath)
-        self.unpack_dict(data)
+        self._unpack_dict(data)
         logger.info(f"Model '{self.name}' loaded from '{filepath}'.")

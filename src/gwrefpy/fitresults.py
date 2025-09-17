@@ -306,7 +306,7 @@ class FitResultData:
         """
         return self.ref_well == well or self.obs_well == well
 
-    def to_dict(self) -> dict:
+    def _to_dict(self) -> dict:
         """
         Convert the FitResultData object to a dictionary.
 
