@@ -1,6 +1,10 @@
+Model
+=====
+
+A class representing a groundwater model that can contain multiple wells.
+
 
 .. automodule:: src.gwrefpy.model
    :members:
-   :special-members: __init__
    :undoc-members:
    :show-inheritance:

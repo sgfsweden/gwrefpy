@@ -1,16 +1,9 @@
-"""
-Model
------
-A class representing a groundwater model that can contain multiple wells.
-
-"""
-
 import logging
 from typing import Literal
 
 import pandas as pd
 
-from .fitresults import FitResultData, LinRegResult, unpack_dict_fit_method
+from .fitresults import FitResultData, LinRegResult, _unpack_dict_fit_method
 from .io.io import load, save
 from .methods.linregressfit import linregressfit
 from .plotter import Plotter
@@ -91,7 +84,7 @@ class Model(Plotter):
     # ======================== Well Management Methods ========================
 
     @property
-    def obs_wells(self):
+    def obs_wells(self) -> list[Well]:
         """List of observation wells in the model."""
         return [well for well in self.wells if not well.is_reference]
 
@@ -156,7 +149,7 @@ class Model(Plotter):
         return pd.DataFrame(data)
 
     @property
-    def ref_wells(self):
+    def ref_wells(self) -> list[Well]:
         """List of reference wells in the model."""
         return [well for well in self.wells if well.is_reference]
 
@@ -303,7 +296,7 @@ class Model(Plotter):
         return pd.DataFrame(data)
 
     @property
-    def well_names(self):
+    def well_names(self) -> list[str]:
         """List of all well names in the model."""
         return [well.name for well in self.wells]
 
@@ -728,7 +721,7 @@ class Model(Plotter):
 
     # ======================== Load and Save Methods ========================
 
-    def to_dict(self):
+    def _to_dict(self):
         """
         Convert the model to a dictionary representation.
 
@@ -746,16 +739,16 @@ class Model(Plotter):
         # Create a dictionary representation of each well
         wells_dict = {}
         for well in self.wells:
-            wells_dict[well.name] = well.to_dict()
+            wells_dict[well.name] = well._to_dict()
         model_dict["wells_dict"] = wells_dict
 
         # Add fits if they exist
         if self.fits:
-            model_dict["fits"] = [fit.to_dict() for fit in self.fits]
+            model_dict["fits"] = [fit._to_dict() for fit in self.fits]
 
         return model_dict
 
-    def unpack_dict(self, data):
+    def _unpack_dict(self, data):
         """
         Unpack a dictionary representation of the model and set the model's attributes.
 
@@ -776,7 +769,7 @@ class Model(Plotter):
         for w in wells_dict.items():
             well_obj = w[1]
             well = Well(name=well_obj["name"], is_reference=well_obj["is_reference"])
-            well.unpack_dict(well_obj)
+            well._unpack_dict(well_obj)
             self.add_well(well)
 
         # Unpack fits
@@ -787,7 +780,7 @@ class Model(Plotter):
                 obs_well=self.wells[self.well_names.index(fit_data["obs_well"])],
                 rmse=fit_data.get("rmse", None),
                 n=fit_data.get("n", None),
-                fit_method=unpack_dict_fit_method(fit_data),
+                fit_method=_unpack_dict_fit_method(fit_data),
                 t_a=fit_data.get("t_a", None),
                 stderr=fit_data.get("stderr", None),
                 pred_const=fit_data.get("pred_const", None),
@@ -817,7 +810,7 @@ class Model(Plotter):
         """
 
         # Convert the model to a dictionary
-        model_dict = self.to_dict()
+        model_dict = self._to_dict()
 
         # Set default filename if not provided
         if filename is None:
@@ -844,5 +837,5 @@ class Model(Plotter):
         """
         # Placeholder for load logic
         data = load(filepath)
-        self.unpack_dict(data)
+        self._unpack_dict(data)
         logger.info(f"Model '{self.name}' loaded from '{filepath}'.")
