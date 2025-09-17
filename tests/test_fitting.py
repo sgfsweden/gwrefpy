@@ -1,5 +1,5 @@
+import numpy as np
 import pytest
-
 from gwrefpy import Well
 from gwrefpy.fitresults import FitResultData
 
@@ -145,3 +145,37 @@ def test_strandangers_model_fit_invalid_well_name(strandangers_model) -> None:
 
     with pytest.raises(ValueError, match="not found in the model"):
         strandangers_model.fit("obs", "nonexistent", offset="3.5D")
+
+
+def test_strandangers_model_remove_fits_by_n(strandangers_model) -> None:
+    # introduce a second reference well
+    ref = strandangers_model.get_wells("ref")  # type: Well
+    for i in range(10):
+        ts2 = ref.timeseries * np.random.rand(*ref.timeseries.shape) + 10
+        ref2 = Well(f"ref{i + 2}", is_reference=True, timeseries=ts2)
+        strandangers_model.add_well(ref2)
+
+    # Add another observation well to make sure it remains intact when removing from
+    # the other, and add a perfect fit reference well to make sure it remains intact
+    obs = strandangers_model.get_wells("obs")  # type: Well
+    ref_perfect = Well("ref_perfect", is_reference=True, timeseries=obs.timeseries)
+    strandangers_model.add_well(ref_perfect)
+    ts_obs2 = obs.timeseries + 1.0
+    obs2 = Well("obs2", is_reference=False, timeseries=ts_obs2)
+    strandangers_model.add_well(obs2)
+
+    strandangers_model.fit("obs", "ref_perfect", offset="0D")
+    strandangers_model.fit("obs2", "ref", offset="3.5D")
+    for i in range(10):
+        strandangers_model.fit("obs", f"ref{i + 2}", offset="3.5D")
+    initial_fit_count = len(strandangers_model.fits)
+    assert initial_fit_count == 12
+
+    # Remove fits by observation well name
+    strandangers_model.remove_fits_by_n("obs", 3)
+    assert any(
+        fit.ref_well.name == "ref_perfect" for fit in strandangers_model.get_fits("obs")
+    )
+
+    new_fit_count = len(strandangers_model.fits)
+    assert new_fit_count == 4
