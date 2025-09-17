@@ -8,3 +8,4 @@ A class representing a groundwater model that can contain multiple wells.
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
