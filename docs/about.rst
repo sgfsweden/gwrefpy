@@ -1,7 +1,7 @@
 About
 =====
 
-This document provides information about the project, its purpose, and its contributors.
+gwrefpy is a Python implementation of the Akvifär reference method for detecting deviations in groundwater level time series.
 
 Release Information
 -------------------
@@ -12,6 +12,14 @@ Release Information
 
 Contributors
 ------------
-- **Anders Retzner** - https://github.com/officialankan
-- **Erik Toller** (https://github.com/eriktoller) - WSP
-- **Tobias Erlström** - (https://github.com/tobiaserlstrom) Sweco
+- `Anders Retzner <https://github.com/officialankan>`_ - SGU
+- `Erik Toller <https://github.com/eriktoller>`_ - WSP
+- `Tobias Erlström <https://github.com/tobiaserlstrom>`_ - Sweco
+
+License
+-------
+This project is licensed under the MIT License - see the `LICENSE <https://github.com/andersretznerSGU/gwrefpy/blob/main/LICENSE>`_ file for details.
+
+Acknowledgements
+----------------
+This package was funded by `Svenska Geotekniska Förening <https://svenskageotekniskaforeningen.se/>`_ (grant no. 542502) and developed in collaboration between `Sveriges Geologiska Undersökning <https://www.sgu.se/>`_ (SGU), `WSP <https://www.wsp.com/sv-SE>`_, and `Sweco <https://www.sweco.se/>`_.
