@@ -5,6 +5,24 @@ from .well import Well
 
 
 class LinRegResult:
+    """
+    This class contains the results of a linear regression fit.
+
+    Parameters
+    ----------
+    slope : float
+        The slope of the regression line.
+    intercept : float
+        The intercept of the regression line.
+    rvalue : float
+        The correlation coefficient.
+    pvalue : float
+        The two-sided p-value for a hypothesis test whose null hypothesis is
+        that the slope is zero.
+    stderr : float
+        The standard error of the estimated slope.
+    """
+
     def __init__(
         self,
         slope: float,
@@ -13,24 +31,6 @@ class LinRegResult:
         pvalue: float,
         stderr: float,
     ):
-        """
-        Initialize a LinRegResult object to store the results of a linear regression.
-        This replaces the scipy LinregressResult object to make it serializable.
-
-        Parameters
-        ----------
-        slope : float
-            The slope of the regression line.
-        intercept : float
-            The intercept of the regression line.
-        rvalue : float
-            The correlation coefficient.
-        pvalue : float
-            The two-sided p-value for a hypothesis test whose null hypothesis is
-            that the slope is zero.
-        stderr : float
-            The standard error of the estimated slope.
-        """
         self.slope = slope
         self.intercept = intercept
         self.rvalue = rvalue
@@ -53,6 +53,38 @@ class LinRegResult:
 
 
 class FitResultData:
+    """
+    This class contains all information that is required to reproduce a fit between
+    a reference well and an observation well.
+
+    Parameters
+    ----------
+    ref_well : Well
+        The reference well object containing the time series data.
+    obs_well : Well
+        The observation well object containing the time series data.
+    rmse : float
+        The root mean square error of the fit.
+    n : int
+        The number of data points used in the fit.
+    fit_method : LinRegResult
+        The method used for fitting (e.g., linreg).
+    t_a : float
+        The t-value for the given confidence level and degrees of freedom.
+    stderr : float
+        The standard error of the regression.
+    pred_const : float
+        The prediction constant for the confidence interval.
+    p : float
+        The confidence level used in the fit.
+    offset: pd.DateOffset | pd.Timedelta | str
+        Allowed offset when grouping data points within time equivalents.
+    tmin: pd.Timestamp | str | None
+        The minimum timestamp for the calibration period.
+    tmax: pd.Timestamp | str | None
+        The maximum timestamp for the calibration period.
+    """
+
     def __init__(
         self,
         obs_well: Well,
@@ -70,36 +102,6 @@ class FitResultData:
     ):
         """
         Initialize a FitResultData object to store the results of a fit between.
-
-        This class contains all information that is required to reproduce a fit between
-        a reference well and an observation well.
-
-        Parameters
-        ----------
-        ref_well : Well
-            The reference well object containing the time series data.
-        obs_well : Well
-            The observation well object containing the time series data.
-        rmse : float
-            The root mean square error of the fit.
-        n : int
-            The number of data points used in the fit.
-        fit_method : LinRegResult
-            The method used for fitting (e.g., linreg).
-        t_a : float
-            The t-value for the given confidence level and degrees of freedom.
-        stderr : float
-            The standard error of the regression.
-        pred_const : float
-            The prediction constant for the confidence interval.
-        p : float
-            The confidence level used in the fit.
-        offset: pd.DateOffset | pd.Timedelta | str
-            Allowed offset when grouping data points within time equivalents.
-        tmin: pd.Timestamp | str | None
-            The minimum timestamp for the calibration period.
-        tmax: pd.Timestamp | str | None
-            The maximum timestamp for the calibration period.
         """
         self.obs_well = obs_well
         self.ref_well = ref_well
@@ -342,7 +344,7 @@ class FitResultData:
         """
         return self.ref_well == well or self.obs_well == well
 
-    def to_dict(self) -> dict:
+    def _to_dict(self) -> dict:
         """
         Convert the FitResultData object to a dictionary.
 
@@ -378,7 +380,20 @@ class FitResultData:
         return dict_representation
 
 
-def unpack_dict_fit_method(data: dict) -> LinRegResult:
+def _unpack_dict_fit_method(data: dict) -> LinRegResult:
+    """
+    Unpack a dictionary representation of a fit method into a LinRegResult object.
+
+    Parameters
+    ----------
+    data : dict
+        A dictionary containing the fit method data.
+
+    Returns
+    -------
+    LinRegResult
+        The unpacked LinRegResult object.
+    """
     fit_method_name = data.get("fit_method", None)
     if fit_method_name == "LinRegResult":
         linreg_data = data.get("LinRegResult", {})
