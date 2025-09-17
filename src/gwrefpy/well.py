@@ -35,7 +35,7 @@ class Well:
         """
 
         # Initialize attributes
-        self._name = None
+        self._name = ""
         self.name = name  # This will call the setter
         self.is_reference = is_reference
         self.model = []
@@ -111,6 +111,7 @@ class Well:
         """
         self._validate_timeseries(timeseries)
         self.timeseries = timeseries
+        self.timeseries.name = self.name
 
     def _validate_timeseries(self, timeseries: pd.Series):
         """
