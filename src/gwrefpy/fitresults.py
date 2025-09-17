@@ -344,7 +344,20 @@ class FitResultData:
         return dict_representation
 
 
-def unpack_dict_fit_method(data: dict) -> LinRegResult:
+def _unpack_dict_fit_method(data: dict) -> LinRegResult:
+    """
+    Unpack a dictionary representation of a fit method into a LinRegResult object.
+
+    Parameters
+    ----------
+    data : dict
+        A dictionary containing the fit method data.
+
+    Returns
+    -------
+    LinRegResult
+        The unpacked LinRegResult object.
+    """
     fit_method_name = data.get("fit_method", None)
     if fit_method_name == "LinRegResult":
         linreg_data = data.get("LinRegResult", {})

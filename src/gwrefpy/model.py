@@ -3,7 +3,7 @@ from typing import Literal
 
 import pandas as pd
 
-from .fitresults import FitResultData, LinRegResult, unpack_dict_fit_method
+from .fitresults import FitResultData, LinRegResult, _unpack_dict_fit_method
 from .io.io import load, save
 from .methods.linregressfit import linregressfit
 from .plotter import Plotter
@@ -780,7 +780,7 @@ class Model(Plotter):
                 obs_well=self.wells[self.well_names.index(fit_data["obs_well"])],
                 rmse=fit_data.get("rmse", None),
                 n=fit_data.get("n", None),
-                fit_method=unpack_dict_fit_method(fit_data),
+                fit_method=_unpack_dict_fit_method(fit_data),
                 t_a=fit_data.get("t_a", None),
                 stderr=fit_data.get("stderr", None),
                 pred_const=fit_data.get("pred_const", None),
