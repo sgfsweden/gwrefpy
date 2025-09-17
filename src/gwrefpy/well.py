@@ -11,6 +11,17 @@ logger = logging.getLogger(__name__)
 class Well:
     """
     Base class for a well in a groundwater model.
+
+    Parameters
+    ----------
+    name : str
+        The name of the well.
+    is_reference : bool
+        Whether the well is a reference well.
+    timeseries : pd.Series, optional
+        A pandas Series containing the time series data for the well. The index
+        should be a pandas DatetimeIndex and the values should be floats.
+        Default is None.
     """
 
     def __init__(
@@ -21,18 +32,6 @@ class Well:
     ):
         """
         Initialize a WellBase object.
-
-        Parameters
-        ----------
-        name : str
-            The name of the well.
-        is_reference : bool
-            Indicates if the well is a reference well (True) or an observation
-             well (False).
-        timeseries : pd.Series | None
-            Supply a pandas Series to associate a time series with the well.
-        model : Model | None
-            Supply a Model instance to associate the well with a groundwater model.
         """
 
         # Initialize attributes

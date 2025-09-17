@@ -23,6 +23,10 @@ logger = logging.getLogger(__name__)
 
 
 class Plotter:
+    """
+    Base class for plotting wells and fit results.
+    """
+
     def __init__(self):
         self.wells = None
         self._cnt_colors = 0
