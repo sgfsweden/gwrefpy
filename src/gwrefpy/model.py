@@ -1,10 +1,3 @@
-"""
-Model
------
-A class representing a groundwater model that can contain multiple wells.
-
-"""
-
 import logging
 from typing import Literal
 
@@ -91,7 +84,7 @@ class Model(Plotter):
     # ======================== Well Management Methods ========================
 
     @property
-    def obs_wells(self):
+    def obs_wells(self) -> list[Well]:
         """List of observation wells in the model."""
         return [well for well in self.wells if not well.is_reference]
 
@@ -156,7 +149,7 @@ class Model(Plotter):
         return pd.DataFrame(data)
 
     @property
-    def ref_wells(self):
+    def ref_wells(self) -> list[Well]:
         """List of reference wells in the model."""
         return [well for well in self.wells if well.is_reference]
 
@@ -303,7 +296,7 @@ class Model(Plotter):
         return pd.DataFrame(data)
 
     @property
-    def well_names(self):
+    def well_names(self) -> list[str]:
         """List of all well names in the model."""
         return [well.name for well in self.wells]
 

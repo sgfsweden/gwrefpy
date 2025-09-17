@@ -58,7 +58,7 @@ class Well:
         self.elevation = None
 
     @property
-    def name(self):
+    def name(self) -> str:
         """The name of the well."""
         return self._name
 
