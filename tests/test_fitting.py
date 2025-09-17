@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from gwrefpy import Well
 from gwrefpy.fitresults import FitResultData
 
