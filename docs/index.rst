@@ -32,7 +32,7 @@ Uninstall the package:
     :hidden:
     :caption: Contents:
 
-    user_guide
+    user_guide/index
     tutorials/index
     apidocs
     about

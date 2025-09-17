@@ -1,4 +1,0 @@
-Fitting
-=======
-
-Text goes here.
