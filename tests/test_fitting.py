@@ -171,6 +171,34 @@ def test_strandangers_model_remove_fits_by_n(strandangers_model) -> None:
     initial_fit_count = len(strandangers_model.fits)
     assert initial_fit_count == 12
 
+    # Test the n input validation
+    with pytest.raises(ValueError, match="Parameter 'n' must be a positive integer."):
+        strandangers_model.remove_fits_by_n("obs", 0)
+    with pytest.raises(ValueError, match="Parameter 'n' must be a positive integer."):
+        strandangers_model.remove_fits_by_n("obs", -3)
+    with pytest.raises(ValueError, match="Parameter 'n' must be a positive integer."):
+        strandangers_model.remove_fits_by_n("obs", 2.5)
+    with pytest.raises(ValueError, match="Parameter 'n' must be a positive integer."):
+        strandangers_model.remove_fits_by_n("obs", "three")
+
+    # test that observation well is an observation well
+    with pytest.raises(ValueError, match="The well 'ref' is not an observation well."):
+        strandangers_model.remove_fits_by_n("ref", 3)
+
+    # Test passing somthing else as a obs_well
+    with pytest.raises(
+        TypeError, match="Parameter 'obs_well' must be a Well instance or a string."
+    ):
+        strandangers_model.remove_fits_by_n(5, 3)
+    with pytest.raises(
+        TypeError, match="Parameter 'obs_well' must be a Well instance or a string."
+    ):
+        strandangers_model.remove_fits_by_n(strandangers_model.fits[0], 3)
+
+    # Test that nothing happens if there are fewer fits than n
+    strandangers_model.remove_fits_by_n("obs2", 300)
+    assert len(strandangers_model.fits) == initial_fit_count
+
     # Remove fits by observation well name
     strandangers_model.remove_fits_by_n("obs", 3)
     assert any(

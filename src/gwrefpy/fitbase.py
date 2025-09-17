@@ -2,9 +2,10 @@ import logging
 from typing import Literal
 
 import pandas as pd
-from gwrefpy import Well
-from gwrefpy.fitresults import FitResultData
-from gwrefpy.methods.linregressfit import linregressfit
+
+from .fitresults import FitResultData
+from .methods.linregressfit import linregressfit
+from .well import Well
 
 logger = logging.getLogger(__name__)
 
@@ -280,7 +281,8 @@ class FitBase:
 
     def remove_fits_by_n(self, obs_well: Well | str, n: int) -> None:
         """
-        Remove fit results for a specific observation well and n value.
+        Remove fit results for a specific observation well. Keeps only the best n fits
+        based on RMSE.
 
         Parameters
         ----------
@@ -292,7 +294,14 @@ class FitBase:
         Returns
         -------
         None
+            Removes fits from the model's fit list.
         """
+        # Check that n is a positive integer
+        if not isinstance(n, int) or n < 1:
+            logger.error("Parameter 'n' must be a positive integer.")
+            raise ValueError("Parameter 'n' must be a positive integer.")
+
+        # Resolve the observation well
         target_well: Well
         if isinstance(obs_well, str):
             target_well = self.get_wells(obs_well)
@@ -302,6 +311,14 @@ class FitBase:
             logger.error("Parameter 'obs_well' must be a Well instance or a string.")
             raise TypeError("Parameter 'obs_well' must be a Well instance or a string.")
 
+        # Make sure the target well is an observation well
+        if target_well.is_reference:
+            logger.error(f"The well '{target_well.name}' is not an observation well.")
+            raise ValueError(
+                f"The well '{target_well.name}' is not an observation well."
+            )
+
+        # Get all fits for the target well
         obs_fits = self.get_fits(target_well)
         if obs_fits is None:
             logger.warning(f"No fits found for well '{target_well.name}'.")
@@ -317,9 +334,10 @@ class FitBase:
             )
             return
 
+        # Get all other fits not involving the target well
         other_fits = [fit for fit in self.fits if not fit.has_well(target_well)]
 
-        # Get the RMSE values for the fits
+        # Get the RMSE values for the fits involving the target well
         rmse_fits = [f.rmse for f in obs_fits]
 
         # Get the best n fits index
