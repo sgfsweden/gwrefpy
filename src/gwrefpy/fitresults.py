@@ -267,6 +267,42 @@ class FitResultData:
                 f"implemented"
             )
 
+    def get_fit_timeseries(self) -> pd.Series:
+        """
+        Get the fitted time series for the reference well.
+
+        Returns
+        -------
+        pd.Series
+            The fitted time series for the reference well.
+        """
+
+        return self.fit_timeseries()
+
+    def get_upper_confidence_bound(self) -> pd.Series:
+        """
+        Calculate the upper confidence bound based on the fit method and RMSE.
+
+        Returns
+        -------
+        pd.Series
+            The upper confidence bound based on the fit method and RMSE.
+        """
+        fitted_values = self.fit_timeseries()
+        return fitted_values + self.pred_const
+
+    def get_lower_confidence_bound(self) -> pd.Series:
+        """
+        Calculate the lower confidence bound based on the fit method and RMSE.
+
+        Returns
+        -------
+        pd.Series
+            The lower confidence bound based on the fit method and RMSE.
+        """
+        fitted_values = self.fit_timeseries()
+        return fitted_values - self.pred_const
+
     def fit_outliers(self) -> pd.Series:
         """
         Calculate the outliers based on the fit method and RMSE.

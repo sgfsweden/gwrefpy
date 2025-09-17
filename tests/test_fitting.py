@@ -145,3 +145,85 @@ def test_strandangers_model_fit_invalid_well_name(strandangers_model) -> None:
 
     with pytest.raises(ValueError, match="not found in the model"):
         strandangers_model.fit("obs", "nonexistent", offset="3.5D")
+
+
+def test_fit_result_get_fit_timeseries(strandangers_model) -> None:
+    # Test the get_fit_timeseries method
+    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+
+    # Perform a fit
+    fit_result = strandangers_model.fit(obs, ref, offset="3.5D")
+
+    # Get the fitted time series
+    fitted_series = fit_result.get_fit_timeseries()
+
+    # Verify the fitted series has the same index as the reference series
+    assert fitted_series.index.equals(ref.timeseries.index)
+
+    # Verify the fitted values are calculated correctly (slope * x + intercept)
+    expected_values = ref.timeseries.apply(
+        lambda x: fit_result.fit_method.slope * x + fit_result.fit_method.intercept
+    )
+    assert fitted_series.equals(expected_values)
+
+
+def test_fit_result_get_upper_confidence_bound(strandangers_model) -> None:
+    # Test the get_upper_confidence_bound method
+    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+
+    # Perform a fit
+    fit_result = strandangers_model.fit(obs, ref, offset="3.5D")
+
+    # Get the upper confidence bound
+    upper_bound = fit_result.get_upper_confidence_bound()
+
+    # Verify the upper bound has the same index as the reference series
+    assert upper_bound.index.equals(ref.timeseries.index)
+
+    # Verify the upper bound is fitted values + pred_const
+    fitted_series = fit_result.get_fit_timeseries()
+    expected_upper = fitted_series + fit_result.pred_const
+    assert upper_bound.equals(expected_upper)
+
+
+def test_fit_result_get_lower_confidence_bound(strandangers_model) -> None:
+    # Test the get_lower_confidence_bound method
+    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+
+    # Perform a fit
+    fit_result = strandangers_model.fit(obs, ref, offset="3.5D")
+
+    # Get the lower confidence bound
+    lower_bound = fit_result.get_lower_confidence_bound()
+
+    # Verify the lower bound has the same index as the reference series
+    assert lower_bound.index.equals(ref.timeseries.index)
+
+    # Verify the lower bound is fitted values - pred_const
+    fitted_series = fit_result.get_fit_timeseries()
+    expected_lower = fitted_series - fit_result.pred_const
+    assert lower_bound.equals(expected_lower)
+
+
+def test_fit_result_confidence_bounds_relationship(strandangers_model) -> None:
+    # Test the relationship between upper and lower confidence bounds
+    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+
+    # Perform a fit
+    fit_result = strandangers_model.fit(obs, ref, offset="3.5D")
+
+    # Get bounds and fitted series
+    upper_bound = fit_result.get_upper_confidence_bound()
+    lower_bound = fit_result.get_lower_confidence_bound()
+    fitted_series = fit_result.get_fit_timeseries()
+
+    # Verify that upper bound > fitted > lower bound for all values
+    assert (upper_bound > fitted_series).all()
+    assert (fitted_series > lower_bound).all()
+
+    # Verify the width of the confidence interval is 2 * pred_const
+    interval_width = upper_bound - lower_bound
+    expected_width = 2 * fit_result.pred_const
+    assert (
+        abs(interval_width - expected_width) < 1e-10
+    ).all()  # Allow for small floating point errors
