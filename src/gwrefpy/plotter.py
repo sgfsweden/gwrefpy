@@ -687,7 +687,9 @@ class Plotter:
                 color="white",
                 linestyle=None,
                 marker=None,
-                label=f"RMSE={fit.rmse:.4f}\nR$^2$={fm.rvalue**2:.4f}",
+                label=f"RMSE = {fit.rmse:.4f}\n"
+                f"R$^2$ = {fm.rvalue**2:.4f}\n"
+                f"y = {slope:.4f}x + {intercept:.4f}",
             )
         else:
             logger.error("Fit method not recognized for plotting.")
