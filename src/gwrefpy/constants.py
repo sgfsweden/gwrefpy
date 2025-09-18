@@ -70,12 +70,12 @@ DEFAULT_PLOT_ATTRIBUTES = {
 }
 
 # Set the font size and family for matplotlib
-FONT_SIZE = 12
+FONT_SIZE = 14
 FONT_FAMILY = "Times New Roman"
 tfont = {"family": FONT_FAMILY, "size": FONT_SIZE}
 afont = {"family": FONT_FAMILY, "size": FONT_SIZE - 2}
-lfont = {"family": FONT_FAMILY, "size": FONT_SIZE + 2, "weight": "bold"}
-tifont = {"family": FONT_FAMILY, "size": FONT_SIZE - 6}
+lfont = {"family": FONT_FAMILY, "size": FONT_SIZE - 2}
+tifont = {"family": FONT_FAMILY, "size": FONT_SIZE - 3}
 
 
 def print_constants():
