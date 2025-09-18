@@ -33,9 +33,9 @@ def groupby_time_equivalents(
     int
         Number of grouped pairs of data points.
     """
-    if not obs_timeseries.name:
+    if not obs_timeseries.name or obs_timeseries.name != "obs":
         obs_timeseries.name = "obs"
-    if not ref_timeseries.name:
+    if not ref_timeseries.name or ref_timeseries.name != "ref":
         ref_timeseries.name = "ref"
 
     time_equivalents = _create_time_equivalents(

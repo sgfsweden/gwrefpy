@@ -9,4 +9,3 @@ This page contains the API reference for the gwrefpy package.
     model
     well
     constants
-    io

@@ -91,11 +91,17 @@ def linregressfit(
 
     pred_const, t_a = _get_gwrefs_stats(p, n, stderr)
 
+    rmse = np.sqrt(
+        np.mean(
+            (obs_timeseries - (linreg.slope * ref_timeseries + linreg.intercept)) ** 2
+        )
+    )
+
     # Create and return a FitResultData object with the regression results
     fit_result = FitResultData(
         obs_well=obs_well,
         ref_well=ref_well,
-        rmse=linreg.rvalue,
+        rmse=rmse,
         n=n,
         fit_method=linreg,
         t_a=t_a,
