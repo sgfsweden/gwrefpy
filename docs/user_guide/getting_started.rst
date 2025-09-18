@@ -18,11 +18,7 @@ If you already have the package installed, make sure to update it to the latest 
 
     pip install gwrefpy --upgrade
 
-Once you have the package installed, you can start using it in your Python environment. You start by importing the necessary modules:
+Once you have the package installed, you can start using it in your Python environment. You allways start by importing the gwrefpy package:
 .. code-block:: python
 
     import gwrefpy as gw
-    import pandas as pd
-    import numpy as np
-    import matplotlib.pyplot as plt
-    from datetime import datetime
