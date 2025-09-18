@@ -9,7 +9,6 @@ This section contains step-by-step tutorials to help you get started with gwrefp
 
    quickstart.ipynb
    plotting.ipynb
-   logging_save_and_load.ipynb
 
 Quickstart Tutorial
 ------------------

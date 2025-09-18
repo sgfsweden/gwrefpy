@@ -21,12 +21,12 @@ If you already have the package installed, make sure to update it to the latest 
     pip install gwrefpy --upgrade
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :titlesonly:
 
    1_models_wells.ipynb
-   2_timeequivalents.ipynb
-   3_fitting.ipynb
+   2_fitting_wells.ipynb
+   3_time_offsets.ipynb
    4_plotting.ipynb
    5_io.ipynb
    6_logging.ipynb
