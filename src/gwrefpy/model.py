@@ -363,6 +363,65 @@ class Model(FitBase, Plotter):
         well.model.append(self)
         logger.debug(f"Well '{well.name}' added to model '{self.name}'.")
 
+    def delete_well(self, well: Well | list[Well]):
+        """
+        Delete a well or a list of wells from the model.
+
+        Parameters
+        ----------
+        well : Well or list of Wells
+            The well or list of wells to add to the model.
+
+        Returns
+        -------
+        None
+            This method modifies the model in place.
+        """
+        if isinstance(well, list):
+            for w in well:
+                self._delete_well(w)
+            logger.debug(f"Deleted {len(well)} wells from model '{self.name}'.")
+        else:
+            self._delete_well(well)
+
+    def _delete_well(self, well):
+        """
+        The internal method to delete a well from the model.
+
+        Parameters
+        ----------
+        well : Well
+            The well to delete from the model.
+
+        Raises
+        ------
+        TypeError
+            If the well is not an instance of WellBase.
+        ValueError
+             If the well is not part of the model.
+
+        Returns
+        -------
+        None
+            This method modifies the model in place.
+        """
+
+        # Check if the well is an instance of Well
+        if not isinstance(well, Well):
+            logger.error("Only Well instances can be deleted from the model.")
+            raise TypeError("Only Well instances can be deleted from the model.")
+
+        # Check if the well is already in the model
+        if well not in self.wells:
+            logger.error(f"Well '{getattr(well, 'name', well)}' is not in the model.")
+            raise ValueError(f"Well '{getattr(well, 'name', well)}' is not in the model.")
+
+        self.wells.remove(well)
+        if hasattr(well, "model") and self in well.model:
+            well.model.remove(self)
+
+        logger.debug(f"Well '{well.name}' deleted from model '{self.name}'.")
+
     def get_wells(self, names: list[str] | str) -> Well | list[Well]:
         """
         Get wells from the model by their names.
