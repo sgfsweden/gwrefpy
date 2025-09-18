@@ -201,9 +201,9 @@ class Plotter:
     def plot_fits(
         self,
         fits: FitResultData | list[FitResultData] = None,
-        title: str = "Well Data Plot",
+        title: str = "",
         xlabel: str = "Time",
-        ylabel: str = "Measurement",
+        ylabel: str = "Measurements",
         mark_outliers: bool = True,
         show_initiation_period: bool = False,
         plot_style: str | None = None,

@@ -6,6 +6,7 @@ This section contains step-by-step tutorials to help you get started with gwrefp
 .. toctree::
    :maxdepth: 2
    :titlesonly:
+   :hidden:
 
    quickstart.ipynb
    plotting.ipynb
