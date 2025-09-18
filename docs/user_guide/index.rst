@@ -21,7 +21,7 @@ If you already have the package installed, make sure to update it to the latest 
     pip install gwrefpy --upgrade
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :titlesonly:
 
    1_models_wells.ipynb

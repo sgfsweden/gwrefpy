@@ -27,6 +27,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.githubpages",
     "sphinx_copybutton",
+    "sphinx_design",
     "myst_nb",
 ]
 
