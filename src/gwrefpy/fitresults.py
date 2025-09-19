@@ -79,6 +79,9 @@ class FitResultData:
         The confidence level used in the fit.
     offset: pd.DateOffset | pd.Timedelta | str
         Allowed offset when grouping data points within time equivalents.
+    aggregation: str
+        The aggregation method used when grouping data points within time
+        equivalents ("mean", "median", "min", or "max").
     tmin: pd.Timestamp | str | None
         The minimum timestamp for the calibration period.
     tmax: pd.Timestamp | str | None
@@ -97,6 +100,7 @@ class FitResultData:
         pred_const: float,
         p: float,
         offset: pd.DateOffset | pd.Timedelta | str,
+        aggregation: str,
         tmin: pd.Timestamp | str | None,
         tmax: pd.Timestamp | str | None,
     ):
@@ -113,6 +117,7 @@ class FitResultData:
         self.pred_const = pred_const
         self.p = p
         self.offset = offset
+        self.aggregation = aggregation
         self.tmin = tmin
         self.tmax = tmax
 
@@ -142,6 +147,7 @@ class FitResultData:
             "",
             f"Calibration Period: {self.tmin} to {self.tmax}",
             f"Time Offset: {self.offset}",
+            f"Aggregation Method: {self.aggregation}",
         ]
 
         return "\n".join(lines)
@@ -232,7 +238,8 @@ class FitResultData:
             </table>
             <p style="margin: 10px 0; font-family: monospace;">
                 <strong>Calibration Period:</strong> {self.tmin} to {self.tmax}<br>
-                <strong>Time Offset:</strong> {self.offset}
+                <strong>Time Offset:</strong> {self.offset}<br>
+                <strong>Aggregation Method:</strong> {self.aggregation}
             </p>
         </div>
         """
@@ -364,6 +371,7 @@ class FitResultData:
             "pred_const": self.pred_const,
             "p": self.p,
             "offset": self.offset,
+            "aggregation": self.aggregation,
             "tmin": datetime_to_float(self.tmin),
             "tmax": datetime_to_float(self.tmax),
         }

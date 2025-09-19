@@ -585,6 +585,7 @@ class Model(FitBase, Plotter):
                 pred_const=fit_data.get("pred_const", None),
                 p=fit_data.get("p", None),
                 offset=fit_data.get("offset", None),
+                aggregation=fit_data.get("aggregation", "mean"),
                 tmin=float_to_datetime(fit_data.get("tmin", None)),
                 tmax=float_to_datetime(fit_data.get("tmax", None)),
             )
