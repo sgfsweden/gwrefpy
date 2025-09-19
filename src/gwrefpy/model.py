@@ -414,7 +414,9 @@ class Model(FitBase, Plotter):
         # Check if the well is already in the model
         if well not in self.wells:
             logger.error(f"Well '{getattr(well, 'name', well)}' is not in the model.")
-            raise ValueError(f"Well '{getattr(well, 'name', well)}' is not in the model.")
+            raise ValueError(
+                f"Well '{getattr(well, 'name', well)}' is not in the model."
+            )
 
         self.wells.remove(well)
         if hasattr(well, "model") and self in well.model:
