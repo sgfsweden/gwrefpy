@@ -98,6 +98,10 @@ def linregressfit(
     )
 
     # Create and return a FitResultData object with the regression results
+    if tmin is None:
+        tmin = obs_well.timeseries.index.min()
+    if tmax is None:
+        tmax = obs_well.timeseries.index.max()
     fit_result = FitResultData(
         obs_well=obs_well,
         ref_well=ref_well,

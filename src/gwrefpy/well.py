@@ -113,6 +113,25 @@ class Well:
         self.timeseries = timeseries
         self.timeseries.name = self.name
 
+    def append_timeseries(self, timeseries: pd.Series):
+        """
+        Append a timeseries to the existing timeseries of the well. This will be
+        validated by `_validate_timeseries`.
+
+        Parameters
+        ----------
+        timeseries : pd.Series
+            A pandas Series containing the time series data to append.
+
+        """
+        self._validate_timeseries(timeseries)
+        if hasattr(self, "timeseries") and self.timeseries is not None:
+            self.timeseries = pd.concat([self.timeseries, timeseries]).sort_index()
+            self.timeseries.name = self.name
+        else:
+            self.timeseries = timeseries
+            self.timeseries.name = self.name
+
     def _validate_timeseries(self, timeseries: pd.Series):
         """
         Validate the timeseries data and data types.
