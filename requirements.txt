@@ -1,8 +1,0 @@
-sphinx
-pydata-sphinx-theme
-sphinx-copybutton
-ghp-import
-numpy
-pandas
-matplotlib
-scipy
