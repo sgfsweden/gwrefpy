@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -10,10 +11,10 @@ def groupby_time_equivalents(
     obs_timeseries: pd.Series,
     ref_timeseries: pd.Series,
     offset: pd.DateOffset | pd.Timedelta | str,
+    aggregation: Literal["mean", "median", "min", "max"] = "mean",
 ) -> tuple[pd.Series, pd.Series, int]:
     """
     Groups the reference and observation timeseries by their time equivalents.
-    Currently, this function uses the mean to aggregate within each time equivalent.
 
     Parameters
     ----------
@@ -23,6 +24,9 @@ def groupby_time_equivalents(
         The reference timeseries data.
     offset: pd.DateOffset | pd.Timedelta | str
         Maximum date offset to allow to group pairs of data points.
+    aggregation: Literal["mean", "median", "min", "max"], optional
+        The aggregation method to use when grouping data points.
+        Default is "mean".
 
     Returns
     -------
@@ -44,14 +48,17 @@ def groupby_time_equivalents(
 
     combined = pd.concat([obs_timeseries, ref_timeseries], axis="columns")
     combined_time_eqs = combined.set_index(time_equivalents, drop=True)
-    time_eq_means = combined_time_eqs.groupby(combined_time_eqs.index).mean()
+    grouped = combined_time_eqs.groupby(combined_time_eqs.index)
 
-    time_eq_means = time_eq_means.dropna()
+    # Apply the specified aggregation method
+    time_eq_aggregated = getattr(grouped, aggregation)()
+
+    time_eq_aggregated = time_eq_aggregated.dropna()
 
     return (
-        time_eq_means[ref_timeseries.name],
-        time_eq_means[obs_timeseries.name],
-        len(time_eq_means),
+        time_eq_aggregated[ref_timeseries.name],
+        time_eq_aggregated[obs_timeseries.name],
+        len(time_eq_aggregated),
     )
 
 
