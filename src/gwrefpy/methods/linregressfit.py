@@ -99,9 +99,11 @@ def linregressfit(
 
     # Create and return a FitResultData object with the regression results
     if tmin is None:
-        tmin = obs_well.timeseries.index.min()
+        logger.warning("tmin is None, setting to min common time of both wells")
+        tmin = max(obs_well.timeseries.index.min(), ref_well.timeseries.index.min())
     if tmax is None:
-        tmax = obs_well.timeseries.index.max()
+        logger.warning("tmax is None, setting to max common time of both wells")
+        tmax = min(obs_well.timeseries.index.max(), ref_well.timeseries.index.max())
     fit_result = FitResultData(
         obs_well=obs_well,
         ref_well=ref_well,
