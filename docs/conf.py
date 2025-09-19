@@ -49,6 +49,7 @@ master_doc = "index"
 
 html_theme = "pydata_sphinx_theme"
 html_title = "gwrefpy"
+html_logo = "_static/figures/logo.png"
 html_theme_options = {
     "navbar_align": "content",
     "icon_links": [
