@@ -569,6 +569,9 @@ class Plotter:
                 plt.savefig(save_path, **kwargs)
                 logger.info(f"Plot saved to {save_path}")
 
+        assert ax is not None  # Type narrowing for type checker
+        return fig, ax
+
     def _set_plot_labels(self, ax, title, xlabel, ylabel):
         """Set plot labels with conditional font styling."""
         if self._plot_style is not None:
