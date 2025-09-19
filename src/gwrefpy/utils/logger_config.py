@@ -52,7 +52,7 @@ def set_log_level(level: str, all_handlers: bool = False) -> None:
         for handler in logging.getLogger().handlers:
             if handler.__class__ == logging.StreamHandler:
                 handler.setLevel(numeric_level)
-    logger.info(f"Log level set to {level}")
+    logger.warning(f"Log level set to {level}")
 
 
 def enable_file_logging(
