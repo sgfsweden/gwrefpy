@@ -7,8 +7,6 @@ import pytest
 from gwrefpy import analyze_offsets
 from gwrefpy.methods.timeseries import groupby_time_equivalents
 
-# TODO: maybe move tests from `test_timeseries.py` to this file
-
 
 @pytest.fixture
 def sample_data_with_multiple_values():
