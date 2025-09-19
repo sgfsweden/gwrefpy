@@ -1,7 +1,6 @@
 import datetime
 
 import pandas as pd
-
 from gwrefpy.utils.conversions import datetime_to_float
 from gwrefpy.well import Well
 
@@ -69,6 +68,48 @@ def test_add_timeseries_empty_series():
         well.add_timeseries(empty_series)
     except ValueError as e:
         assert str(e) == "Timeseries cannot be empty."
+
+
+def test_add_timeseries_to_one_already_set(timeseries):
+    """Test that add_timeseries raises ValueError if timeseries is already set."""
+    well = Well("Test Well", is_reference=True, timeseries=timeseries)
+
+    try:
+        well.add_timeseries(timeseries)
+    except ValueError as e:
+        assert str(e) == (
+            f"Well {well.name} already has a timeseries. Use "
+            f"`append_timeseries` to add more data or overwrite it using "
+            f"`replace_timeseries`."
+        )
+
+
+def test_append_timeseries_to_one_already_set(timeseries):
+    """Test that append_timeseries raises ValueError if duplicate timestamps."""
+    well = Well("Test Well", is_reference=True, timeseries=timeseries)
+
+    try:
+        well.append_timeseries(timeseries)
+    except ValueError as e:
+        assert str(e) == (
+            f"Appending timeseries to well {well.name} resulted in "
+            f"duplicate timestamps. Set `remove_duplicates=True` to remove "
+            f"them."
+        )
+
+    well.append_timeseries(timeseries, remove_duplicates=True)
+    assert len(well.timeseries) == len(timeseries)
+
+
+def test_replace_timeseries(timeseries):
+    """Test that replace_timeseries replaces existing timeseries."""
+    well = Well("Test Well", is_reference=True, timeseries=timeseries)
+
+    new_series = pd.Series(
+        [10.0, 20.0, 30.0], index=pd.date_range("2023-01-01", periods=3, freq="D")
+    )
+    well.replace_timeseries(new_series)
+    pd.testing.assert_series_equal(well.timeseries, new_series)
 
 
 def test_add_timeseries_non_datetime_index():

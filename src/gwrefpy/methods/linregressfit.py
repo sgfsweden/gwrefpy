@@ -91,11 +91,23 @@ def linregressfit(
 
     pred_const, t_a = _get_gwrefs_stats(p, n, stderr)
 
+    rmse = np.sqrt(
+        np.mean(
+            (obs_timeseries - (linreg.slope * ref_timeseries + linreg.intercept)) ** 2
+        )
+    )
+
     # Create and return a FitResultData object with the regression results
+    if tmin is None:
+        logger.warning("tmin is None, setting to min common time of both wells")
+        tmin = max(obs_well.timeseries.index.min(), ref_well.timeseries.index.min())
+    if tmax is None:
+        logger.warning("tmax is None, setting to max common time of both wells")
+        tmax = min(obs_well.timeseries.index.max(), ref_well.timeseries.index.max())
     fit_result = FitResultData(
         obs_well=obs_well,
         ref_well=ref_well,
-        rmse=linreg.rvalue,
+        rmse=rmse,
         n=n,
         fit_method=linreg,
         t_a=t_a,

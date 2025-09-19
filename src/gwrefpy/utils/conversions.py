@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def datetime_to_float(date_time):
+def datetime_to_float(date_time: pd.Timestamp) -> float:
     """
     Convert a datetime object to a float representation.
 
@@ -18,7 +18,7 @@ def datetime_to_float(date_time):
     return date_time.timestamp()
 
 
-def float_to_datetime(float_time):
+def float_to_datetime(float_time: float) -> pd.Timestamp:
     """
     Convert a float representation of time back to a datetime object.
 
@@ -29,7 +29,7 @@ def float_to_datetime(float_time):
 
     Returns
     -------
-    datetime
+    pd.Timestamp
         The corresponding datetime object.
     """
     return pd.to_datetime(float_time, unit="s")
