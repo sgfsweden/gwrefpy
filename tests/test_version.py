@@ -31,6 +31,6 @@ def test_version_consistency() -> None:
 
     # Check all versions are the same
     unique_versions = set(versions.values())
-    assert len(unique_versions) == 1, f"Version mismatch detected:\n" + "\n".join(
+    assert len(unique_versions) == 1, "Version mismatch detected:\n" + "\n".join(
         [f"  {source}: {version}" for source, version in versions.items()]
     )

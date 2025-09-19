@@ -40,6 +40,8 @@ class Well:
         self.is_reference = is_reference
         self.model = []
 
+        # Time series data
+        self.timeseries = None
         if timeseries is not None:
             self.add_timeseries(timeseries)
 
@@ -110,10 +112,22 @@ class Well:
 
         """
         self._validate_timeseries(timeseries)
+        if self.timeseries is not None:
+            logger.error(
+                f"Well {self.name} already has a timeseries. Use "
+                f"`append_timeseries` to add more data or overwrite it using "
+                f"`replace_timeseries`."
+            )
+            raise ValueError(
+                f"Well {self.name} already has a timeseries. Use "
+                f"`append_timeseries` to add more data or overwrite it using "
+                f"`replace_timeseries`."
+            )
         self.timeseries = timeseries
         self.timeseries.name = self.name
+        logger.debug(f"Added timeseries to well {self.name}")
 
-    def append_timeseries(self, timeseries: pd.Series):
+    def append_timeseries(self, timeseries: pd.Series, remove_duplicates: bool = False):
         """
         Append a timeseries to the existing timeseries of the well. This will be
         validated by `_validate_timeseries`.
@@ -122,15 +136,57 @@ class Well:
         ----------
         timeseries : pd.Series
             A pandas Series containing the time series data to append.
+        remove_duplicates : bool, optional
+            Whether to remove duplicate timestamps after appending. Default is False
+            which will raise an error if duplicates are found.
 
         """
         self._validate_timeseries(timeseries)
-        if hasattr(self, "timeseries") and self.timeseries is not None:
-            self.timeseries = pd.concat([self.timeseries, timeseries]).sort_index()
+        if self.timeseries is not None:
+            new_timeseries = pd.concat([self.timeseries, timeseries]).sort_index()
+            n0 = len(self.timeseries)
+            new_timeseries = new_timeseries[
+                ~new_timeseries.index.duplicated(keep="last")
+            ]
+            n1 = len(new_timeseries)
+            if n1 < n0 + len(timeseries):
+                if not remove_duplicates:
+                    logger.error(
+                        f"Appending timeseries to well {self.name} resulted in "
+                        f"duplicate timestamps. Set `remove_duplicates=True` to remove "
+                        f"them."
+                    )
+                    raise ValueError(
+                        f"Appending timeseries to well {self.name} resulted in "
+                        f"duplicate timestamps. Set `remove_duplicates=True` to remove "
+                        f"them."
+                    )
+                logger.warning(
+                    f"Appending timeseries to well {self.name} resulted in "
+                    f"{n0 + len(timeseries) - n1} duplicate timestamps being removed."
+                )
+            self.timeseries = new_timeseries
             self.timeseries.name = self.name
         else:
             self.timeseries = timeseries
             self.timeseries.name = self.name
+        logger.debug(f"Appended timeseries to well {self.name}")
+
+    def replace_timeseries(self, timeseries: pd.Series):
+        """
+        Replace the existing timeseries of the well with a new timeseries. This will be
+        validated by `_validate_timeseries`.
+
+        Parameters
+        ----------
+        timeseries : pd.Series
+            A pandas Series containing the new time series data.
+
+        """
+        self._validate_timeseries(timeseries)
+        self.timeseries = timeseries
+        self.timeseries.name = self.name
+        logger.debug(f"Replaced timeseries of well {self.name}")
 
     def _validate_timeseries(self, timeseries: pd.Series):
         """
