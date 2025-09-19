@@ -109,22 +109,22 @@ class Model(FitBase, Plotter):
                 "name": well.name,
                 "well_type": "observation",
                 "data_points": len(well.timeseries)
-                if hasattr(well, "timeseries")
+                if well.timeseries is not None
                 else 0,
                 "start_date": well.timeseries.index.min()
-                if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                if well.timeseries is not None and len(well.timeseries) > 0
                 else None,
                 "end_date": well.timeseries.index.max()
-                if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                if well.timeseries is not None and len(well.timeseries) > 0
                 else None,
                 "mean_level": well.timeseries.mean()
-                if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                if well.timeseries is not None and len(well.timeseries) > 0
                 else None,
                 "latest_value": well.timeseries.iloc[-1]
-                if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                if well.timeseries is not None and len(well.timeseries) > 0
                 else None,
                 "latest_date": well.timeseries.index[-1]
-                if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                if well.timeseries is not None and len(well.timeseries) > 0
                 else None,
                 "latitude": well.latitude,
                 "longitude": well.longitude,
@@ -174,31 +174,31 @@ class Model(FitBase, Plotter):
                 "name": well.name,
                 "well_type": "reference",
                 "data_points": (
-                    len(well.timeseries) if hasattr(well, "timeseries") else 0
+                    len(well.timeseries) if well.timeseries is not None else 0
                 ),
                 "start_date": (
                     well.timeseries.index.min()
-                    if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                    if well.timeseries is not None and len(well.timeseries) > 0
                     else None
                 ),
                 "end_date": (
                     well.timeseries.index.max()
-                    if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                    if well.timeseries is not None and len(well.timeseries) > 0
                     else None
                 ),
                 "mean_level": (
                     well.timeseries.mean()
-                    if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                    if well.timeseries is not None and len(well.timeseries) > 0
                     else None
                 ),
                 "latest_value": (
                     well.timeseries.iloc[-1]
-                    if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                    if well.timeseries is not None and len(well.timeseries) > 0
                     else None
                 ),
                 "latest_date": (
                     well.timeseries.index[-1]
-                    if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                    if well.timeseries is not None and len(well.timeseries) > 0
                     else None
                 ),
                 "latitude": well.latitude,
