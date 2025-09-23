@@ -1,7 +1,7 @@
 gwrefpy
 =======
 
-A Python implementation of the Akvifär reference method for detecting deviations in groundwater level time series.
+``gwrefpy`` is an open source Python implementation of the Akvifär reference method for detecting deviations in groundwater level time series. The method is described in detail in `Strandanger (2024) <https://svenskageotekniskaforeningen.se/wp-content/uploads/Publikationer/SGF_Rapporter/2024_2_Akvifars_refmetod.pdf)>`_.
 
 .. grid::
 
@@ -25,11 +25,11 @@ A Python implementation of the Akvifär reference method for detecting deviation
 
 .. grid::
 
-    .. grid-item-card:: About
-        :link: about/index
+    .. grid-item-card:: Exercises
+        :link: tutorials/exercises/index
         :link-type: doc
 
-        General information about ``gwrefpy``.
+        A collection of ``gwrefpy`` exercises.
 
     .. grid-item-card:: Key Concepts
         :link: about/keyconcepts
@@ -48,7 +48,7 @@ Features
 - Programmatically fit observation wells to reference wells
 - Visualize fits and deviations
 - Save your work, share and pick up later with a custom ``.gwref`` file format
-- More to come...
+- Work with live data and update your analysis as new data comes in
 
 
 Quick Example
