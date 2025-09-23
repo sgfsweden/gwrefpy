@@ -21,6 +21,7 @@ class FitBase:
         obs_well: Well | list[Well] | str | list[str],
         ref_well: Well | list[Well] | str | list[str],
         offset: pd.DateOffset | pd.Timedelta | str,
+        aggregation: Literal["mean", "median", "min", "max"] = "mean",
         p: float = 0.95,
         method: Literal["linearregression"] = "linearregression",
         tmin: pd.Timestamp | str | None = None,
@@ -43,6 +44,9 @@ class FitBase:
         offset: pd.DateOffset | pd.Timedelta | str
             The offset to apply to the time series when grouping within time
             equivalents.
+        aggregation: Literal["mean", "median", "min", "max"], optional
+            The aggregation method to use when grouping data points within time
+            equivalents (default is "mean").
         p : float, optional
             The confidence level for the fit (default is 0.95).
         method : Literal["linearregression"]
@@ -74,7 +78,7 @@ class FitBase:
         # Handle single well case
         if len(obs_wells) == 1 and len(ref_wells) == 1:
             result = self._fit(
-                obs_wells[0], ref_wells[0], offset, p, method, tmin, tmax
+                obs_wells[0], ref_wells[0], offset, p, method, tmin, tmax, aggregation
             )
             logger.info(
                 f"Fitting model '{self.name}' using reference well "
@@ -96,7 +100,7 @@ class FitBase:
         # Perform fitting for each pair
         results = []
         for obs_w, ref_w in zip(obs_wells, ref_wells, strict=True):
-            result = self._fit(obs_w, ref_w, offset, p, method, tmin, tmax)
+            result = self._fit(obs_w, ref_w, offset, p, method, tmin, tmax, aggregation)
             results.append(result)
             logger.info(
                 f"Fitting model '{self.name}' using reference well '{ref_w.name}' "
@@ -116,6 +120,7 @@ class FitBase:
         method: Literal["linearregression"] = "linearregression",
         tmin: pd.Timestamp | str | None = None,
         tmax: pd.Timestamp | str | None = None,
+        aggregation: Literal["mean", "median", "min", "max"] = "mean",
     ) -> FitResultData:
         # Check that the ref_well is a reference well
         if not ref_well.is_reference:
@@ -130,7 +135,7 @@ class FitBase:
         fit = None
         if method == "linearregression":
             logger.debug("Using linear regression method for fitting.")
-            fit = linregressfit(obs_well, ref_well, offset, tmin, tmax, p)
+            fit = linregressfit(obs_well, ref_well, offset, tmin, tmax, p, aggregation)
         if fit is None:
             logger.error(f"Fitting method '{method}' is not implemented.")
             raise NotImplementedError(f"Fitting method '{method}' is not implemented.")
@@ -161,7 +166,7 @@ class FitBase:
             linear regression.
         **kwargs
             Keyword arguments to pass to the fitting method. For example, you can use
-            `offset`, `p`, `tmin`, and `tmax` to control
+            `offset`, `p`, `tmin`, `tmax`, and `aggregation` to control the fitting
 
         Returns
         -------
@@ -192,7 +197,7 @@ class FitBase:
             linear regression.
         **kwargs
             Keyword arguments to pass to the fitting method. For example, you can use
-            `offset`, `p`, `tmin`, and `tmax` to control
+            `offset`, `p`, `tmin`, `tmax`, and `aggregation` to control the fitting
 
         Returns
         -------

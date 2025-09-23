@@ -79,6 +79,9 @@ class FitResultData:
         The confidence level used in the fit.
     offset: pd.DateOffset | pd.Timedelta | str
         Allowed offset when grouping data points within time equivalents.
+    aggregation: str
+        The aggregation method used when grouping data points within time
+        equivalents ("mean", "median", "min", or "max").
     tmin: pd.Timestamp | str | None
         The minimum timestamp for the calibration period.
     tmax: pd.Timestamp | str | None
@@ -97,6 +100,7 @@ class FitResultData:
         pred_const: float,
         p: float,
         offset: pd.DateOffset | pd.Timedelta | str,
+        aggregation: str,
         tmin: pd.Timestamp | str | None,
         tmax: pd.Timestamp | str | None,
     ):
@@ -113,6 +117,7 @@ class FitResultData:
         self.pred_const = pred_const
         self.p = p
         self.offset = offset
+        self.aggregation = aggregation
         self.tmin = tmin
         self.tmax = tmax
 
@@ -142,6 +147,7 @@ class FitResultData:
             "",
             f"Calibration Period: {self.tmin} to {self.tmax}",
             f"Time Offset: {self.offset}",
+            f"Aggregation Method: {self.aggregation}",
         ]
 
         return "\n".join(lines)
@@ -149,90 +155,68 @@ class FitResultData:
     def _repr_html_(self):
         """Return HTML representation for Jupyter notebooks."""
         return f"""
-        <div style="margin: 10px 0;">
-            <h4>Fit Results: {self.obs_well.name} ~ {self.ref_well.name}</h4>
-            <table style="border-collapse: collapse; margin: 10px 0;
-                           font-family: monospace;">
+        <div>
+            <strong>Fit Results: {self.obs_well.name} ~ {self.ref_well.name}</strong>
+            <table>
                 <thead>
-                    <tr style="background-color: #f0f0f0;">
-                        <th style="border: 1px solid #ccc; padding: 8px;
-                                   text-align: left;">Statistic</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;
-                                   text-align: left;">Value</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;
-                                   text-align: left;">Description</th>
+                    <tr>
+                        <th style="text-align: left">Statistic</th>
+                        <th style="text-align: left">Value</th>
+                        <th style="text-align: left">Description</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">RMSE</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.rmse:.4f}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Root Mean Square Error</td>
+                        <td>RMSE</td>
+                        <td>{self.rmse:.4f}</td>
+                        <td>Root Mean Square Error</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">R²</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.fit_method.rvalue**2:.4f}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Coefficient of Determination</td>
+                        <td>R²</td>
+                        <td>{self.fit_method.rvalue**2:.4f}</td>
+                        <td>Coefficient of Determination</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">R-value</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.fit_method.rvalue:.4f}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Correlation Coefficient</td>
+                        <td>R-value</td>
+                        <td>{self.fit_method.rvalue:.4f}</td>
+                        <td>Correlation Coefficient</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">Slope</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.fit_method.slope:.4f}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Linear Regression Slope</td>
+                        <td>Slope</td>
+                        <td>{self.fit_method.slope:.4f}</td>
+                        <td>Linear Regression Slope</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">Intercept</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.fit_method.intercept:.4f}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Linear Regression Intercept</td>
+                        <td>Intercept</td>
+                        <td>{self.fit_method.intercept:.4f}</td>
+                        <td>Linear Regression Intercept</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">P-value</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.fit_method.pvalue:.4f}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Statistical Significance</td>
+                        <td>P-value</td>
+                        <td>{self.fit_method.pvalue:.4f}</td>
+                        <td>Statistical Significance</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">N</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.n}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Number of Data Points</td>
+                        <td>N</td>
+                        <td>{self.n}</td>
+                        <td>Number of Data Points</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">Std Error</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.stderr:.4f}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Standard Error</td>
+                        <td>Std Error</td>
+                        <td>{self.stderr:.4f}</td>
+                        <td>Standard Error</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Confidence</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.p * 100:.1f}%</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Confidence Level</td>
+                        <td>Confidence</td>
+                        <td>{self.p * 100:.1f}%</td>
+                        <td>Confidence Level</td>
                     </tr>
                 </tbody>
             </table>
-            <p style="margin: 10px 0; font-family: monospace;">
-                <strong>Calibration Period:</strong> {self.tmin} to {self.tmax}<br>
-                <strong>Time Offset:</strong> {self.offset}
+            <p>
+                Calibration Period: {self.tmin} to {self.tmax}<br>
+                Time Offset: {self.offset}<br>
+                Aggregation Method: {self.aggregation}
             </p>
         </div>
         """
@@ -364,6 +348,7 @@ class FitResultData:
             "pred_const": self.pred_const,
             "p": self.p,
             "offset": self.offset,
+            "aggregation": self.aggregation,
             "tmin": datetime_to_float(self.tmin),
             "tmax": datetime_to_float(self.tmax),
         }

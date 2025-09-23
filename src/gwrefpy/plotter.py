@@ -313,7 +313,7 @@ class Plotter:
                 self._set_plot_attributes(fit.ref_well)
                 self._plot_well(fit.obs_well, ax)
                 self._plot_fit(fit.obs_well, ax)
-                self._plot_well(fit.ref_well, ax)
+                self._plot_well(fit.ref_well, ax)  # TODO: this should be optional
                 if mark_outliers:
                     self._plot_outliers(fit.obs_well, ax)
                 if show_initiation_period:

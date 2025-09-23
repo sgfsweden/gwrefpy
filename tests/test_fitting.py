@@ -290,3 +290,44 @@ def test_fit_result_confidence_bounds_relationship(strandangers_model) -> None:
     assert (
         abs(interval_width - expected_width) < 1e-10
     ).all()  # Allow for small floating point errors
+
+
+def test_fit_with_aggregation_parameter(strandangers_model):
+    """Test that the aggregation parameter can be used in fit method."""
+    # Test with 'min' aggregation method
+    result = strandangers_model.fit(
+        obs_well="obs",
+        ref_well="ref",
+        offset="3.5D",
+        aggregation="min",
+        report=False,
+    )
+
+    # Check that the aggregation method was stored correctly
+    assert hasattr(result, "aggregation"), (
+        "FitResultData should have aggregation attribute"
+    )
+    assert result.aggregation == "min", "Aggregation should be set to 'min'"
+
+    # Test with 'median' aggregation method
+    result_median = strandangers_model.fit(
+        obs_well="obs",
+        ref_well="ref",
+        offset="3.5D",
+        aggregation="median",
+        report=False,
+    )
+
+    assert result_median.aggregation == "median", (
+        "Aggregation should be set to 'median'"
+    )
+
+    # Test that default is 'mean'
+    result_default = strandangers_model.fit(
+        obs_well="obs",
+        ref_well="ref",
+        offset="3.5D",
+        report=False,
+    )
+
+    assert result_default.aggregation == "mean", "Default aggregation should be 'mean'"
