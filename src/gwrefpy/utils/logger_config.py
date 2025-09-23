@@ -79,12 +79,9 @@ def enable_file_logging(
     loglevel = loglevel.upper()
     if loglevel not in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
         raise ValueError(f"Invalid log level: {loglevel}")
-    # Check if file handler already exists
-    if not any(isinstance(h, logging.FileHandler) for h in root_logger.handlers):
-        file_handler = logging.FileHandler(name, mode=filemode, encoding="utf-8")
-        formatter = logging.Formatter(
-            "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-        )
-        file_handler.setFormatter(formatter)
-        file_handler.setLevel(loglevel)
-        root_logger.addHandler(file_handler)
+    # Add file handler to root logger
+    file_handler = logging.FileHandler(name, mode=filemode, encoding="utf-8")
+    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(loglevel)
+    root_logger.addHandler(file_handler)

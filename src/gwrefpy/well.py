@@ -281,7 +281,7 @@ class Well:
                 [float_to_datetime(float(ts)) for ts in timeseries_dict.keys()]
             )
             values = list(timeseries_dict.values())
-            self.timeseries = pd.Series(values, index=datetime_index)
+            self.add_timeseries(pd.Series(values, index=datetime_index))
 
         self.color = data.get("color", self.color)
         self.alpha = data.get("alpha", self.alpha)
