@@ -35,8 +35,16 @@ class Model(FitBase, Plotter):
         self.fits: list[FitResultData] = []
 
         # Check if the name ends with the .gwref extension
-        if name.endswith(".gwref"):
+        ext = name.split(".")[-1].lower()
+        if ext == "gwref":
             self.open_project(name)
+        elif ext != name.lower():
+            name_ = name.split(".")[0]
+            logger.warning(
+                f"Model name '{name}' has an unrecognized extension '.{ext}'. "
+                f"Proceeding with {name_} as name."
+            )
+            self.name = name_
 
     def __str__(self):
         """String representation of the Model object."""
