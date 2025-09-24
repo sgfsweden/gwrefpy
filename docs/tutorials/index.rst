@@ -38,6 +38,5 @@ This section contains step-by-step tutorials to help you get started with gwrefp
    :hidden:
 
    quickstart.ipynb
-   plotting.ipynb
    livedata.ipynb
    exercises/index

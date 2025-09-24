@@ -409,6 +409,7 @@ class Plotter:
         color_style: str | None = None,
         save_path: str | None = None,
         plot_separately: bool = False,
+        plot_fit_period: bool = True,
         ax: Axes | None = None,
         **kwargs,
     ) -> tuple[Figure | SubFigure, Axes] | tuple[list[Figure], list[Axes]]:
@@ -438,6 +439,9 @@ class Plotter:
             file name.
         plot_separately : bool
             If True, each fit will be plotted in a separate figure. Default is False.
+        plot_fit_period : bool
+            If True, the data points within the fit period will be highlighted.
+            Default is True.
         ax : matplotlib.axes.Axes | None
             Optional matplotlib Axes object to plot on. If provided, the plot will be
             drawn on this axes instead of creating a new figure. Not compatible with
@@ -499,6 +503,8 @@ class Plotter:
                 self._set_plot_attributes(fit.obs_well)
                 self._set_plot_attributes(fit.ref_well)
                 self._plot_well_scatter(fit.obs_well, fit.ref_well, ax)
+                if plot_fit_period:
+                    self._plot_well_scatter_fit_period(fit, ax)
                 self._plot_fitmethod(fit, ax)
 
                 if plot_style is not None:
@@ -537,6 +543,8 @@ class Plotter:
                 self._set_plot_attributes(fit.obs_well)
                 self._set_plot_attributes(fit.ref_well)
                 self._plot_well_scatter(fit.obs_well, fit.ref_well, ax)
+                if plot_fit_period:
+                    self._plot_well_scatter_fit_period(fit, ax)
                 self._plot_fitmethod(fit, ax)
             if plot_style is not None:
                 ax.legend(prop=lfont)
@@ -565,6 +573,8 @@ class Plotter:
                 self._set_plot_attributes(fit.obs_well)
                 self._set_plot_attributes(fit.ref_well)
                 self._plot_well_scatter(fit.obs_well, fit.ref_well, ax)
+                if plot_fit_period:
+                    self._plot_well_scatter_fit_period(fit, ax)
                 self._plot_fitmethod(fit, ax)
             if plot_style is not None:
                 ax.legend(prop=lfont)
@@ -657,8 +667,25 @@ class Plotter:
         ax.scatter(
             ref_well.timeseries.values,
             obs_well.timeseries.values,
-            label=f"{obs_well.name} ~ {ref_well.name}",
+            label=f"Observed data {obs_well.name} ~ {ref_well.name}",
             color=ref_well.color,
+            alpha=1,
+            marker="o",
+            s=6,  # markersize is in points, s is in points^2
+        )
+
+    def _plot_well_scatter_fit_period(self, fit, ax):
+        """Plot the time series data for a single well as a scatter plot."""
+        tmin = fit.tmin
+        tmax = fit.tmax
+        # Plot the data within the fit period only
+        fit_obs_data = fit.obs_well.timeseries.loc[tmin:tmax]
+        fit_ref_data = fit.ref_well.timeseries.loc[tmin:tmax]
+        ax.scatter(
+            fit_ref_data.values,
+            fit_obs_data.values,
+            label=f"Training data {fit.obs_well.name} ~ {fit.ref_well.name}",
+            color=fit.obs_well.color,
             alpha=1,
             marker="o",
             s=6,  # markersize is in points, s is in points^2
