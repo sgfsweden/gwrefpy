@@ -42,6 +42,11 @@ class Plotter:
 
         self.fits = []
 
+    @staticmethod
+    def show_plots():
+        """Display all open matplotlib plots."""
+        plt.show()
+
     def plot_wells(
         self,
         wells: Well | list[Well] | None = None,
