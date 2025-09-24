@@ -200,12 +200,13 @@ class Plotter:
 
     def plot_fits(
         self,
-        fits: FitResultData | list[FitResultData] = None,
+        fits: FitResultData | list[FitResultData] | None = None,
         title: str = "",
         xlabel: str = "Time",
         ylabel: str = "Measurements",
         mark_outliers: bool = True,
         show_initiation_period: bool = False,
+        plot_ref_well: bool = False,
         plot_style: str | None = None,
         color_style: str | None = None,
         save_path: str | None = None,
@@ -220,7 +221,7 @@ class Plotter:
 
         Parameters
         ----------
-        fits : FitResultData | list[FitResultData]
+        fits : FitResultData | list[FitResultData] | None
             A FitResultData instance or a list of FitResultData instances
             containing the fit results to be plotted. If None, all fits will be plotted.
         title : str
@@ -233,6 +234,8 @@ class Plotter:
             If True, outliers will be marked on the plot.
         show_initiation_period : bool
             If True, the initiation period will be shaded on the plot. Default is False.
+        plot_ref_well : bool
+            If True, the reference well data will be plotted. Default is False.
         plot_style : str | None
             The style of the plot. Options are "fancy", "scientific", or None.
             If None, uses matplotlib defaults without custom styling.
@@ -313,7 +316,8 @@ class Plotter:
                 self._set_plot_attributes(fit.ref_well)
                 self._plot_well(fit.obs_well, ax)
                 self._plot_fit(fit.obs_well, ax)
-                self._plot_well(fit.ref_well, ax)  # TODO: this should be optional
+                if plot_ref_well:
+                    self._plot_well(fit.ref_well, ax)
                 if mark_outliers:
                     self._plot_outliers(fit.obs_well, ax)
                 if show_initiation_period:
@@ -347,7 +351,8 @@ class Plotter:
                 self._set_plot_attributes(fit.ref_well)
                 self._plot_well(fit.obs_well, ax)
                 self._plot_fit(fit.obs_well, ax)
-                self._plot_well(fit.ref_well, ax)
+                if plot_ref_well:
+                    self._plot_well(fit.ref_well, ax)
                 if mark_outliers:
                     self._plot_outliers(fit.obs_well, ax)
                 if show_initiation_period:
@@ -373,7 +378,8 @@ class Plotter:
                 self._set_plot_attributes(fit.ref_well)
                 self._plot_well(fit.obs_well, ax)
                 self._plot_fit(fit.obs_well, ax)
-                self._plot_well(fit.ref_well, ax)
+                if plot_ref_well:
+                    self._plot_well(fit.ref_well, ax)
                 if mark_outliers:
                     self._plot_outliers(fit.obs_well, ax)
                 if show_initiation_period:
