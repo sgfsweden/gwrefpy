@@ -5,6 +5,24 @@ from .well import Well
 
 
 class LinRegResult:
+    """
+    This class contains the results of a linear regression fit.
+
+    Parameters
+    ----------
+    slope : float
+        The slope of the regression line.
+    intercept : float
+        The intercept of the regression line.
+    rvalue : float
+        The correlation coefficient.
+    pvalue : float
+        The two-sided p-value for a hypothesis test whose null hypothesis is
+        that the slope is zero.
+    stderr : float
+        The standard error of the estimated slope.
+    """
+
     def __init__(
         self,
         slope: float,
@@ -13,24 +31,6 @@ class LinRegResult:
         pvalue: float,
         stderr: float,
     ):
-        """
-        Initialize a LinRegResult object to store the results of a linear regression.
-        This replaces the scipy LinregressResult object to make it serializable.
-
-        Parameters
-        ----------
-        slope : float
-            The slope of the regression line.
-        intercept : float
-            The intercept of the regression line.
-        rvalue : float
-            The correlation coefficient.
-        pvalue : float
-            The two-sided p-value for a hypothesis test whose null hypothesis is
-            that the slope is zero.
-        stderr : float
-            The standard error of the estimated slope.
-        """
         self.slope = slope
         self.intercept = intercept
         self.rvalue = rvalue
@@ -53,6 +53,41 @@ class LinRegResult:
 
 
 class FitResultData:
+    """
+    This class contains all information that is required to reproduce a fit between
+    a reference well and an observation well.
+
+    Parameters
+    ----------
+    ref_well : Well
+        The reference well object containing the time series data.
+    obs_well : Well
+        The observation well object containing the time series data.
+    rmse : float
+        The root mean square error of the fit.
+    n : int
+        The number of data points used in the fit.
+    fit_method : LinRegResult
+        The method used for fitting (e.g., linreg).
+    t_a : float
+        The t-value for the given confidence level and degrees of freedom.
+    stderr : float
+        The standard error of the regression.
+    pred_const : float
+        The prediction constant for the confidence interval.
+    p : float
+        The confidence level used in the fit.
+    offset: pd.DateOffset | pd.Timedelta | str
+        Allowed offset when grouping data points within time equivalents.
+    aggregation: str
+        The aggregation method used when grouping data points within time
+        equivalents ("mean", "median", "min", or "max").
+    tmin: pd.Timestamp | str | None
+        The minimum timestamp for the calibration period.
+    tmax: pd.Timestamp | str | None
+        The maximum timestamp for the calibration period.
+    """
+
     def __init__(
         self,
         obs_well: Well,
@@ -65,41 +100,12 @@ class FitResultData:
         pred_const: float,
         p: float,
         offset: pd.DateOffset | pd.Timedelta | str,
+        aggregation: str,
         tmin: pd.Timestamp | str | None,
         tmax: pd.Timestamp | str | None,
     ):
         """
         Initialize a FitResultData object to store the results of a fit between.
-
-        This class contains all information that is required to reproduce a fit between
-        a reference well and an observation well.
-
-        Parameters
-        ----------
-        ref_well : Well
-            The reference well object containing the time series data.
-        obs_well : Well
-            The observation well object containing the time series data.
-        rmse : float
-            The root mean square error of the fit.
-        n : int
-            The number of data points used in the fit.
-        fit_method : LinRegResult
-            The method used for fitting (e.g., linreg).
-        t_a : float
-            The t-value for the given confidence level and degrees of freedom.
-        stderr : float
-            The standard error of the regression.
-        pred_const : float
-            The prediction constant for the confidence interval.
-        p : float
-            The confidence level used in the fit.
-        offset: pd.DateOffset | pd.Timedelta | str
-            Allowed offset when grouping data points within time equivalents.
-        tmin: pd.Timestamp | str | None
-            The minimum timestamp for the calibration period.
-        tmax: pd.Timestamp | str | None
-            The maximum timestamp for the calibration period.
         """
         self.obs_well = obs_well
         self.ref_well = ref_well
@@ -111,6 +117,7 @@ class FitResultData:
         self.pred_const = pred_const
         self.p = p
         self.offset = offset
+        self.aggregation = aggregation
         self.tmin = tmin
         self.tmax = tmax
 
@@ -140,6 +147,7 @@ class FitResultData:
             "",
             f"Calibration Period: {self.tmin} to {self.tmax}",
             f"Time Offset: {self.offset}",
+            f"Aggregation Method: {self.aggregation}",
         ]
 
         return "\n".join(lines)
@@ -147,90 +155,68 @@ class FitResultData:
     def _repr_html_(self):
         """Return HTML representation for Jupyter notebooks."""
         return f"""
-        <div style="margin: 10px 0;">
-            <h4>Fit Results: {self.obs_well.name} ~ {self.ref_well.name}</h4>
-            <table style="border-collapse: collapse; margin: 10px 0;
-                           font-family: monospace;">
+        <div>
+            <strong>Fit Results: {self.obs_well.name} ~ {self.ref_well.name}</strong>
+            <table>
                 <thead>
-                    <tr style="background-color: #f0f0f0;">
-                        <th style="border: 1px solid #ccc; padding: 8px;
-                                   text-align: left;">Statistic</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;
-                                   text-align: left;">Value</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;
-                                   text-align: left;">Description</th>
+                    <tr>
+                        <th style="text-align: left">Statistic</th>
+                        <th style="text-align: left">Value</th>
+                        <th style="text-align: left">Description</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">RMSE</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.rmse:.4f}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Root Mean Square Error</td>
+                        <td>RMSE</td>
+                        <td>{self.rmse:.4f}</td>
+                        <td>Root Mean Square Error</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">R²</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.fit_method.rvalue**2:.4f}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Coefficient of Determination</td>
+                        <td>R²</td>
+                        <td>{self.fit_method.rvalue**2:.4f}</td>
+                        <td>Coefficient of Determination</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">R-value</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.fit_method.rvalue:.4f}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Correlation Coefficient</td>
+                        <td>R-value</td>
+                        <td>{self.fit_method.rvalue:.4f}</td>
+                        <td>Correlation Coefficient</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">Slope</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.fit_method.slope:.4f}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Linear Regression Slope</td>
+                        <td>Slope</td>
+                        <td>{self.fit_method.slope:.4f}</td>
+                        <td>Linear Regression Slope</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">Intercept</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.fit_method.intercept:.4f}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Linear Regression Intercept</td>
+                        <td>Intercept</td>
+                        <td>{self.fit_method.intercept:.4f}</td>
+                        <td>Linear Regression Intercept</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">P-value</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.fit_method.pvalue:.4f}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Statistical Significance</td>
+                        <td>P-value</td>
+                        <td>{self.fit_method.pvalue:.4f}</td>
+                        <td>Statistical Significance</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">N</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.n}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Number of Data Points</td>
+                        <td>N</td>
+                        <td>{self.n}</td>
+                        <td>Number of Data Points</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">Std Error</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.stderr:.4f}</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Standard Error</td>
+                        <td>Std Error</td>
+                        <td>{self.stderr:.4f}</td>
+                        <td>Standard Error</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Confidence</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            {self.p * 100:.1f}%</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Confidence Level</td>
+                        <td>Confidence</td>
+                        <td>{self.p * 100:.1f}%</td>
+                        <td>Confidence Level</td>
                     </tr>
                 </tbody>
             </table>
-            <p style="margin: 10px 0; font-family: monospace;">
-                <strong>Calibration Period:</strong> {self.tmin} to {self.tmax}<br>
-                <strong>Time Offset:</strong> {self.offset}
+            <p>
+                Calibration Period: {self.tmin} to {self.tmax}<br>
+                Time Offset: {self.offset}<br>
+                Aggregation Method: {self.aggregation}
             </p>
         </div>
         """
@@ -266,6 +252,42 @@ class FitResultData:
                 f"Fitting method {self.fit_method.__class__.__name__} is not "
                 f"implemented"
             )
+
+    def get_fit_timeseries(self) -> pd.Series:
+        """
+        Get the fitted time series for the reference well.
+
+        Returns
+        -------
+        pd.Series
+            The fitted time series for the reference well.
+        """
+
+        return self.fit_timeseries()
+
+    def get_upper_confidence_bound(self) -> pd.Series:
+        """
+        Calculate the upper confidence bound based on the fit method and RMSE.
+
+        Returns
+        -------
+        pd.Series
+            The upper confidence bound based on the fit method and RMSE.
+        """
+        fitted_values = self.fit_timeseries()
+        return fitted_values + self.pred_const
+
+    def get_lower_confidence_bound(self) -> pd.Series:
+        """
+        Calculate the lower confidence bound based on the fit method and RMSE.
+
+        Returns
+        -------
+        pd.Series
+            The lower confidence bound based on the fit method and RMSE.
+        """
+        fitted_values = self.fit_timeseries()
+        return fitted_values - self.pred_const
 
     def fit_outliers(self) -> pd.Series:
         """
@@ -306,7 +328,7 @@ class FitResultData:
         """
         return self.ref_well == well or self.obs_well == well
 
-    def to_dict(self) -> dict:
+    def _to_dict(self) -> dict:
         """
         Convert the FitResultData object to a dictionary.
 
@@ -326,6 +348,7 @@ class FitResultData:
             "pred_const": self.pred_const,
             "p": self.p,
             "offset": self.offset,
+            "aggregation": self.aggregation,
             "tmin": datetime_to_float(self.tmin),
             "tmax": datetime_to_float(self.tmax),
         }
@@ -342,7 +365,20 @@ class FitResultData:
         return dict_representation
 
 
-def unpack_dict_fit_method(data: dict) -> LinRegResult:
+def _unpack_dict_fit_method(data: dict) -> LinRegResult:
+    """
+    Unpack a dictionary representation of a fit method into a LinRegResult object.
+
+    Parameters
+    ----------
+    data : dict
+        A dictionary containing the fit method data.
+
+    Returns
+    -------
+    LinRegResult
+        The unpacked LinRegResult object.
+    """
     fit_method_name = data.get("fit_method", None)
     if fit_method_name == "LinRegResult":
         linreg_data = data.get("LinRegResult", {})

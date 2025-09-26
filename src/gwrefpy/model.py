@@ -1,18 +1,10 @@
-"""
-Model
------
-A class representing a groundwater model that can contain multiple wells.
-
-"""
-
 import logging
-from typing import Literal
 
 import pandas as pd
 
-from .fitresults import FitResultData, LinRegResult, unpack_dict_fit_method
+from .fitbase import FitBase
+from .fitresults import FitResultData, LinRegResult, _unpack_dict_fit_method
 from .io.io import load, save
-from .methods.linregressfit import linregressfit
 from .plotter import Plotter
 from .utils.conversions import float_to_datetime
 from .well import Well
@@ -20,9 +12,20 @@ from .well import Well
 logger = logging.getLogger(__name__)
 
 
-class Model(Plotter):
+class Model(FitBase, Plotter):
+    """
+    A class representing a groundwater model that can contain multiple wells.
+
+    Parameters
+    ----------
+    name : str
+        The name of the model. If the name ends with ".gwref", it is treated as a
+        filename and the model is loaded from that file.
+    """
+
     def __init__(self, name: str):
-        super().__init__()
+        super(FitBase, self).__init__()
+        super(Plotter, self).__init__()
         self.name = name
 
         # Well attributes
@@ -30,6 +33,18 @@ class Model(Plotter):
 
         # Fit attributes
         self.fits: list[FitResultData] = []
+
+        # Check if the name ends with the .gwref extension
+        ext = name.split(".")[-1].lower()
+        if ext == "gwref":
+            self.open_project(name)
+        elif ext != name.lower():
+            name_ = name.split(".")[0]
+            logger.warning(
+                f"Model name '{name}' has an unrecognized extension '.{ext}'. "
+                f"Proceeding with {name_} as name."
+            )
+            self.name = name_
 
     def __str__(self):
         """String representation of the Model object."""
@@ -77,7 +92,7 @@ class Model(Plotter):
     # ======================== Well Management Methods ========================
 
     @property
-    def obs_wells(self):
+    def obs_wells(self) -> list[Well]:
         """List of observation wells in the model."""
         return [well for well in self.wells if not well.is_reference]
 
@@ -102,22 +117,22 @@ class Model(Plotter):
                 "name": well.name,
                 "well_type": "observation",
                 "data_points": len(well.timeseries)
-                if hasattr(well, "timeseries")
+                if well.timeseries is not None
                 else 0,
                 "start_date": well.timeseries.index.min()
-                if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                if well.timeseries is not None and len(well.timeseries) > 0
                 else None,
                 "end_date": well.timeseries.index.max()
-                if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                if well.timeseries is not None and len(well.timeseries) > 0
                 else None,
                 "mean_level": well.timeseries.mean()
-                if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                if well.timeseries is not None and len(well.timeseries) > 0
                 else None,
                 "latest_value": well.timeseries.iloc[-1]
-                if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                if well.timeseries is not None and len(well.timeseries) > 0
                 else None,
                 "latest_date": well.timeseries.index[-1]
-                if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                if well.timeseries is not None and len(well.timeseries) > 0
                 else None,
                 "latitude": well.latitude,
                 "longitude": well.longitude,
@@ -142,7 +157,7 @@ class Model(Plotter):
         return pd.DataFrame(data)
 
     @property
-    def ref_wells(self):
+    def ref_wells(self) -> list[Well]:
         """List of reference wells in the model."""
         return [well for well in self.wells if well.is_reference]
 
@@ -167,31 +182,31 @@ class Model(Plotter):
                 "name": well.name,
                 "well_type": "reference",
                 "data_points": (
-                    len(well.timeseries) if hasattr(well, "timeseries") else 0
+                    len(well.timeseries) if well.timeseries is not None else 0
                 ),
                 "start_date": (
                     well.timeseries.index.min()
-                    if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                    if well.timeseries is not None and len(well.timeseries) > 0
                     else None
                 ),
                 "end_date": (
                     well.timeseries.index.max()
-                    if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                    if well.timeseries is not None and len(well.timeseries) > 0
                     else None
                 ),
                 "mean_level": (
                     well.timeseries.mean()
-                    if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                    if well.timeseries is not None and len(well.timeseries) > 0
                     else None
                 ),
                 "latest_value": (
                     well.timeseries.iloc[-1]
-                    if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                    if well.timeseries is not None and len(well.timeseries) > 0
                     else None
                 ),
                 "latest_date": (
                     well.timeseries.index[-1]
-                    if hasattr(well, "timeseries") and len(well.timeseries) > 0
+                    if well.timeseries is not None and len(well.timeseries) > 0
                     else None
                 ),
                 "latitude": well.latitude,
@@ -289,7 +304,7 @@ class Model(Plotter):
         return pd.DataFrame(data)
 
     @property
-    def well_names(self):
+    def well_names(self) -> list[str]:
         """List of all well names in the model."""
         return [well.name for well in self.wells]
 
@@ -310,10 +325,9 @@ class Model(Plotter):
         if isinstance(well, list):
             for w in well:
                 self._add_well(w)
-            logger.info(f"Added {len(well)} wells to model '{self.name}'.")
+            logger.debug(f"Added {len(well)} wells to model '{self.name}'.")
         else:
             self._add_well(well)
-            logger.info(f"Added one well to model '{self.name}'.")
 
     def _add_well(self, well):
         """
@@ -356,6 +370,67 @@ class Model(Plotter):
         self.wells.append(well)
         well.model.append(self)
         logger.debug(f"Well '{well.name}' added to model '{self.name}'.")
+
+    def delete_well(self, well: Well | list[Well]):
+        """
+        Delete a well or a list of wells from the model.
+
+        Parameters
+        ----------
+        well : Well or list of Wells
+            The well or list of wells to add to the model.
+
+        Returns
+        -------
+        None
+            This method modifies the model in place.
+        """
+        if isinstance(well, list):
+            for w in well:
+                self._delete_well(w)
+            logger.debug(f"Deleted {len(well)} wells from model '{self.name}'.")
+        else:
+            self._delete_well(well)
+
+    def _delete_well(self, well):
+        """
+        The internal method to delete a well from the model.
+
+        Parameters
+        ----------
+        well : Well
+            The well to delete from the model.
+
+        Raises
+        ------
+        TypeError
+            If the well is not an instance of WellBase.
+        ValueError
+             If the well is not part of the model.
+
+        Returns
+        -------
+        None
+            This method modifies the model in place.
+        """
+
+        # Check if the well is an instance of Well
+        if not isinstance(well, Well):
+            logger.error("Only Well instances can be deleted from the model.")
+            raise TypeError("Only Well instances can be deleted from the model.")
+
+        # Check if the well is already in the model
+        if well not in self.wells:
+            logger.error(f"Well '{getattr(well, 'name', well)}' is not in the model.")
+            raise ValueError(
+                f"Well '{getattr(well, 'name', well)}' is not in the model."
+            )
+
+        self.wells.remove(well)
+        if hasattr(well, "model") and self in well.model:
+            well.model.remove(self)
+
+        logger.debug(f"Well '{well.name}' deleted from model '{self.name}'.")
 
     def get_wells(self, names: list[str] | str) -> Well | list[Well]:
         """
@@ -408,6 +483,7 @@ class Model(Plotter):
                 and ipython.__class__.__name__ == "ZMQInteractiveShell"
             ):
                 # We're in Jupyter - don't print, let the return value display
+                logger.debug(result)  # Log at debug level instead of printing
                 return
         except ImportError:
             # IPython not available, definitely not in Jupyter
@@ -450,271 +526,9 @@ class Model(Plotter):
 
         return resolved_wells
 
-    def fit(
-        self,
-        obs_well: Well | list[Well] | str | list[str],
-        ref_well: Well | list[Well] | str | list[str],
-        offset: pd.DateOffset | pd.Timedelta | str,
-        p: float = 0.95,
-        method: Literal["linearregression"] = "linearregression",
-        tmin: pd.Timestamp | str | None = None,
-        tmax: pd.Timestamp | str | None = None,
-        report: bool = True,
-    ) -> FitResultData | list[FitResultData]:
-        """
-        Fit reference well(s) to observation well(s) using regression.
-
-        Parameters
-        ----------
-        obs_well : Well | list[Well] | str | list[str]
-            The observation well(s) to use for fitting. Can be Well objects,
-            well names (strings), or lists of either. If a list is provided,
-            each well will be paired with the corresponding reference well by index.
-        ref_well : Well | list[Well] | str | list[str]
-            The reference well(s) to use for fitting. Can be Well objects,
-            well names (strings), or lists of either. If a list is provided,
-            each well will be paired with the corresponding observation well by index.
-        offset: pd.DateOffset | pd.Timedelta | str
-            The offset to apply to the time series when grouping within time
-            equivalents.
-        p : float, optional
-            The confidence level for the fit (default is 0.95).
-        method : Literal["linearregression"]
-            Method with which to perform regression. Currently only supports
-            linear regression.
-        tmin: pd.Timestamp | str | None = None
-            Minimum time for calibration period.
-        tmax: pd.Timestamp | str | None = None
-            Maximum time for calibration period.
-        report: bool, optional
-            Whether to print fit results summary (default is True).
-
-        Returns
-        -------
-        FitResultData | list[FitResultData]
-            If single wells are provided, returns a single FitResultData object.
-            If lists of wells are provided, returns a list of FitResultData objects
-            for each obs_well/ref_well pair.
-
-        Raises
-        ------
-        ValueError
-            If lists are provided but have different lengths.
-        """
-        # Resolve wells (convert strings to Well objects and normalize to lists)
-        obs_wells = self._resolve_wells(obs_well)
-        ref_wells = self._resolve_wells(ref_well)
-
-        # Handle single well case
-        if len(obs_wells) == 1 and len(ref_wells) == 1:
-            result = self._fit(
-                obs_wells[0], ref_wells[0], offset, p, method, tmin, tmax
-            )
-            logger.info(
-                f"Fitting model '{self.name}' using reference well "
-                f"'{ref_wells[0].name}' and observation well '{obs_wells[0].name}'."
-            )
-            if report:
-                self._display_result(result)
-            return result
-
-        # Validate that lists have the same length
-        if len(obs_wells) != len(ref_wells):
-            error_msg = (
-                f"obs_well list length ({len(obs_wells)}) must match "
-                f"ref_well list length ({len(ref_wells)})"
-            )
-            logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        # Perform fitting for each pair
-        results = []
-        for obs_w, ref_w in zip(obs_wells, ref_wells, strict=True):
-            result = self._fit(obs_w, ref_w, offset, p, method, tmin, tmax)
-            results.append(result)
-            logger.info(
-                f"Fitting model '{self.name}' using reference well '{ref_w.name}' "
-                f"and observation well '{obs_w.name}'."
-            )
-            if report:
-                self._display_result(result)
-
-        return results
-
-    def _fit(
-        self,
-        obs_well: Well,
-        ref_well: Well,
-        offset: pd.DateOffset | pd.Timedelta | str,
-        p: float = 0.95,
-        method: Literal["linearregression"] = "linearregression",
-        tmin: pd.Timestamp | str | None = None,
-        tmax: pd.Timestamp | str | None = None,
-    ) -> FitResultData:
-        # Check that the ref_well is a reference well
-        if not ref_well.is_reference:
-            logger.error(f"The well '{ref_well.name}' is not a reference well.")
-            raise ValueError(f"The well '{ref_well.name}' is not a reference well.")
-
-        # Check that the obs_well is an observation well
-        if obs_well.is_reference:
-            logger.error(f"The well '{obs_well.name}' is not an observation well.")
-            raise ValueError(f"The well '{obs_well.name}' is not an observation well.")
-
-        fit = None
-        if method == "linearregression":
-            logger.debug("Using linear regression method for fitting.")
-            fit = linregressfit(obs_well, ref_well, offset, tmin, tmax, p)
-        if fit is None:
-            logger.error(f"Fitting method '{method}' is not implemented.")
-            raise NotImplementedError(f"Fitting method '{method}' is not implemented.")
-
-        self.fits.append(fit)
-        logger.info(f"Fit completed for model '{self.name}' with RMSE {fit.rmse}.")
-        return fit
-
-    def best_fit(
-        self,
-        obs_well: str | Well,
-        ref_wells: list[str | Well] | None = None,
-        method: Literal["linearregression"] = "linearregression",
-        **kwargs,
-    ) -> FitResultData:
-        """
-        Find the best fit for the model using the provided wells.
-
-        Parameters
-        ----------
-        obs_well : Well or list of Well or None, optional
-            The observation well to use for fitting.
-        ref_wells : Well or list of Well or None, optional
-            The reference wells to test. If None, all reference wells in the
-            model will be used (default is None).
-        method : Literal["linearregression"]
-            Method with which to perform regression. Currently only supports
-            linear regression.
-        **kwargs
-            Keyword arguments to pass to the fitting method. For example, you can use
-            `offset`, `p`, `tmin`, and `tmax` to control
-
-        Returns
-        -------
-        FitResultData
-            Returns the best fit for the given observation well.
-        """
-        return self._best_fit(obs_well, ref_wells, method, **kwargs)
-
-    def _best_fit(
-        self,
-        obs_well: str | Well,
-        ref_wells: list[str | Well] | None = None,
-        method: Literal["linearregression"] = "linearregression",
-        **kwargs,
-    ) -> FitResultData:
-        """
-        The internal method to find the best fit.
-
-        Parameters
-        ----------
-        obs_well : Well or list of Well or None, optional
-            The observation well to use for fitting.
-        ref_wells : Well or list of Well or None, optional
-            The reference wells to test. If None, all reference wells in the
-            model will be used (default is None).
-        method : Literal["linearregression"]
-            Method with which to perform regression. Currently only supports
-            linear regression.
-        **kwargs
-            Keyword arguments to pass to the fitting method. For example, you can use
-            `offset`, `p`, `tmin`, and `tmax` to control
-
-        Returns
-        -------
-        FitResultData
-            Returns the best fit for the given arguments.
-        """
-        if isinstance(ref_wells, list) and len(ref_wells) < 1:
-            logger.error("ref_wells list cannot be empty.")
-            raise ValueError("ref_wells list cannot be empty.")
-
-        if isinstance(obs_well, str):
-            target_obs_well = self.get_wells(obs_well)
-            if isinstance(target_obs_well, list):
-                logger.error(
-                    "obs_well parameter must resolve to a single well, not a list."
-                )
-                raise ValueError(
-                    "obs_well parameter must resolve to a single well, not a list."
-                )
-        elif isinstance(obs_well, Well):
-            target_obs_well = obs_well
-        if ref_wells is None:
-            target_ref_wells = self.ref_wells
-            if len(target_ref_wells) < 1:
-                logger.error("No reference wells available in the model.")
-                raise ValueError("No reference wells available in the model.")
-        else:
-            target_ref_wells: list[Well] = []
-            for rw in ref_wells:
-                if isinstance(rw, str):
-                    target_ref_wells.append(self.get_wells(rw))  # type: ignore
-                elif isinstance(rw, Well):
-                    target_ref_wells.append(rw)
-                else:
-                    logger.error(
-                        f"Unsupported type for {rw}. Supported types are Well or str"
-                    )
-                    raise TypeError(
-                        f"Unsupported type for {rw}. Supported types are Well or str"
-                    )
-
-        local_fits: list[FitResultData] = []
-        for ref_well in target_ref_wells:
-            logger.debug(
-                f"Testing fit for observation well '{target_obs_well.name}' "
-                f"and reference well '{ref_well.name}'."
-            )
-            fit = self._fit(target_obs_well, ref_well, method=method, **kwargs)
-            local_fits.append(fit)
-            logger.debug(
-                f"Fit result for observation well '{target_obs_well.name}' and"
-                f"reference well '{ref_well.name}': RMSE={fit.rmse}"
-            )
-        return min(local_fits, key=lambda x: x.rmse)
-
-    def get_fits(self, well: Well | str) -> list[FitResultData] | FitResultData | None:
-        """
-        Get all fit results involving a specific well.
-
-        Parameters
-        ----------
-        well : Well | str
-            The well to check.
-
-        Returns
-        -------
-        list[FitResultData] | FitResultData | None
-            A list of fit results involving the specified well.
-        """
-        target_well: Well
-        if isinstance(well, str):
-            target_well = self.get_wells(well)  # type: ignore
-        elif isinstance(well, Well):
-            target_well = well
-        else:
-            logger.error("Parameter 'well' must be a Well instance or a string.")
-            raise TypeError("Parameter 'well' must be a Well instance or a string.")
-
-        fit_list = [fit for fit in self.fits if fit.has_well(target_well)]
-        return (
-            fit_list
-            if len(fit_list) > 1
-            else (fit_list[0] if len(fit_list) == 1 else None)
-        )
-
     # ======================== Load and Save Methods ========================
 
-    def to_dict(self):
+    def _to_dict(self):
         """
         Convert the model to a dictionary representation.
 
@@ -732,16 +546,16 @@ class Model(Plotter):
         # Create a dictionary representation of each well
         wells_dict = {}
         for well in self.wells:
-            wells_dict[well.name] = well.to_dict()
+            wells_dict[well.name] = well._to_dict()
         model_dict["wells_dict"] = wells_dict
 
         # Add fits if they exist
         if self.fits:
-            model_dict["fits"] = [fit.to_dict() for fit in self.fits]
+            model_dict["fits"] = [fit._to_dict() for fit in self.fits]
 
         return model_dict
 
-    def unpack_dict(self, data):
+    def _unpack_dict(self, data):
         """
         Unpack a dictionary representation of the model and set the model's attributes.
 
@@ -762,7 +576,7 @@ class Model(Plotter):
         for w in wells_dict.items():
             well_obj = w[1]
             well = Well(name=well_obj["name"], is_reference=well_obj["is_reference"])
-            well.unpack_dict(well_obj)
+            well._unpack_dict(well_obj)
             self.add_well(well)
 
         # Unpack fits
@@ -773,12 +587,13 @@ class Model(Plotter):
                 obs_well=self.wells[self.well_names.index(fit_data["obs_well"])],
                 rmse=fit_data.get("rmse", None),
                 n=fit_data.get("n", None),
-                fit_method=unpack_dict_fit_method(fit_data),
+                fit_method=_unpack_dict_fit_method(fit_data),
                 t_a=fit_data.get("t_a", None),
                 stderr=fit_data.get("stderr", None),
                 pred_const=fit_data.get("pred_const", None),
                 p=fit_data.get("p", None),
                 offset=fit_data.get("offset", None),
+                aggregation=fit_data.get("aggregation", "mean"),
                 tmin=float_to_datetime(fit_data.get("tmin", None)),
                 tmax=float_to_datetime(fit_data.get("tmax", None)),
             )
@@ -803,15 +618,16 @@ class Model(Plotter):
         """
 
         # Convert the model to a dictionary
-        model_dict = self.to_dict()
+        model_dict = self._to_dict()
 
         # Set default filename if not provided
         if filename is None:
             filename = f"{self.name}.gwref"
 
         # Save the model dictionary to a file
-        save(filename, model_dict, overwrite=overwrite)
-        logger.info(f"Model '{self.name}' saved to '{filename}'.")
+        saved = save(filename, model_dict, overwrite=overwrite)
+        if saved:
+            logger.info(f"Model '{self.name}' saved to '{filename}'.")
 
     def open_project(self, filepath):
         """
@@ -829,5 +645,5 @@ class Model(Plotter):
         """
         # Placeholder for load logic
         data = load(filepath)
-        self.unpack_dict(data)
+        self._unpack_dict(data)
         logger.info(f"Model '{self.name}' loaded from '{filepath}'.")

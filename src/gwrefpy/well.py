@@ -11,6 +11,17 @@ logger = logging.getLogger(__name__)
 class Well:
     """
     Base class for a well in a groundwater model.
+
+    Parameters
+    ----------
+    name : str
+        The name of the well.
+    is_reference : bool
+        Whether the well is a reference well.
+    timeseries : pd.Series, optional
+        A pandas Series containing the time series data for the well. The index
+        should be a pandas DatetimeIndex and the values should be floats.
+        Default is None.
     """
 
     def __init__(
@@ -21,26 +32,16 @@ class Well:
     ):
         """
         Initialize a WellBase object.
-
-        Parameters
-        ----------
-        name : str
-            The name of the well.
-        is_reference : bool
-            Indicates if the well is a reference well (True) or an observation
-             well (False).
-        timeseries : pd.Series | None
-            Supply a pandas Series to associate a time series with the well.
-        model : Model | None
-            Supply a Model instance to associate the well with a groundwater model.
         """
 
         # Initialize attributes
-        self._name = None
+        self._name = ""
         self.name = name  # This will call the setter
         self.is_reference = is_reference
         self.model = []
 
+        # Time series data
+        self.timeseries = None
         if timeseries is not None:
             self.add_timeseries(timeseries)
 
@@ -59,7 +60,7 @@ class Well:
         self.elevation = None
 
     @property
-    def name(self):
+    def name(self) -> str:
         """The name of the well."""
         return self._name
 
@@ -111,7 +112,81 @@ class Well:
 
         """
         self._validate_timeseries(timeseries)
+        if self.timeseries is not None:
+            logger.error(
+                f"Well {self.name} already has a timeseries. Use "
+                f"`append_timeseries` to add more data or overwrite it using "
+                f"`replace_timeseries`."
+            )
+            raise ValueError(
+                f"Well {self.name} already has a timeseries. Use "
+                f"`append_timeseries` to add more data or overwrite it using "
+                f"`replace_timeseries`."
+            )
         self.timeseries = timeseries
+        self.timeseries.name = self.name
+        logger.debug(f"Added timeseries to well {self.name}")
+
+    def append_timeseries(self, timeseries: pd.Series, remove_duplicates: bool = False):
+        """
+        Append a timeseries to the existing timeseries of the well. This will be
+        validated by `_validate_timeseries`.
+
+        Parameters
+        ----------
+        timeseries : pd.Series
+            A pandas Series containing the time series data to append.
+        remove_duplicates : bool, optional
+            Whether to remove duplicate timestamps after appending. Default is False
+            which will raise an error if duplicates are found.
+
+        """
+        self._validate_timeseries(timeseries)
+        if self.timeseries is not None:
+            new_timeseries = pd.concat([self.timeseries, timeseries]).sort_index()
+            n0 = len(self.timeseries)
+            new_timeseries = new_timeseries[
+                ~new_timeseries.index.duplicated(keep="last")
+            ]
+            n1 = len(new_timeseries)
+            if n1 < n0 + len(timeseries):
+                if not remove_duplicates:
+                    logger.error(
+                        f"Appending timeseries to well {self.name} resulted in "
+                        f"duplicate timestamps. Set `remove_duplicates=True` to remove "
+                        f"them."
+                    )
+                    raise ValueError(
+                        f"Appending timeseries to well {self.name} resulted in "
+                        f"duplicate timestamps. Set `remove_duplicates=True` to remove "
+                        f"them."
+                    )
+                logger.warning(
+                    f"Appending timeseries to well {self.name} resulted in "
+                    f"{n0 + len(timeseries) - n1} duplicate timestamps being removed."
+                )
+            self.timeseries = new_timeseries
+            self.timeseries.name = self.name
+        else:
+            self.timeseries = timeseries
+            self.timeseries.name = self.name
+        logger.debug(f"Appended timeseries to well {self.name}")
+
+    def replace_timeseries(self, timeseries: pd.Series):
+        """
+        Replace the existing timeseries of the well with a new timeseries. This will be
+        validated by `_validate_timeseries`.
+
+        Parameters
+        ----------
+        timeseries : pd.Series
+            A pandas Series containing the new time series data.
+
+        """
+        self._validate_timeseries(timeseries)
+        self.timeseries = timeseries
+        self.timeseries.name = self.name
+        logger.debug(f"Replaced timeseries of well {self.name}")
 
     def _validate_timeseries(self, timeseries: pd.Series):
         """
@@ -162,7 +237,7 @@ class Well:
         float_index = self.timeseries.index.map(lambda dt: datetime_to_float(dt))
         return pd.Series(self.timeseries.values, index=float_index).to_dict()
 
-    def to_dict(self):
+    def _to_dict(self):
         """
         Convert the Well object to a dictionary representation.
 
@@ -189,7 +264,7 @@ class Well:
             "elevation": self.elevation,
         }
 
-    def unpack_dict(self, data):
+    def _unpack_dict(self, data):
         """
         Unpack a dictionary representation to set the Well object's attributes.
 
@@ -206,7 +281,7 @@ class Well:
                 [float_to_datetime(float(ts)) for ts in timeseries_dict.keys()]
             )
             values = list(timeseries_dict.values())
-            self.timeseries = pd.Series(values, index=datetime_index)
+            self.add_timeseries(pd.Series(values, index=datetime_index))
 
         self.color = data.get("color", self.color)
         self.alpha = data.get("alpha", self.alpha)

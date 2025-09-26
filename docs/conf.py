@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath(".."))
 project = "gwrefpy"
 copyright = ""
 author = ""
-release = "0.1.0"
+release = "0.2.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -27,6 +27,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.githubpages",
     "sphinx_copybutton",
+    "sphinx_design",
     "myst_nb",
 ]
 
@@ -47,7 +48,8 @@ master_doc = "index"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "pydata_sphinx_theme"
-html_title = "GwRefPy"
+html_title = "gwrefpy"
+html_logo = "_static/figures/logo.png"
 html_theme_options = {
     "navbar_align": "content",
     "icon_links": [

@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 # List of default colors
 DEFAULT_COLORS = [
     "#4E79A7",  # deep blue
@@ -66,9 +70,26 @@ DEFAULT_PLOT_ATTRIBUTES = {
 }
 
 # Set the font size and family for matplotlib
-FONT_SIZE = 12
+FONT_SIZE = 14
 FONT_FAMILY = "Times New Roman"
 tfont = {"family": FONT_FAMILY, "size": FONT_SIZE}
 afont = {"family": FONT_FAMILY, "size": FONT_SIZE - 2}
-lfont = {"family": FONT_FAMILY, "size": FONT_SIZE + 2, "weight": "bold"}
-tifont = {"family": FONT_FAMILY, "size": FONT_SIZE - 6}
+lfont = {"family": FONT_FAMILY, "size": FONT_SIZE - 2}
+tifont = {"family": FONT_FAMILY, "size": FONT_SIZE - 3}
+
+
+def print_constants():
+    """
+    Function that prints all predefined constants of the gwrefpy pacakge to the console.
+    """
+    logger.info("Default Colors: %s", DEFAULT_COLORS)
+    logger.info("Default Monochrome Colors: %s", DEFAULT_MONOCHROME_COLORS)
+    logger.info("Default Line Styles: %s", DEFAULT_LINE_STYLES)
+    logger.info("Default Marker Styles: %s", DEFAULT_MARKER_STYLES)
+    logger.info("Default Plot Attributes: %s", DEFAULT_PLOT_ATTRIBUTES)
+    logger.info("Font Size: %s", FONT_SIZE)
+    logger.info("Font Family: %s", FONT_FAMILY)
+    logger.info("Title Font: %s", tfont)
+    logger.info("Axis Font: %s", afont)
+    logger.info("Label Font: %s", lfont)
+    logger.info("Tick Font: %s", tifont)

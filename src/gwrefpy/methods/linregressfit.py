@@ -18,6 +18,7 @@ def linregressfit(
     tmin: pd.Timestamp | str | None = None,
     tmax: pd.Timestamp | str | None = None,
     p=0.95,
+    aggregation="mean",
 ):
     """
     Perform linear regression fit between reference and observation well time series.
@@ -36,6 +37,9 @@ def linregressfit(
         The maximum timestamp for the calibration period.
     p : float, optional
         The confidence level for the prediction interval (default is 0.95).
+    aggregation : str, optional
+        The aggregation method to use when grouping data points within time
+        equivalents (default is "mean"). Can be "mean", "median", "min", or "max".
 
     Returns
     -------
@@ -73,7 +77,10 @@ def linregressfit(
         return None
 
     ref_timeseries, obs_timeseries, n = groupby_time_equivalents(
-        obs_well.timeseries.loc[tmin:tmax], ref_well.timeseries.loc[tmin:tmax], offset
+        obs_well.timeseries.loc[tmin:tmax],
+        ref_well.timeseries.loc[tmin:tmax],
+        offset,
+        aggregation,
     )
 
     res = sp.stats.linregress(ref_timeseries, obs_timeseries)
@@ -91,11 +98,23 @@ def linregressfit(
 
     pred_const, t_a = _get_gwrefs_stats(p, n, stderr)
 
+    rmse = np.sqrt(
+        np.mean(
+            (obs_timeseries - (linreg.slope * ref_timeseries + linreg.intercept)) ** 2
+        )
+    )
+
     # Create and return a FitResultData object with the regression results
+    if tmin is None:
+        logger.warning("tmin is None, setting to min common time of both wells")
+        tmin = max(obs_well.timeseries.index.min(), ref_well.timeseries.index.min())
+    if tmax is None:
+        logger.warning("tmax is None, setting to max common time of both wells")
+        tmax = min(obs_well.timeseries.index.max(), ref_well.timeseries.index.max())
     fit_result = FitResultData(
         obs_well=obs_well,
         ref_well=ref_well,
-        rmse=linreg.rvalue,
+        rmse=rmse,
         n=n,
         fit_method=linreg,
         t_a=t_a,
@@ -103,6 +122,7 @@ def linregressfit(
         pred_const=pred_const,
         p=p,
         offset=offset,
+        aggregation=aggregation,
         tmin=tmin,
         tmax=tmax,
     )

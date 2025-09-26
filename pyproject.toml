@@ -1,6 +1,6 @@
 [project]
 name = "gwrefpy"
-version = "0.1.0"
+version = "0.2.0"
 description = "A python implementation of the Akvifär reference method for detecting deviations in groundwater level time series."
 readme = "README.md"
 license = "MIT"
@@ -30,6 +30,7 @@ dev = [
     "sphinx-copybutton",
     "sphinx-autobuild",
     "myst-nb>=1.3.0",
+    "sphinx-design>=0.6.1",
 ]
 recommended = ["notebook"]
 

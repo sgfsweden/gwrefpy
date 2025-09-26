@@ -1,29 +1,96 @@
-GWREFPY
+gwrefpy
 =======
 
+``gwrefpy`` is an open source Python implementation of the Akvifär reference method for detecting deviations in groundwater level time series. The method is described in detail in `Strandanger (2024) <https://svenskageotekniskaforeningen.se/wp-content/uploads/Publikationer/SGF_Rapporter/2024_2_Akvifars_refmetod.pdf)>`_.
+
+.. grid::
+
+    .. grid-item-card:: User Guide
+        :link: user_guide/index
+        :link-type: doc
+
+        User guide on installation and the basic concepts.
+
+    .. grid-item-card:: Tutorials
+        :link: tutorials/index
+        :link-type: doc
+
+        Some tutorials on how to use th epackage.
+
+    .. grid-item-card:: API Reference
+        :link: apidocs
+        :link-type: doc
+
+        Application programming interface (API) reference.
+
+.. grid::
+
+    .. grid-item-card:: Exercises
+        :link: tutorials/exercises/index
+        :link-type: doc
+
+        A collection of ``gwrefpy`` exercises.
+
+    .. grid-item-card:: Key Concepts
+        :link: about/keyconcepts
+        :link-type: doc
+
+        Key concepts behind ``gwrefpy`` and the Akvifär reference method.
+
+    .. grid-item-card:: GitHub Repository
+        :link: https://github.com/andersretznerSGU/gwrefpy
+
+        The source code for ``gwrefpy`` is hosted on GitHub.
+
+Features
+--------
+
+- Programmatically fit observation wells to reference wells
+- Visualize fits and deviations
+- Save your work, share and pick up later with a custom ``.gwref`` file format
+- Work with live data and update your analysis as new data comes in
 
 
-Installation
-------------
-The package is uploaded to the Python Package Index (PyPI) and can be installed using pip.
+Quick Example
+-------------
 
-Install the package:
+.. tab-set::
 
-.. code-block:: console
+    .. tab-item:: Python
 
-    pip install gwrefpy
+        In this example an observation well and reference well are fitted and plotted.
 
-Update the package to the latest version:
+        .. code-block:: python
 
-.. code-block:: console
+            # Import the packages
+            import gwrefpy as gr
+            import pandas as pd
 
-    pip install gwrefpy --upgrade
+            # Load timeseries data from CSV files
+            obs_data = pd.read_csv("obs.csv", index_col="date", parse_dates=["date"]).squeeze()
+            ref_data = pd.read_csv("ref.csv", index_col="date", parse_dates=["date"]).squeeze()
 
-Uninstall the package:
+            # Create Well objects and add timeseries data
+            obs = gr.Well(name="12GIPGW", is_reference=False)
+            obs.add_timeseries(obs_data)
 
-.. code-block:: console
+            ref = gr.Well(name="45LOGW", is_reference=True)
+            ref.add_timeseries(ref_data)
 
-    pip uninstall gwrefpy
+            # Create a Model object, add wells, and fit the model
+            model = gr.Model(name="Small Example")
+            model.add_well([obs, ref])
+
+            model.fit(obs_well=obs, ref_well=ref, offset="0D", tmin="2020-01-01", tmax="2020-03-23")
+
+            # Plot the results
+            model.plot_fits(plot_style="fancy", color_style="color", show_initiation_period=True)
+
+    .. tab-item:: Result
+
+        .. figure:: _static/figures/quick_example_plot.png
+            :alt: Quick example plot
+            :align: center
 
 
 .. toctree::
@@ -32,8 +99,8 @@ Uninstall the package:
     :hidden:
     :caption: Contents:
 
-    user_guide
+    user_guide/index
     tutorials/index
     apidocs
-    about
+    about/index
     index

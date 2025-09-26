@@ -115,3 +115,15 @@ jobs:
           ```bash
           uv add gwrefpy@latest
           ```
+          
+    - name: Build and deploy documentation
+      run: |
+        uv sync --group dev
+        cd docs/
+        uv run make html
+        
+    - name: Deploy documentation to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/_build/html
