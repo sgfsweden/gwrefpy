@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>src.gwrefpy.model &#8212; GwRefPy</title>
+    <title>src.gwrefpy.model &#8212; gwrefpy</title>
   
   
   
@@ -32,6 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -39,13 +40,13 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../_static/documentation_options.js?v=938c9ccc"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/src/gwrefpy/model';</script>
-    <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -111,8 +112,14 @@
   
   
   
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="gwrefpy - Home"/>
+    <img src="../../../_static/logo.png" class="logo__image only-dark pst-js-only" alt="gwrefpy - Home"/>
   
-    <p class="title logo__title">GwRefPy</p>
   
 </a></div>
     
@@ -127,7 +134,7 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../user_guide.html">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
     User guide
   </a>
 </li>
@@ -148,7 +155,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../about.html">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
     About
   </a>
 </li>
@@ -240,7 +247,7 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../user_guide.html">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
     User guide
   </a>
 </li>
@@ -261,7 +268,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../about.html">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
     About
   </a>
 </li>
@@ -359,21 +366,13 @@
                 <article class="bd-article">
                   
   <h1>Source code for src.gwrefpy.model</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Model</span>
-<span class="sd">-----</span>
-<span class="sd">A class representing a groundwater model that can contain multiple wells.</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.fitresults</span><span class="w"> </span><span class="kn">import</span> <span class="n">FitResultData</span><span class="p">,</span> <span class="n">LinRegResult</span><span class="p">,</span> <span class="n">unpack_dict_fit_method</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.fitbase</span><span class="w"> </span><span class="kn">import</span> <span class="n">FitBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.fitresults</span><span class="w"> </span><span class="kn">import</span> <span class="n">FitResultData</span><span class="p">,</span> <span class="n">LinRegResult</span><span class="p">,</span> <span class="n">_unpack_dict_fit_method</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.io.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">load</span><span class="p">,</span> <span class="n">save</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.methods.linregressfit</span><span class="w"> </span><span class="kn">import</span> <span class="n">linregressfit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.plotter</span><span class="w"> </span><span class="kn">import</span> <span class="n">Plotter</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils.conversions</span><span class="w"> </span><span class="kn">import</span> <span class="n">float_to_datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.well</span><span class="w"> </span><span class="kn">import</span> <span class="n">Well</span>
@@ -383,19 +382,39 @@
 
 <div class="viewcode-block" id="Model">
 <a class="viewcode-back" href="../../../model.html#src.gwrefpy.model.Model">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Model</span><span class="p">(</span><span class="n">Plotter</span><span class="p">):</span>
-<div class="viewcode-block" id="Model.__init__">
-<a class="viewcode-back" href="../../../model.html#src.gwrefpy.model.Model.__init__">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Model</span><span class="p">(</span><span class="n">FitBase</span><span class="p">,</span> <span class="n">Plotter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class representing a groundwater model that can contain multiple wells.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        The name of the model. If the name ends with &quot;.gwref&quot;, it is treated as a</span>
+<span class="sd">        filename and the model is loaded from that file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FitBase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Plotter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
         <span class="c1"># Well attributes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wells</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Well</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># Fit attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fits</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">FitResultData</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fits</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">FitResultData</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
+        <span class="c1"># Check if the name ends with the .gwref extension</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;gwref&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">open_project</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">ext</span> <span class="o">!=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="n">name_</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Model name &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has an unrecognized extension &#39;.</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Proceeding with </span><span class="si">{</span><span class="n">name_</span><span class="si">}</span><span class="s2"> as name.&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name_</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;String representation of the Model object.&quot;&quot;&quot;</span>
@@ -443,7 +462,7 @@
     <span class="c1"># ======================== Well Management Methods ========================</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">obs_wells</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">obs_wells</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Well</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;List of observation wells in the model.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">well</span> <span class="k">for</span> <span class="n">well</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wells</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">well</span><span class="o">.</span><span class="n">is_reference</span><span class="p">]</span>
 
@@ -470,22 +489,22 @@
                 <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">well</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                 <span class="s2">&quot;well_type&quot;</span><span class="p">:</span> <span class="s2">&quot;observation&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;data_points&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="s2">&quot;timeseries&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
                 <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
                 <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="s2">&quot;timeseries&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
                 <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="s2">&quot;timeseries&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
                 <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="s2">&quot;mean_level&quot;</span><span class="p">:</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="s2">&quot;timeseries&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
                 <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="s2">&quot;latest_value&quot;</span><span class="p">:</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="s2">&quot;timeseries&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
                 <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="s2">&quot;latest_date&quot;</span><span class="p">:</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="s2">&quot;timeseries&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
                 <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="n">well</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
                 <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="n">well</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span>
@@ -511,7 +530,7 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">ref_wells</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ref_wells</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Well</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;List of reference wells in the model.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">well</span> <span class="k">for</span> <span class="n">well</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wells</span> <span class="k">if</span> <span class="n">well</span><span class="o">.</span><span class="n">is_reference</span><span class="p">]</span>
 
@@ -538,31 +557,31 @@
                 <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">well</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                 <span class="s2">&quot;well_type&quot;</span><span class="p">:</span> <span class="s2">&quot;reference&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;data_points&quot;</span><span class="p">:</span> <span class="p">(</span>
-                    <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="s2">&quot;timeseries&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="k">if</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
                 <span class="p">),</span>
                 <span class="s2">&quot;start_date&quot;</span><span class="p">:</span> <span class="p">(</span>
                     <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="s2">&quot;timeseries&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                    <span class="k">if</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
                     <span class="k">else</span> <span class="kc">None</span>
                 <span class="p">),</span>
                 <span class="s2">&quot;end_date&quot;</span><span class="p">:</span> <span class="p">(</span>
                     <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="s2">&quot;timeseries&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                    <span class="k">if</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
                     <span class="k">else</span> <span class="kc">None</span>
                 <span class="p">),</span>
                 <span class="s2">&quot;mean_level&quot;</span><span class="p">:</span> <span class="p">(</span>
                     <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="s2">&quot;timeseries&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                    <span class="k">if</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
                     <span class="k">else</span> <span class="kc">None</span>
                 <span class="p">),</span>
                 <span class="s2">&quot;latest_value&quot;</span><span class="p">:</span> <span class="p">(</span>
                     <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="s2">&quot;timeseries&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                    <span class="k">if</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
                     <span class="k">else</span> <span class="kc">None</span>
                 <span class="p">),</span>
                 <span class="s2">&quot;latest_date&quot;</span><span class="p">:</span> <span class="p">(</span>
                     <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="s2">&quot;timeseries&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                    <span class="k">if</span> <span class="n">well</span><span class="o">.</span><span class="n">timeseries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
                     <span class="k">else</span> <span class="kc">None</span>
                 <span class="p">),</span>
                 <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="n">well</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
@@ -667,7 +686,7 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">well_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">well_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;List of all well names in the model.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">well</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">well</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wells</span><span class="p">]</span>
 
@@ -690,10 +709,9 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">well</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_add_well</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="p">)</span><span class="si">}</span><span class="s2"> wells to model &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="p">)</span><span class="si">}</span><span class="s2"> wells to model &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_well</span><span class="p">(</span><span class="n">well</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added one well to model &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_well</span><span class="p">(</span><span class="n">well</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_add_well</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">well</span><span class="p">):</span>
@@ -737,6 +755,70 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">wells</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">well</span><span class="p">)</span>
         <span class="n">well</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Well &#39;</span><span class="si">{</span><span class="n">well</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; added to model &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Model.delete_well">
+<a class="viewcode-back" href="../../../model.html#src.gwrefpy.model.Model.delete_well">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_well</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">well</span><span class="p">:</span> <span class="n">Well</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Well</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete a well or a list of wells from the model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        well : Well or list of Wells</span>
+<span class="sd">            The well or list of wells to add to the model.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">            This method modifies the model in place.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">well</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_delete_well</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deleted </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">well</span><span class="p">)</span><span class="si">}</span><span class="s2"> wells from model &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_delete_well</span><span class="p">(</span><span class="n">well</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_delete_well</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">well</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The internal method to delete a well from the model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        well : Well</span>
+<span class="sd">            The well to delete from the model.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If the well is not an instance of WellBase.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">             If the well is not part of the model.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">            This method modifies the model in place.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check if the well is an instance of Well</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="n">Well</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Only Well instances can be deleted from the model.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Only Well instances can be deleted from the model.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check if the well is already in the model</span>
+        <span class="k">if</span> <span class="n">well</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wells</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Well &#39;</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">well</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39; is not in the model.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Well &#39;</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">well</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39; is not in the model.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">wells</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">well</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span> <span class="ow">in</span> <span class="n">well</span><span class="o">.</span><span class="n">model</span><span class="p">:</span>
+            <span class="n">well</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Well &#39;</span><span class="si">{</span><span class="n">well</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; deleted from model &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Model.get_wells">
 <a class="viewcode-back" href="../../../model.html#src.gwrefpy.model.Model.get_wells">[docs]</a>
@@ -792,6 +874,7 @@
                 <span class="ow">and</span> <span class="n">ipython</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;ZMQInteractiveShell&quot;</span>
             <span class="p">):</span>
                 <span class="c1"># We&#39;re in Jupyter - don&#39;t print, let the return value display</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>  <span class="c1"># Log at debug level instead of printing</span>
                 <span class="k">return</span>
         <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
             <span class="c1"># IPython not available, definitely not in Jupyter</span>
@@ -834,282 +917,9 @@
 
         <span class="k">return</span> <span class="n">resolved_wells</span>
 
-<div class="viewcode-block" id="Model.fit">
-<a class="viewcode-back" href="../../../model.html#src.gwrefpy.model.Model.fit">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">obs_well</span><span class="p">:</span> <span class="n">Well</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Well</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-        <span class="n">ref_well</span><span class="p">:</span> <span class="n">Well</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Well</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-        <span class="n">offset</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span>
-        <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;linearregression&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;linearregression&quot;</span><span class="p">,</span>
-        <span class="n">tmin</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">tmax</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">report</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FitResultData</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">FitResultData</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Fit reference well(s) to observation well(s) using regression.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        obs_well : Well | list[Well] | str | list[str]</span>
-<span class="sd">            The observation well(s) to use for fitting. Can be Well objects,</span>
-<span class="sd">            well names (strings), or lists of either. If a list is provided,</span>
-<span class="sd">            each well will be paired with the corresponding reference well by index.</span>
-<span class="sd">        ref_well : Well | list[Well] | str | list[str]</span>
-<span class="sd">            The reference well(s) to use for fitting. Can be Well objects,</span>
-<span class="sd">            well names (strings), or lists of either. If a list is provided,</span>
-<span class="sd">            each well will be paired with the corresponding observation well by index.</span>
-<span class="sd">        offset: pd.DateOffset | pd.Timedelta | str</span>
-<span class="sd">            The offset to apply to the time series when grouping within time</span>
-<span class="sd">            equivalents.</span>
-<span class="sd">        p : float, optional</span>
-<span class="sd">            The confidence level for the fit (default is 0.95).</span>
-<span class="sd">        method : Literal[&quot;linearregression&quot;]</span>
-<span class="sd">            Method with which to perform regression. Currently only supports</span>
-<span class="sd">            linear regression.</span>
-<span class="sd">        tmin: pd.Timestamp | str | None = None</span>
-<span class="sd">            Minimum time for calibration period.</span>
-<span class="sd">        tmax: pd.Timestamp | str | None = None</span>
-<span class="sd">            Maximum time for calibration period.</span>
-<span class="sd">        report: bool, optional</span>
-<span class="sd">            Whether to print fit results summary (default is True).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        FitResultData | list[FitResultData]</span>
-<span class="sd">            If single wells are provided, returns a single FitResultData object.</span>
-<span class="sd">            If lists of wells are provided, returns a list of FitResultData objects</span>
-<span class="sd">            for each obs_well/ref_well pair.</span>
-
-<span class="sd">        Raises</span>
-<span class="sd">        ------</span>
-<span class="sd">        ValueError</span>
-<span class="sd">            If lists are provided but have different lengths.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Resolve wells (convert strings to Well objects and normalize to lists)</span>
-        <span class="n">obs_wells</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_wells</span><span class="p">(</span><span class="n">obs_well</span><span class="p">)</span>
-        <span class="n">ref_wells</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_wells</span><span class="p">(</span><span class="n">ref_well</span><span class="p">)</span>
-
-        <span class="c1"># Handle single well case</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">obs_wells</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">ref_wells</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span>
-                <span class="n">obs_wells</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ref_wells</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">offset</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span>
-            <span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Fitting model &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; using reference well &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">ref_wells</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; and observation well &#39;</span><span class="si">{</span><span class="n">obs_wells</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">report</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_display_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">result</span>
-
-        <span class="c1"># Validate that lists have the same length</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">obs_wells</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ref_wells</span><span class="p">):</span>
-            <span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;obs_well list length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">obs_wells</span><span class="p">)</span><span class="si">}</span><span class="s2">) must match &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;ref_well list length (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ref_wells</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
-            <span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
-
-        <span class="c1"># Perform fitting for each pair</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">obs_w</span><span class="p">,</span> <span class="n">ref_w</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">obs_wells</span><span class="p">,</span> <span class="n">ref_wells</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span><span class="n">obs_w</span><span class="p">,</span> <span class="n">ref_w</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="p">)</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Fitting model &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; using reference well &#39;</span><span class="si">{</span><span class="n">ref_w</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;and observation well &#39;</span><span class="si">{</span><span class="n">obs_w</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">report</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_display_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">results</span></div>
-
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_fit</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">obs_well</span><span class="p">:</span> <span class="n">Well</span><span class="p">,</span>
-        <span class="n">ref_well</span><span class="p">:</span> <span class="n">Well</span><span class="p">,</span>
-        <span class="n">offset</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span>
-        <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;linearregression&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;linearregression&quot;</span><span class="p">,</span>
-        <span class="n">tmin</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">tmax</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FitResultData</span><span class="p">:</span>
-        <span class="c1"># Check that the ref_well is a reference well</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">ref_well</span><span class="o">.</span><span class="n">is_reference</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The well &#39;</span><span class="si">{</span><span class="n">ref_well</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is not a reference well.&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The well &#39;</span><span class="si">{</span><span class="n">ref_well</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is not a reference well.&quot;</span><span class="p">)</span>
-
-        <span class="c1"># Check that the obs_well is an observation well</span>
-        <span class="k">if</span> <span class="n">obs_well</span><span class="o">.</span><span class="n">is_reference</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The well &#39;</span><span class="si">{</span><span class="n">obs_well</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is not an observation well.&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The well &#39;</span><span class="si">{</span><span class="n">obs_well</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is not an observation well.&quot;</span><span class="p">)</span>
-
-        <span class="n">fit</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;linearregression&quot;</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Using linear regression method for fitting.&quot;</span><span class="p">)</span>
-            <span class="n">fit</span> <span class="o">=</span> <span class="n">linregressfit</span><span class="p">(</span><span class="n">obs_well</span><span class="p">,</span> <span class="n">ref_well</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">fit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fitting method &#39;</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39; is not implemented.&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fitting method &#39;</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39; is not implemented.&quot;</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">fits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fit completed for model &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; with RMSE </span><span class="si">{</span><span class="n">fit</span><span class="o">.</span><span class="n">rmse</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">fit</span>
-
-<div class="viewcode-block" id="Model.best_fit">
-<a class="viewcode-back" href="../../../model.html#src.gwrefpy.model.Model.best_fit">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">best_fit</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">obs_well</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Well</span><span class="p">,</span>
-        <span class="n">ref_wells</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Well</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;linearregression&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;linearregression&quot;</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FitResultData</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Find the best fit for the model using the provided wells.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        obs_well : Well or list of Well or None, optional</span>
-<span class="sd">            The observation well to use for fitting.</span>
-<span class="sd">        ref_wells : Well or list of Well or None, optional</span>
-<span class="sd">            The reference wells to test. If None, all reference wells in the</span>
-<span class="sd">            model will be used (default is None).</span>
-<span class="sd">        method : Literal[&quot;linearregression&quot;]</span>
-<span class="sd">            Method with which to perform regression. Currently only supports</span>
-<span class="sd">            linear regression.</span>
-<span class="sd">        **kwargs</span>
-<span class="sd">            Keyword arguments to pass to the fitting method. For example, you can use</span>
-<span class="sd">            `offset`, `p`, `tmin`, and `tmax` to control</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        FitResultData</span>
-<span class="sd">            Returns the best fit for the given observation well.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_fit</span><span class="p">(</span><span class="n">obs_well</span><span class="p">,</span> <span class="n">ref_wells</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_best_fit</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">obs_well</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Well</span><span class="p">,</span>
-        <span class="n">ref_wells</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Well</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;linearregression&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;linearregression&quot;</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FitResultData</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The internal method to find the best fit.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        obs_well : Well or list of Well or None, optional</span>
-<span class="sd">            The observation well to use for fitting.</span>
-<span class="sd">        ref_wells : Well or list of Well or None, optional</span>
-<span class="sd">            The reference wells to test. If None, all reference wells in the</span>
-<span class="sd">            model will be used (default is None).</span>
-<span class="sd">        method : Literal[&quot;linearregression&quot;]</span>
-<span class="sd">            Method with which to perform regression. Currently only supports</span>
-<span class="sd">            linear regression.</span>
-<span class="sd">        **kwargs</span>
-<span class="sd">            Keyword arguments to pass to the fitting method. For example, you can use</span>
-<span class="sd">            `offset`, `p`, `tmin`, and `tmax` to control</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        FitResultData</span>
-<span class="sd">            Returns the best fit for the given arguments.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ref_wells</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">ref_wells</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;ref_wells list cannot be empty.&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ref_wells list cannot be empty.&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obs_well</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">target_obs_well</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_wells</span><span class="p">(</span><span class="n">obs_well</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target_obs_well</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                    <span class="s2">&quot;obs_well parameter must resolve to a single well, not a list.&quot;</span>
-                <span class="p">)</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;obs_well parameter must resolve to a single well, not a list.&quot;</span>
-                <span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obs_well</span><span class="p">,</span> <span class="n">Well</span><span class="p">):</span>
-            <span class="n">target_obs_well</span> <span class="o">=</span> <span class="n">obs_well</span>
-        <span class="k">if</span> <span class="n">ref_wells</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">target_ref_wells</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref_wells</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_ref_wells</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No reference wells available in the model.&quot;</span><span class="p">)</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No reference wells available in the model.&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">target_ref_wells</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Well</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">rw</span> <span class="ow">in</span> <span class="n">ref_wells</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rw</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                    <span class="n">target_ref_wells</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_wells</span><span class="p">(</span><span class="n">rw</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
-                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rw</span><span class="p">,</span> <span class="n">Well</span><span class="p">):</span>
-                    <span class="n">target_ref_wells</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rw</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Unsupported type for </span><span class="si">{</span><span class="n">rw</span><span class="si">}</span><span class="s2">. Supported types are Well or str&quot;</span>
-                    <span class="p">)</span>
-                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Unsupported type for </span><span class="si">{</span><span class="n">rw</span><span class="si">}</span><span class="s2">. Supported types are Well or str&quot;</span>
-                    <span class="p">)</span>
-
-        <span class="n">local_fits</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">FitResultData</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">ref_well</span> <span class="ow">in</span> <span class="n">target_ref_wells</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Testing fit for observation well &#39;</span><span class="si">{</span><span class="n">target_obs_well</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;and reference well &#39;</span><span class="si">{</span><span class="n">ref_well</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
-            <span class="p">)</span>
-            <span class="n">fit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span><span class="n">target_obs_well</span><span class="p">,</span> <span class="n">ref_well</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="n">local_fits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Fit result for observation well &#39;</span><span class="si">{</span><span class="n">target_obs_well</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; and&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;reference well &#39;</span><span class="si">{</span><span class="n">ref_well</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;: RMSE=</span><span class="si">{</span><span class="n">fit</span><span class="o">.</span><span class="n">rmse</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">local_fits</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">rmse</span><span class="p">)</span>
-
-<div class="viewcode-block" id="Model.get_fits">
-<a class="viewcode-back" href="../../../model.html#src.gwrefpy.model.Model.get_fits">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_fits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">well</span><span class="p">:</span> <span class="n">Well</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">FitResultData</span><span class="p">]</span> <span class="o">|</span> <span class="n">FitResultData</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get all fit results involving a specific well.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        well : Well | str</span>
-<span class="sd">            The well to check.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        list[FitResultData] | FitResultData | None</span>
-<span class="sd">            A list of fit results involving the specified well.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">target_well</span><span class="p">:</span> <span class="n">Well</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">target_well</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_wells</span><span class="p">(</span><span class="n">well</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">well</span><span class="p">,</span> <span class="n">Well</span><span class="p">):</span>
-            <span class="n">target_well</span> <span class="o">=</span> <span class="n">well</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Parameter &#39;well&#39; must be a Well instance or a string.&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Parameter &#39;well&#39; must be a Well instance or a string.&quot;</span><span class="p">)</span>
-
-        <span class="n">fit_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">fit</span> <span class="k">for</span> <span class="n">fit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fits</span> <span class="k">if</span> <span class="n">fit</span><span class="o">.</span><span class="n">has_well</span><span class="p">(</span><span class="n">target_well</span><span class="p">)]</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">fit_list</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fit_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
-            <span class="k">else</span> <span class="p">(</span><span class="n">fit_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fit_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="p">)</span></div>
-
-
     <span class="c1"># ======================== Load and Save Methods ========================</span>
 
-<div class="viewcode-block" id="Model.to_dict">
-<a class="viewcode-back" href="../../../model.html#src.gwrefpy.model.Model.to_dict">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert the model to a dictionary representation.</span>
 
@@ -1127,19 +937,16 @@
         <span class="c1"># Create a dictionary representation of each well</span>
         <span class="n">wells_dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">well</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wells</span><span class="p">:</span>
-            <span class="n">wells_dict</span><span class="p">[</span><span class="n">well</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">well</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+            <span class="n">wells_dict</span><span class="p">[</span><span class="n">well</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">well</span><span class="o">.</span><span class="n">_to_dict</span><span class="p">()</span>
         <span class="n">model_dict</span><span class="p">[</span><span class="s2">&quot;wells_dict&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">wells_dict</span>
 
         <span class="c1"># Add fits if they exist</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fits</span><span class="p">:</span>
-            <span class="n">model_dict</span><span class="p">[</span><span class="s2">&quot;fits&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">fit</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">fit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fits</span><span class="p">]</span>
+            <span class="n">model_dict</span><span class="p">[</span><span class="s2">&quot;fits&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">fit</span><span class="o">.</span><span class="n">_to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">fit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fits</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">model_dict</span></div>
+        <span class="k">return</span> <span class="n">model_dict</span>
 
-
-<div class="viewcode-block" id="Model.unpack_dict">
-<a class="viewcode-back" href="../../../model.html#src.gwrefpy.model.Model.unpack_dict">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">unpack_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_unpack_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Unpack a dictionary representation of the model and set the model&#39;s attributes.</span>
 
@@ -1160,7 +967,7 @@
         <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wells_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">well_obj</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">well</span> <span class="o">=</span> <span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">well_obj</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">is_reference</span><span class="o">=</span><span class="n">well_obj</span><span class="p">[</span><span class="s2">&quot;is_reference&quot;</span><span class="p">])</span>
-            <span class="n">well</span><span class="o">.</span><span class="n">unpack_dict</span><span class="p">(</span><span class="n">well_obj</span><span class="p">)</span>
+            <span class="n">well</span><span class="o">.</span><span class="n">_unpack_dict</span><span class="p">(</span><span class="n">well_obj</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_well</span><span class="p">(</span><span class="n">well</span><span class="p">)</span>
 
         <span class="c1"># Unpack fits</span>
@@ -1171,17 +978,17 @@
                 <span class="n">obs_well</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wells</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">well_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">fit_data</span><span class="p">[</span><span class="s2">&quot;obs_well&quot;</span><span class="p">])],</span>
                 <span class="n">rmse</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rmse&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                 <span class="n">n</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-                <span class="n">fit_method</span><span class="o">=</span><span class="n">unpack_dict_fit_method</span><span class="p">(</span><span class="n">fit_data</span><span class="p">),</span>
+                <span class="n">fit_method</span><span class="o">=</span><span class="n">_unpack_dict_fit_method</span><span class="p">(</span><span class="n">fit_data</span><span class="p">),</span>
                 <span class="n">t_a</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;t_a&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                 <span class="n">stderr</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stderr&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                 <span class="n">pred_const</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pred_const&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                 <span class="n">p</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                 <span class="n">offset</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;offset&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">aggregation</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;aggregation&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">),</span>
                 <span class="n">tmin</span><span class="o">=</span><span class="n">float_to_datetime</span><span class="p">(</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tmin&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)),</span>
                 <span class="n">tmax</span><span class="o">=</span><span class="n">float_to_datetime</span><span class="p">(</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tmax&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)),</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">fits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit</span><span class="p">)</span></div>
-
+            <span class="bp">self</span><span class="o">.</span><span class="n">fits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Model.save_project">
 <a class="viewcode-back" href="../../../model.html#src.gwrefpy.model.Model.save_project">[docs]</a>
@@ -1204,15 +1011,16 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Convert the model to a dictionary</span>
-        <span class="n">model_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="n">model_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_dict</span><span class="p">()</span>
 
         <span class="c1"># Set default filename if not provided</span>
         <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.gwref&quot;</span>
 
         <span class="c1"># Save the model dictionary to a file</span>
-        <span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">model_dict</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; saved to &#39;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span></div>
+        <span class="n">saved</span> <span class="o">=</span> <span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">model_dict</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">saved</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; saved to &#39;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Model.open_project">
@@ -1233,7 +1041,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Placeholder for load logic</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">unpack_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unpack_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; loaded from &#39;</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span></div>
 </div>
 

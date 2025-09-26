@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>A basic model &#8212; GwRefPy</title>
+    <title>Quickstart &#8212; gwrefpy</title>
   
   
   
@@ -33,6 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- So that users can add custom icons -->
   <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -40,16 +41,16 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../_static/documentation_options.js?v=938c9ccc"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/quickstart';</script>
-    <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="API Reference" href="../apidocs.html" />
+    <link rel="next" title="Working with live data" href="livedata.html" />
     <link rel="prev" title="Tutorials" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -114,8 +115,14 @@
   
   
   
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="gwrefpy - Home"/>
+    <img src="../_static/logo.png" class="logo__image only-dark pst-js-only" alt="gwrefpy - Home"/>
   
-    <p class="title logo__title">GwRefPy</p>
   
 </a></div>
     
@@ -130,7 +137,7 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../user_guide.html">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
     User guide
   </a>
 </li>
@@ -151,7 +158,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../about.html">
+  <a class="nav-link nav-internal" href="../about/index.html">
     About
   </a>
 </li>
@@ -245,7 +252,7 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../user_guide.html">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
     User guide
   </a>
 </li>
@@ -266,7 +273,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../about.html">
+  <a class="nav-link nav-internal" href="../about/index.html">
     About
   </a>
 </li>
@@ -314,7 +321,14 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">A basic model</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="livedata.html">Working with live data</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="exercises/index.html">Exercises</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="exercises/1_exercise1.html">Exercise 1: Create and fit a simple gwrefpy model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exercises/2_exercise2.html">Exercise 2: Using best fit methods in gwrefpy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exercises/3_exercise3.html">Exercise 3: Update a <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code>model with new data</a></li>
+</ul>
+</details></li>
 </ul>
 </div>
 </nav></div>
@@ -358,7 +372,7 @@
     
     <li class="breadcrumb-item"><a href="index.html" class="nav-link">Tutorials</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">A basic model</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Quickstart</span></li>
   </ul>
 </nav>
 </div>
@@ -375,76 +389,70 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="a-basic-model">
-<h1>A basic model<a class="headerlink" href="#a-basic-model" title="Link to this heading">#</a></h1>
-<p>This quick introductory example demonstrates how to use <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> to analyze an observation and a reference well, calibrate a model, save the project, and then reload and visualize the results.</p>
-<p>We will go step by step:</p>
-<ol class="arabic simple">
-<li><p>Store the data in <code class="docutils literal notranslate"><span class="pre">Well</span></code> objects</p></li>
-<li><p>Build a <code class="docutils literal notranslate"><span class="pre">Model</span></code> and run calibration</p></li>
-<li><p>Save the project and reload it</p></li>
-<li><p>Plot the results</p></li>
-</ol>
+  <section id="quickstart">
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading">#</a></h1>
+<p>This quick introductory example demonstrates how to use <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> to analyze an observation and a reference well, calibrate the two wells, and visualize the results.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">gwrefpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gr</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-
-<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Logging is configured.
 </pre></div>
 </div>
 </div>
 </div>
-<section id="import-groundwater-level-measurements">
-<h2>1. Import groundwater level measurements<a class="headerlink" href="#import-groundwater-level-measurements" title="Link to this heading">#</a></h2>
-<p>Importing groundwaterlevel for a reference well and a observationswell as csv files and creates panda series.</p>
+<p>For this quickstart example, we will generate two fictious timeseries.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="s2">&quot;2020-01-01&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">365</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">)</span>
 
-<span class="n">obs_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">365</span><span class="p">)),</span> <span class="n">index</span><span class="o">=</span><span class="n">dates</span><span class="p">)</span>
-<span class="n">ref_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">365</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">dates</span><span class="p">)</span>
+<span class="n">obs_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">365</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">365</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">dates</span><span class="p">)</span>
+<span class="n">ref_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">365</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">365</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">dates</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-</section>
-<section id="create-well-objects">
-<h2>2. Create well objects 💧<a class="headerlink" href="#create-well-objects" title="Link to this heading">#</a></h2>
-<p>We now add our time series to <code class="docutils literal notranslate"><span class="pre">Well</span></code> objects.  The following boolean condition marks if the well is reference or observation.</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">is_reference=False</span></code> for the observation well</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">is_reference=True</span></code> for the reference well</p></li>
-</ul>
+<p>To use the timeseries in <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code>, we create <code class="docutils literal notranslate"><span class="pre">Well</span></code> objects.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Obs_well&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeseries</span><span class="o">=</span><span class="n">obs_series</span><span class="p">)</span>
-<span class="n">ref</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ref_well&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeseries</span><span class="o">=</span><span class="n">ref_series</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;obs&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeseries</span><span class="o">=</span><span class="n">obs_series</span><span class="p">)</span>
+<span class="n">ref</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ref&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeseries</span><span class="o">=</span><span class="n">ref_series</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-</section>
-<section id="build-a-model-and-calibrate">
-<h2>3. Build a model and calibrate ⚙️<a class="headerlink" href="#build-a-model-and-calibrate" title="Link to this heading">#</a></h2>
-<p>We create a <code class="docutils literal notranslate"><span class="pre">Model</span></code> and add both the reference well and the observation well.
-Then we choose a calibration period – here we just use the whole time series.
-The <code class="docutils literal notranslate"><span class="pre">model.fit</span></code> function takes the observation well (<code class="docutils literal notranslate"><span class="pre">obs</span></code>), the reference well (<code class="docutils literal notranslate"><span class="pre">ref</span></code>), the (<code class="docutils literal notranslate"><span class="pre">time_equivalent</span></code>), and the start and end dates of the calibration period. It checks how well the reference well values match the observation well values.</p>
+<p>Let’s create our <code class="docutils literal notranslate"><span class="pre">Model</span></code> object which will hold wells and associated fits. We then add both wells and use <code class="docutils literal notranslate"><span class="pre">model.plot_wells()</span></code> which will plot all available wells.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my first model&quot;</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">add_well</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">add_well</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span>
 
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_wells</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Plotting well: obs
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Plotting well: ref
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x7f5e20a0e5d0&gt;
+</pre></div>
+</div>
+<img alt="../_images/108cea41d0cab1dd80a562ceaecb6e28b7fa6f2442e314b09cd834a6ec14e5a0.png" src="../_images/108cea41d0cab1dd80a562ceaecb6e28b7fa6f2442e314b09cd834a6ec14e5a0.png" />
+</div>
+</div>
+<p>Let’s fit the obervation well to our reference well. Since we know the series share the same timestamps, we can safely use <code class="docutils literal notranslate"><span class="pre">&quot;0D&quot;</span></code> as an offset (i.e., no offset).</p>
+<blockquote>
+<div><p>See the <em>Regarding time offsets</em> notebook for more details on offsets.</p>
+</div></blockquote>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
     <span class="n">obs</span><span class="p">,</span>
     <span class="n">ref</span><span class="p">,</span>
     <span class="n">offset</span><span class="o">=</span><span class="s2">&quot;0D&quot;</span>
@@ -453,131 +461,100 @@ The <code class="docutils literal notranslate"><span class="pre">model.fit</span
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Added one well to model &#39;my first model&#39;.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Added one well to model &#39;my first model&#39;.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>tmax is None, setting to max common time of both wells
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fit completed for model &#39;my first model&#39; with RMSE 0.8770304495439567.
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fitting model &#39;my first model&#39; using reference well &#39;Ref_well&#39; and observation well &#39;Obs_well&#39;.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fitting model &#39;my first model&#39; using reference well &#39;ref&#39; and observation well &#39;obs&#39;.
 </pre></div>
 </div>
 <div class="output text_html">
-        <div style="margin: 10px 0;">
-            <h4>Fit Results: Obs_well ~ Ref_well</h4>
-            <table style="border-collapse: collapse; margin: 10px 0;
-                           font-family: monospace;">
+        <div>
+            <strong>Fit Results: obs ~ ref</strong>
+            <table>
                 <thead>
-                    <tr style="background-color: #f0f0f0;">
-                        <th style="border: 1px solid #ccc; padding: 8px;
-                                   text-align: left;">Statistic</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;
-                                   text-align: left;">Value</th>
-                        <th style="border: 1px solid #ccc; padding: 8px;
-                                   text-align: left;">Description</th>
+                    <tr>
+                        <th style="text-align: left">Statistic</th>
+                        <th style="text-align: left">Value</th>
+                        <th style="text-align: left">Description</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">RMSE</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            0.8770</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Root Mean Square Error</td>
+                        <td>RMSE</td>
+                        <td>0.2212</td>
+                        <td>Root Mean Square Error</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">R²</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            0.7692</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Coefficient of Determination</td>
+                        <td>R²</td>
+                        <td>0.9110</td>
+                        <td>Coefficient of Determination</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">R-value</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            0.8770</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Correlation Coefficient</td>
+                        <td>R-value</td>
+                        <td>0.9544</td>
+                        <td>Correlation Coefficient</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">Slope</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            0.8765</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Linear Regression Slope</td>
+                        <td>Slope</td>
+                        <td>0.9895</td>
+                        <td>Linear Regression Slope</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">Intercept</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            -0.0012</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Linear Regression Intercept</td>
+                        <td>Intercept</td>
+                        <td>-0.0095</td>
+                        <td>Linear Regression Intercept</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">P-value</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            0.0000</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Statistical Significance</td>
+                        <td>P-value</td>
+                        <td>0.0000</td>
+                        <td>Statistical Significance</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">N</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            365</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Number of Data Points</td>
+                        <td>N</td>
+                        <td>365</td>
+                        <td>Number of Data Points</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">Std Error</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            0.3402</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Standard Error</td>
+                        <td>Std Error</td>
+                        <td>0.2218</td>
+                        <td>Standard Error</td>
                     </tr>
                     <tr>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Confidence</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            95.0%</td>
-                        <td style="border: 1px solid #ccc; padding: 8px;">
-                            Confidence Level</td>
+                        <td>Confidence</td>
+                        <td>95.0%</td>
+                        <td>Confidence Level</td>
                     </tr>
                 </tbody>
             </table>
-            <p style="margin: 10px 0; font-family: monospace;">
-                <strong>Calibration Period:</strong> None to None<br>
-                <strong>Time Offset:</strong> 0D
+            <p>
+                Calibration Period: 2020-01-01 00:00:00 to 2020-12-30 00:00:00<br>
+                Time Offset: 0D<br>
+                Aggregation Method: mean
             </p>
         </div>
         </div></div>
 </div>
-</section>
-<section id="plot-the-results">
-<h2>4. Plot the results 📈<a class="headerlink" href="#plot-the-results" title="Link to this heading">#</a></h2>
-<p>Finally, we plot the calibrated model using the built-in plotting functionality.</p>
+<p>Let’s plot the fit. We can use <code class="docutils literal notranslate"><span class="pre">model.plot_fits()</span></code> since we only have one fit. By default, any levels from the observation well falling outside the fitted confidence interval will be highlighted with a red circle.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_fits</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">AttributeError</span><span class="g g-Whitespace">                            </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">line</span> <span class="mi">1</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">model</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
-<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
-<span class="ne">AttributeError</span>: &#39;Model&#39; object has no attribute &#39;plot&#39;
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Plotting fit: obs ~ ref
 </pre></div>
 </div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x7f5e0719f150&gt;
+</pre></div>
+</div>
+<img alt="../_images/9405afcd21c1e12622c19caeeb07fd961e3205982592031b7c46fe8fcaaf019d.png" src="../_images/9405afcd21c1e12622c19caeeb07fd961e3205982592031b7c46fe8fcaaf019d.png" />
 </div>
 </div>
-</section>
 </section>
 
 
@@ -600,11 +577,11 @@ The <code class="docutils literal notranslate"><span class="pre">model.fit</span
       </div>
     </a>
     <a class="right-next"
-       href="../apidocs.html"
+       href="livedata.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API Reference</p>
+        <p class="prev-next-title">Working with live data</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -618,21 +595,6 @@ The <code class="docutils literal notranslate"><span class="pre">model.fit</span
                 <dialog id="pst-secondary-sidebar-modal"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
-
-  <div class="sidebar-secondary-item">
-<div
-    id="pst-page-navigation-heading-2"
-    class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-  </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#import-groundwater-level-measurements">1. Import groundwater level measurements</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-well-objects">2. Create well objects 💧</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-a-model-and-calibrate">3. Build a model and calibrate ⚙️</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plot-the-results">4. Plot the results 📈</a></li>
-</ul>
-  </nav></div>
 
   <div class="sidebar-secondary-item">
   <div role="note" aria-label="source link">

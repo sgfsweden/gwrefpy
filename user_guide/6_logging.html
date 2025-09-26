@@ -1,0 +1,908 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Logging 📄 &#8212; gwrefpy</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/6_logging';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tutorials" href="../tutorials/index.html" />
+    <link rel="prev" title="Saving and loading models" href="5_io.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="gwrefpy - Home"/>
+    <img src="../_static/logo.png" class="logo__image only-dark pst-js-only" alt="gwrefpy - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../about/index.html">
+    About
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/andersretznerSGU/gwrefpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../about/index.html">
+    About
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/andersretznerSGU/gwrefpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="1_intro_gwrefpy.html">Intro to <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code></a></li>
+
+
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="2_fitting_wells.html">Fitting wells</a></li>
+<li class="toctree-l1"><a class="reference internal" href="3_time_offsets.html">Time offsets</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="4_plotting.html">Plotting with gwrefpy 📊</a></li>
+<li class="toctree-l1"><a class="reference internal" href="5_io.html">Saving and loading models</a></li>
+
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Logging 📄</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Logging 📄</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="logging">
+<h1>Logging 📄<a class="headerlink" href="#logging" title="Link to this heading">#</a></h1>
+<p>This notebook introduces the concept of logging using Python’s built-in logging module. Logging is essential for tracking events that happen when some software runs. The module provides a way to configure different log handlers and severity levels.</p>
+<p>This notebook can be downloaded from the source code <a class="reference external" href="https://github.com/andersretznerSGU/gwrefpy/blob/main/docs/user_guide/6_logging.ipynb">here</a>.</p>
+<p>The logging levels available in <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">DEBUG</span></code>: Detailed information, typically of interest only when diagnosing problems.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">INFO</span></code>: Confirmation that things are working as expected. This is the default logging level.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">WARNING</span></code>: An indication that something unexpected happened, or indicative of some problem in the near future</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ERROR</span></code>: Due to a more serious problem, the software has not been able to perform some function. Typically, these are issues will also raise exceptions.</p></li>
+</ul>
+<p>Let’s start by importing the necessary libraries and setting the logging level to <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code> using the <code class="docutils literal notranslate"><span class="pre">set_logging_level</span></code> function.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">gwrefpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">gr</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">)</span>  <span class="c1"># Set logging level to DEBUG</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Log level set to DEBUG
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can now create some well objects and a model to see the logging in action.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create some example data</span>
+<span class="n">n_days</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">dates</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2020-01-01&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="n">n_days</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">)</span>
+
+<span class="c1"># Observed and reference values with some noise</span>
+<span class="n">values_obs1</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="mf">25.75</span>
+    <span class="o">+</span> <span class="mf">0.7</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n_days</span><span class="p">))</span>
+    <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">n_days</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">values_obs1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">values_obs1</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">dates</span><span class="p">)</span>
+<span class="n">values_ref1</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="mf">18.75</span>
+    <span class="o">+</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n_days</span><span class="p">))</span>
+    <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">n_days</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">values_ref1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">values_ref1</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">dates</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Creat the observed and reference wells</span>
+<span class="n">obs1</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Obs. well&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">obs1</span><span class="o">.</span><span class="n">add_timeseries</span><span class="p">(</span><span class="n">values_obs1</span><span class="p">)</span> <span class="c1"># &lt;-- Here we will see logging messages</span>
+<span class="n">ref1</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ref. well&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ref1</span><span class="o">.</span><span class="n">add_timeseries</span><span class="p">(</span><span class="n">values_ref1</span><span class="p">)</span> <span class="c1"># &lt;-- Here we will see logging messages</span>
+
+<span class="c1"># Create the model and add the wells</span>
+<span class="n">model1</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Logging Example Model&quot;</span><span class="p">)</span>
+<span class="n">model1</span><span class="o">.</span><span class="n">add_well</span><span class="p">(</span><span class="n">obs1</span><span class="p">)</span> <span class="c1"># &lt;-- Here we will see logging messages</span>
+<span class="n">model1</span><span class="o">.</span><span class="n">add_well</span><span class="p">(</span><span class="n">ref1</span><span class="p">)</span> <span class="c1"># &lt;-- Here we will see logging messages</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Added timeseries to well Obs. well
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Added timeseries to well Ref. well
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Well &#39;Obs. well&#39; added to model &#39;Logging Example Model&#39;.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Well &#39;Ref. well&#39; added to model &#39;Logging Example Model&#39;.
+</pre></div>
+</div>
+</div>
+</div>
+<p>As you can see, we got logging messages in the console when adding the wells to the model. Now let’s fit the model to see more logging messages.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fit the model</span>
+<span class="n">model1</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">obs1</span><span class="p">,</span>
+    <span class="n">ref1</span><span class="p">,</span>
+    <span class="n">offset</span><span class="o">=</span><span class="s2">&quot;0D&quot;</span><span class="p">,</span>
+    <span class="n">tmin</span><span class="o">=</span><span class="n">dates</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">tmax</span><span class="o">=</span><span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="mi">21</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using linear regression method for fitting.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fit completed for model &#39;Logging Example Model&#39; with RMSE 0.14269974740731517.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fitting model &#39;Logging Example Model&#39; using reference well &#39;Ref. well&#39; and observation well &#39;Obs. well&#39;.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fit Results: Obs. well ~ Ref. well
+==================================
+Statistic       Value        Description
+--------------------------------------------------
+RMSE            0.1427       Root Mean Square Error
+R²              0.9043       Coefficient of Determination
+R-value         0.9510       Correlation Coefficient
+Slope           1.9834       Linear Regression Slope
+Intercept       -11.3871     Linear Regression Intercept
+P-value         0.0000       Statistical Significance
+N               80           Number of Data Points
+Std Error       0.1445       Standard Error
+Confidence      95.0        % Confidence Level
+
+Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00
+Time Offset: 0D
+Aggregation Method: mean
+</pre></div>
+</div>
+<div class="output text_html">
+        <div>
+            <strong>Fit Results: Obs. well ~ Ref. well</strong>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align: left">Statistic</th>
+                        <th style="text-align: left">Value</th>
+                        <th style="text-align: left">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>RMSE</td>
+                        <td>0.1427</td>
+                        <td>Root Mean Square Error</td>
+                    </tr>
+                    <tr>
+                        <td>R²</td>
+                        <td>0.9043</td>
+                        <td>Coefficient of Determination</td>
+                    </tr>
+                    <tr>
+                        <td>R-value</td>
+                        <td>0.9510</td>
+                        <td>Correlation Coefficient</td>
+                    </tr>
+                    <tr>
+                        <td>Slope</td>
+                        <td>1.9834</td>
+                        <td>Linear Regression Slope</td>
+                    </tr>
+                    <tr>
+                        <td>Intercept</td>
+                        <td>-11.3871</td>
+                        <td>Linear Regression Intercept</td>
+                    </tr>
+                    <tr>
+                        <td>P-value</td>
+                        <td>0.0000</td>
+                        <td>Statistical Significance</td>
+                    </tr>
+                    <tr>
+                        <td>N</td>
+                        <td>80</td>
+                        <td>Number of Data Points</td>
+                    </tr>
+                    <tr>
+                        <td>Std Error</td>
+                        <td>0.1445</td>
+                        <td>Standard Error</td>
+                    </tr>
+                    <tr>
+                        <td>Confidence</td>
+                        <td>95.0%</td>
+                        <td>Confidence Level</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00<br>
+                Time Offset: 0D<br>
+                Aggregation Method: mean
+            </p>
+        </div>
+        </div></div>
+</div>
+<p>As you can see both the progress and the results of the fitting are logged to the console.</p>
+<p>Usually, we do not want that much information printed to the console. For many practivale applications, the <code class="docutils literal notranslate"><span class="pre">INFO</span></code> logging level is sufficient. Let’s change the logging level and see how it affects the output. We will also enable logging to a file with the <code class="docutils literal notranslate"><span class="pre">enable_file_logging</span></code> function, here we can set the logging level to <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code> to capture all messages in the file.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you want to log your own messages in your code, you can use the <code class="docutils literal notranslate"><span class="pre">get_logger</span></code> function to get a logger object and then use its methods to log messages at different levels (e.g., <code class="docutils literal notranslate"><span class="pre">logger.debug()</span></code>, <code class="docutils literal notranslate"><span class="pre">logger.info()</span></code>, etc.).</p>
+<p>In the example below, we will use the <code class="docutils literal notranslate"><span class="pre">logging</span></code> module directly to demonstrate this. The <code class="docutils literal notranslate"><span class="pre">info</span></code> and <code class="docutils literal notranslate"><span class="pre">debug</span></code> messages will be logged according to the logging level we set.</p>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Set logging level to INFO (default)</span>
+<span class="n">gr</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="s2">&quot;INFO&quot;</span><span class="p">)</span>
+<span class="c1"># Enable logging to a file with DEBUG level</span>
+<span class="n">gr</span><span class="o">.</span><span class="n">enable_file_logging</span><span class="p">(</span><span class="s2">&quot;gwrefpy_debug.log&quot;</span><span class="p">,</span> <span class="n">loglevel</span><span class="o">=</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Log level set to INFO
+</pre></div>
+</div>
+</div>
+</div>
+<p>Let’s create a new model and fit it again to see the detailed logging in the file.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Show code cell source</p>
+<p class="expanded admonition-title">Hide code cell source</p>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Observed and reference values with some noise</span>
+<span class="n">values_obs2</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="mf">25.75</span>
+    <span class="o">+</span> <span class="mf">0.7</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n_days</span><span class="p">))</span>
+    <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">n_days</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">values_obs2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">values_obs2</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">dates</span><span class="p">)</span>
+<span class="n">values_ref2</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="mf">18.75</span>
+    <span class="o">+</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n_days</span><span class="p">))</span>
+    <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">n_days</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">values_ref2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">values_ref2</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">dates</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Creat the observed and reference wells</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating wells with timeseries data&quot;</span><span class="p">)</span>
+<span class="n">obs2</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Obs. well 1&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">obs2</span><span class="o">.</span><span class="n">add_timeseries</span><span class="p">(</span><span class="n">values_obs2</span><span class="p">)</span>
+<span class="n">ref2</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ref. well 1&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ref2</span><span class="o">.</span><span class="n">add_timeseries</span><span class="p">(</span><span class="n">values_ref2</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Timeseries data added to wells&quot;</span><span class="p">)</span> <span class="c1"># &lt;-- This will be logged to the file only </span>
+
+<span class="c1"># Create the model and add the wells</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating a new model&quot;</span><span class="p">)</span>
+<span class="n">model2</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Logging Example Model DEBUG&quot;</span><span class="p">)</span>
+<span class="n">model2</span><span class="o">.</span><span class="n">add_well</span><span class="p">(</span><span class="n">obs2</span><span class="p">)</span>
+<span class="n">model2</span><span class="o">.</span><span class="n">add_well</span><span class="p">(</span><span class="n">ref2</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;The wells have been added to the model&quot;</span><span class="p">)</span> <span class="c1"># &lt;-- This will be logged to the file only </span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Creating wells with timeseries data
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Creating a new model
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now, when we add the wells to the model, we will not see any logging messages in the console, but they will be logged to the file.</p>
+<p>We can now fit the model again.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fit the model</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running the fit method on the model&quot;</span><span class="p">)</span>
+<span class="n">model2</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">obs2</span><span class="p">,</span>
+    <span class="n">ref2</span><span class="p">,</span>
+    <span class="n">offset</span><span class="o">=</span><span class="s2">&quot;0D&quot;</span><span class="p">,</span>
+    <span class="n">tmin</span><span class="o">=</span><span class="n">dates</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">tmax</span><span class="o">=</span><span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="mi">21</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Running the fit method on the model
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fitting model &#39;Logging Example Model DEBUG&#39; using reference well &#39;Ref. well 1&#39; and observation well &#39;Obs. well 1&#39;.
+</pre></div>
+</div>
+<div class="output text_html">
+        <div>
+            <strong>Fit Results: Obs. well 1 ~ Ref. well 1</strong>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align: left">Statistic</th>
+                        <th style="text-align: left">Value</th>
+                        <th style="text-align: left">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>RMSE</td>
+                        <td>0.1670</td>
+                        <td>Root Mean Square Error</td>
+                    </tr>
+                    <tr>
+                        <td>R²</td>
+                        <td>0.8712</td>
+                        <td>Coefficient of Determination</td>
+                    </tr>
+                    <tr>
+                        <td>R-value</td>
+                        <td>0.9334</td>
+                        <td>Correlation Coefficient</td>
+                    </tr>
+                    <tr>
+                        <td>Slope</td>
+                        <td>2.1444</td>
+                        <td>Linear Regression Slope</td>
+                    </tr>
+                    <tr>
+                        <td>Intercept</td>
+                        <td>-14.4441</td>
+                        <td>Linear Regression Intercept</td>
+                    </tr>
+                    <tr>
+                        <td>P-value</td>
+                        <td>0.0000</td>
+                        <td>Statistical Significance</td>
+                    </tr>
+                    <tr>
+                        <td>N</td>
+                        <td>80</td>
+                        <td>Number of Data Points</td>
+                    </tr>
+                    <tr>
+                        <td>Std Error</td>
+                        <td>0.1692</td>
+                        <td>Standard Error</td>
+                    </tr>
+                    <tr>
+                        <td>Confidence</td>
+                        <td>95.0%</td>
+                        <td>Confidence Level</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00<br>
+                Time Offset: 0D<br>
+                Aggregation Method: mean
+            </p>
+        </div>
+        </div></div>
+</div>
+<p>As you can see, not as much will be printed to the console. But if we instead open <code class="docutils literal notranslate"><span class="pre">gwrefpy_debug.log</span></code> file we can see all the detailed logging information.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print the log file content</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;gwrefpy_debug.log&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">log_file</span><span class="p">:</span>
+    <span class="n">log_content</span> <span class="o">=</span> <span class="n">log_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">log_content</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-09-26 12:03:05,620 [INFO] __main__: Creating wells with timeseries data
+2025-09-26 12:03:05,620 [DEBUG] gwrefpy.well: Added timeseries to well Obs. well 1
+2025-09-26 12:03:05,621 [DEBUG] gwrefpy.well: Added timeseries to well Ref. well 1
+2025-09-26 12:03:05,621 [DEBUG] __main__: Timeseries data added to wells
+2025-09-26 12:03:05,621 [INFO] __main__: Creating a new model
+2025-09-26 12:03:05,621 [DEBUG] gwrefpy.model: Well &#39;Obs. well 1&#39; added to model &#39;Logging Example Model DEBUG&#39;.
+2025-09-26 12:03:05,621 [DEBUG] gwrefpy.model: Well &#39;Ref. well 1&#39; added to model &#39;Logging Example Model DEBUG&#39;.
+2025-09-26 12:03:05,621 [DEBUG] __main__: The wells have been added to the model
+2025-09-26 12:03:05,625 [INFO] __main__: Running the fit method on the model
+2025-09-26 12:03:05,626 [DEBUG] gwrefpy.fitbase: Using linear regression method for fitting.
+2025-09-26 12:03:05,630 [DEBUG] gwrefpy.fitbase: Fit completed for model &#39;Logging Example Model DEBUG&#39; with RMSE 0.1670235627371146.
+2025-09-26 12:03:05,630 [INFO] gwrefpy.fitbase: Fitting model &#39;Logging Example Model DEBUG&#39; using reference well &#39;Ref. well 1&#39; and observation well &#39;Obs. well 1&#39;.
+2025-09-26 12:03:05,631 [DEBUG] gwrefpy.model: Fit Results: Obs. well 1 ~ Ref. well 1
+======================================
+Statistic       Value        Description
+--------------------------------------------------
+RMSE            0.1670       Root Mean Square Error
+R²              0.8712       Coefficient of Determination
+R-value         0.9334       Correlation Coefficient
+Slope           2.1444       Linear Regression Slope
+Intercept       -14.4441     Linear Regression Intercept
+P-value         0.0000       Statistical Significance
+N               80           Number of Data Points
+Std Error       0.1692       Standard Error
+Confidence      95.0        % Confidence Level
+
+Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00
+Time Offset: 0D
+Aggregation Method: mean
+</pre></div>
+</div>
+</div>
+</div>
+<p>As you can see, the log file contains detailed information about the program’s execution, module, time, and log level, including messages that are not necessarily printed to the console.</p>
+<p>This concludes this notebook on logging in <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code>. For more information on logging, please refer to the <a class="reference external" href="https://docs.python.org/3/library/logging.html">logging documentation</a> and the API for <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code>’s logging functions <a class="reference external" href="https://andersretznersgu.github.io/gwrefpy/constants.html">here</a>.</p>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="5_io.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Saving and loading models</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../tutorials/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Tutorials</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user_guide/6_logging.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

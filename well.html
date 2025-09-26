@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Well &#8212; GwRefPy</title>
+    <title>Well &#8212; gwrefpy</title>
   
   
   
@@ -33,6 +33,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- So that users can add custom icons -->
   <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -40,16 +41,16 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/documentation_options.js?v=938c9ccc"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'well';</script>
-    <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Constants" href="constants.html" />
+    <link rel="next" title="Utilities and Constants" href="constants.html" />
     <link rel="prev" title="Model" href="model.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -114,8 +115,14 @@
   
   
   
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="gwrefpy - Home"/>
+    <img src="_static/logo.png" class="logo__image only-dark pst-js-only" alt="gwrefpy - Home"/>
   
-    <p class="title logo__title">GwRefPy</p>
   
 </a></div>
     
@@ -130,7 +137,7 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="user_guide.html">
+  <a class="nav-link nav-internal" href="user_guide/index.html">
     User guide
   </a>
 </li>
@@ -151,7 +158,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="about.html">
+  <a class="nav-link nav-internal" href="about/index.html">
     About
   </a>
 </li>
@@ -245,7 +252,7 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="user_guide.html">
+  <a class="nav-link nav-internal" href="user_guide/index.html">
     User guide
   </a>
 </li>
@@ -266,7 +273,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="about.html">
+  <a class="nav-link nav-internal" href="about/index.html">
     About
   </a>
 </li>
@@ -315,10 +322,8 @@
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
-
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Well</a></li>
-<li class="toctree-l1"><a class="reference internal" href="constants.html">Constants</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html">I/O Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constants.html">Utilities and Constants</a></li>
 </ul>
 </div>
 </nav></div>
@@ -387,26 +392,17 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.gwrefpy.well.</span></span><span class="sig-name descname"><span class="pre">Well</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_reference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeseries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/gwrefpy/well.html#Well"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gwrefpy.well.Well" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base class for a well in a groundwater model.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="src.gwrefpy.well.Well.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_reference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeseries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/gwrefpy/well.html#Well.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gwrefpy.well.Well.__init__" title="Link to this definition">#</a></dt>
-<dd><p>Initialize a WellBase object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<em>str</em>) – The name of the well.</p></li>
-<li><p><strong>is_reference</strong> (<em>bool</em>) – <dl class="simple">
-<dt>Indicates if the well is a reference well (True) or an observation</dt><dd><p>well (False).</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>timeseries</strong> (<em>pd.Series</em><em> | </em><em>None</em>) – Supply a pandas Series to associate a time series with the well.</p></li>
-<li><p><strong>model</strong> (<a class="reference internal" href="model.html#src.gwrefpy.model.Model" title="src.gwrefpy.model.Model"><em>Model</em></a><em> | </em><em>None</em>) – Supply a Model instance to associate the well with a groundwater model.</p></li>
+<li><p><strong>is_reference</strong> (<em>bool</em>) – Whether the well is a reference well.</p></li>
+<li><p><strong>timeseries</strong> (<em>pd.Series</em><em>, </em><em>optional</em>) – A pandas Series containing the time series data for the well. The index
+should be a pandas DatetimeIndex and the values should be floats.
+Default is None.</p></li>
 </ul>
 </dd>
 </dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="src.gwrefpy.well.Well.add_timeseries">
 <span class="sig-name descname"><span class="pre">add_timeseries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/gwrefpy/well.html#Well.add_timeseries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gwrefpy.well.Well.add_timeseries" title="Link to this definition">#</a></dt>
@@ -418,10 +414,38 @@
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="src.gwrefpy.well.Well.append_timeseries">
+<span class="sig-name descname"><span class="pre">append_timeseries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_duplicates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/gwrefpy/well.html#Well.append_timeseries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gwrefpy.well.Well.append_timeseries" title="Link to this definition">#</a></dt>
+<dd><p>Append a timeseries to the existing timeseries of the well. This will be
+validated by <cite>_validate_timeseries</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timeseries</strong> (<em>pd.Series</em>) – A pandas Series containing the time series data to append.</p></li>
+<li><p><strong>remove_duplicates</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to remove duplicate timestamps after appending. Default is False
+which will raise an error if duplicates are found.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="src.gwrefpy.well.Well.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#src.gwrefpy.well.Well.name" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#src.gwrefpy.well.Well.name" title="Link to this definition">#</a></dt>
 <dd><p>The name of the well.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.gwrefpy.well.Well.replace_timeseries">
+<span class="sig-name descname"><span class="pre">replace_timeseries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeseries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Series</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/gwrefpy/well.html#Well.replace_timeseries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gwrefpy.well.Well.replace_timeseries" title="Link to this definition">#</a></dt>
+<dd><p>Replace the existing timeseries of the well with a new timeseries. This will be
+validated by <cite>_validate_timeseries</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timeseries</strong> (<em>pd.Series</em>) – A pandas Series containing the new time series data.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -432,31 +456,6 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>**kwargs</strong> (<em>dict</em>) – The attributes to set. The keys should be the names of the attributes and
 the values should be the new values.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="src.gwrefpy.well.Well.to_dict">
-<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/gwrefpy/well.html#Well.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gwrefpy.well.Well.to_dict" title="Link to this definition">#</a></dt>
-<dd><p>Convert the Well object to a dictionary representation.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A dictionary containing the well’s attributes.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="src.gwrefpy.well.Well.unpack_dict">
-<span class="sig-name descname"><span class="pre">unpack_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/src/gwrefpy/well.html#Well.unpack_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gwrefpy.well.Well.unpack_dict" title="Link to this definition">#</a></dt>
-<dd><p>Unpack a dictionary representation to set the Well object’s attributes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – A dictionary containing the well’s attributes.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -489,7 +488,7 @@ the values should be the new values.</p>
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Constants</p>
+        <p class="prev-next-title">Utilities and Constants</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -513,12 +512,11 @@ the values should be the new values.</p>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#src.gwrefpy.well.Well"><code class="docutils literal notranslate"><span class="pre">Well</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.gwrefpy.well.Well.__init__"><code class="docutils literal notranslate"><span class="pre">Well.__init__()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.gwrefpy.well.Well.add_timeseries"><code class="docutils literal notranslate"><span class="pre">Well.add_timeseries()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.gwrefpy.well.Well.append_timeseries"><code class="docutils literal notranslate"><span class="pre">Well.append_timeseries()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.gwrefpy.well.Well.name"><code class="docutils literal notranslate"><span class="pre">Well.name</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.gwrefpy.well.Well.replace_timeseries"><code class="docutils literal notranslate"><span class="pre">Well.replace_timeseries()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.gwrefpy.well.Well.set_kwargs"><code class="docutils literal notranslate"><span class="pre">Well.set_kwargs()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.gwrefpy.well.Well.to_dict"><code class="docutils literal notranslate"><span class="pre">Well.to_dict()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#src.gwrefpy.well.Well.unpack_dict"><code class="docutils literal notranslate"><span class="pre">Well.unpack_dict()</span></code></a></li>
 </ul>
 </li>
 </ul>

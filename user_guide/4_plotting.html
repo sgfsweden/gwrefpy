@@ -1,0 +1,663 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Plotting with gwrefpy 📊 &#8212; gwrefpy</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/4_plotting';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Saving and loading models" href="5_io.html" />
+    <link rel="prev" title="Time offsets" href="3_time_offsets.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="gwrefpy - Home"/>
+    <img src="../_static/logo.png" class="logo__image only-dark pst-js-only" alt="gwrefpy - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../about/index.html">
+    About
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/andersretznerSGU/gwrefpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apidocs.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../about/index.html">
+    About
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/andersretznerSGU/gwrefpy" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="1_intro_gwrefpy.html">Intro to <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code></a></li>
+
+
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="2_fitting_wells.html">Fitting wells</a></li>
+<li class="toctree-l1"><a class="reference internal" href="3_time_offsets.html">Time offsets</a></li>
+
+
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Plotting with gwrefpy 📊</a></li>
+<li class="toctree-l1"><a class="reference internal" href="5_io.html">Saving and loading models</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="6_logging.html">Logging 📄</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Plotting with gwrefpy 📊</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="plotting-with-gwrefpy">
+<h1>Plotting with gwrefpy 📊<a class="headerlink" href="#plotting-with-gwrefpy" title="Link to this heading">#</a></h1>
+<p>In this tutorial we will explore how to plot with the <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> package.</p>
+<p>This notebook can be downloaded from the source code <a class="reference external" href="https://github.com/andersretznerSGU/gwrefpy/blob/main/docs/turorials/plotting.ipynb">here</a>.</p>
+<p>The plotting capabilities are built into the <code class="docutils literal notranslate"><span class="pre">Model</span></code> class. This means that once you have created a <code class="docutils literal notranslate"><span class="pre">Model</span></code> object, you can use the plotting methods to visualize the data and fits. By default the plots will be unformated matplotlib plots, but <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> has several built-in plot styles and color themes that can be used to change the appearance of the plots.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you are not within a Jupyter notebook, you can use the <code class="docutils literal notranslate"><span class="pre">model.show_plots()</span></code> method to show the plots in a separate window.</p>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">gwrefpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gr</span>
+<span class="n">gr</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="s2">&quot;ERROR&quot;</span><span class="p">)</span>  <span class="c1"># Set log level to ERROR to reduce output</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s2">&quot;small_example.gwref&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>This example data contains 4 wells and 2 fits. We can see this by printing the model object.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Model(name=&#39;Small Example&#39;, wells=4, fits=2)
+</pre></div>
+</div>
+</div>
+</div>
+<section id="plotting-well-timeseries-data">
+<h2>Plotting well timeseries data 📈<a class="headerlink" href="#plotting-well-timeseries-data" title="Link to this heading">#</a></h2>
+<p>Now we can plot the data. We start by plotting all of the wells in the same figure.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you append <code class="docutils literal notranslate"><span class="pre">_</span> <span class="pre">=</span></code> before the plotting function, it will suppress the output of the plotting function and only show the plot.</p>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_wells</span><span class="p">(</span><span class="n">plot_style</span><span class="o">=</span><span class="s2">&quot;fancy&quot;</span><span class="p">,</span> <span class="n">color_style</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/9a069f31cebac71315aa041e5672f0be2afa11dc816b773f96f90dcf70a17170.png" src="../_images/9a069f31cebac71315aa041e5672f0be2afa11dc816b773f96f90dcf70a17170.png" />
+</div>
+</div>
+<p>We can see that the labels for the two reference wells are overlapping. We can fix this by simply adding an offset to the text labels. Here we add a small offset to the two reference wells.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The offsets are in the same units as the y-axis, so in this case meters.</p>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">offsets</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;46LOGW&quot;</span><span class="p">:</span><span class="o">-</span><span class="mf">.2</span><span class="p">,</span>
+    <span class="s2">&quot;45LOGW&quot;</span><span class="p">:</span><span class="mf">.2</span>
+<span class="p">}</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_wells</span><span class="p">(</span><span class="n">plot_style</span><span class="o">=</span><span class="s2">&quot;fancy&quot;</span><span class="p">,</span> <span class="n">color_style</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="n">offset_text</span><span class="o">=</span><span class="n">offsets</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/eb8c5272b91ebf3e0c863041106285b117a22659ec9960f1370d35c3981316d6.png" src="../_images/eb8c5272b91ebf3e0c863041106285b117a22659ec9960f1370d35c3981316d6.png" />
+</div>
+</div>
+<p>We can also plot wells by passing them as a list. Here we plot only the two reference wells in the model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_wells</span><span class="p">(</span><span class="n">wells</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">ref_wells</span><span class="p">,</span> <span class="n">plot_style</span><span class="o">=</span><span class="s2">&quot;fancy&quot;</span><span class="p">,</span> <span class="n">color_style</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/f79fbdfc8e5c618015d988acae38ffab963bc52deab28bb3a9e0fca4043e70c5.png" src="../_images/f79fbdfc8e5c618015d988acae38ffab963bc52deab28bb3a9e0fca4043e70c5.png" />
+</div>
+</div>
+</section>
+<section id="plotting-fitted-data">
+<h2>Plotting fitted data 📉<a class="headerlink" href="#plotting-fitted-data" title="Link to this heading">#</a></h2>
+<p>Now we can plot the fits. We can plot all of the fits in the model by simply calling the <code class="docutils literal notranslate"><span class="pre">plot_fits</span></code> method. The filled areas represent the prediction interval of each fit and the red circles mark outliers.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_fits</span><span class="p">(</span><span class="n">plot_style</span><span class="o">=</span><span class="s2">&quot;fancy&quot;</span><span class="p">,</span> <span class="n">color_style</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="n">offset_text</span><span class="o">=</span><span class="n">offsets</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/637b4eb2535031964c5f78c1248a7c207574689b777de1d716d50d861982960b.png" src="../_images/637b4eb2535031964c5f78c1248a7c207574689b777de1d716d50d861982960b.png" />
+</div>
+</div>
+<p>We can also plot them individually by passing only a sinlge fit to the function or by passing a list of fits and seeting the <code class="docutils literal notranslate"><span class="pre">plot_Seperately</span></code> argument to <code class="docutils literal notranslate"><span class="pre">True</span></code>. We can also show the initiation period by setting the <code class="docutils literal notranslate"><span class="pre">show_initiation</span></code> argument to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_fits</span><span class="p">(</span><span class="n">plot_style</span><span class="o">=</span><span class="s2">&quot;fancy&quot;</span><span class="p">,</span> <span class="n">color_style</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="n">plot_separately</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_initiation_period</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/e0bcea600dcd80b3f9d6e1bab697757bbc7ed238a0984b3340db5a47f1b9e98c.png" src="../_images/e0bcea600dcd80b3f9d6e1bab697757bbc7ed238a0984b3340db5a47f1b9e98c.png" />
+<img alt="../_images/eefe92a6d6e80d826de93a72347371244d6a11d8eddd47547e733a1235a05fc1.png" src="../_images/eefe92a6d6e80d826de93a72347371244d6a11d8eddd47547e733a1235a05fc1.png" />
+</div>
+</div>
+</section>
+<section id="color-style">
+<h2>Color style 🎨<a class="headerlink" href="#color-style" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> has several built-in color styles that can be used to change the appearance of the plots.</p>
+<p>The default color theme is <code class="docutils literal notranslate"><span class="pre">None</span></code>, which uses the default matplotlib colors. You can set the color theme by passing the <code class="docutils literal notranslate"><span class="pre">color_style</span></code> argument to the plotting functions. The available color styles are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'color'</span></code>: A color theme with distinct colors for each well and fit.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'monochrome'</span></code>: A monochrome color theme with shades of gray.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">None</span></code>: The default matplotlib colors, this is the default.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_fits</span><span class="p">(</span><span class="n">fits</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">fits</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color_style</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="n">plot_style</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show_initiation_period</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_fits</span><span class="p">(</span><span class="n">fits</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">fits</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color_style</span><span class="o">=</span><span class="s1">&#39;monochrome&#39;</span><span class="p">,</span> <span class="n">plot_style</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show_initiation_period</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_fits</span><span class="p">(</span><span class="n">fits</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">fits</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color_style</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot_style</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show_initiation_period</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/a43835369c48c562ad87deba5c780e8bd12b502fa55cb54fa4fea5d3bbfcc2cc.png" src="../_images/a43835369c48c562ad87deba5c780e8bd12b502fa55cb54fa4fea5d3bbfcc2cc.png" />
+<img alt="../_images/1fc74a8a86cb2a8cd3f3362e94fdfff9534f6120d5e79dde7ada38b4994acbb0.png" src="../_images/1fc74a8a86cb2a8cd3f3362e94fdfff9534f6120d5e79dde7ada38b4994acbb0.png" />
+<img alt="../_images/9604d8c3871630971d50087f96fa346f86b5eea07bfc03ac23ff5fe2b153ae2b.png" src="../_images/9604d8c3871630971d50087f96fa346f86b5eea07bfc03ac23ff5fe2b153ae2b.png" />
+</div>
+</div>
+</section>
+<section id="plot-style">
+<h2>Plot style 🎨<a class="headerlink" href="#plot-style" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> has several built-in plot styles that can be used to change the appearance of the plots. The available plot styles are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'fancy'</span></code>: A fancy plot style with grid lines and filled areas for the prediction intervals. This is the default.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'scientific'</span></code>: A scientific plot style with no grid lines and no filled areas for the prediction intervals.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">None</span></code>: The default matplotlib style, this is the default.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_fits</span><span class="p">(</span><span class="n">fits</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">fits</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color_style</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="n">plot_style</span><span class="o">=</span><span class="s1">&#39;fancy&#39;</span><span class="p">,</span> <span class="n">show_initiation_period</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_fits</span><span class="p">(</span><span class="n">fits</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">fits</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color_style</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="n">plot_style</span><span class="o">=</span><span class="s1">&#39;scientific&#39;</span><span class="p">,</span> <span class="n">show_initiation_period</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">plot_fits</span><span class="p">(</span><span class="n">fits</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">fits</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color_style</span><span class="o">=</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="n">plot_style</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show_initiation_period</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/e0bcea600dcd80b3f9d6e1bab697757bbc7ed238a0984b3340db5a47f1b9e98c.png" src="../_images/e0bcea600dcd80b3f9d6e1bab697757bbc7ed238a0984b3340db5a47f1b9e98c.png" />
+<img alt="../_images/d548b98ee65a6182a6f1668389fdaa380c34bbc612ae70eb397a825ca6223f2f.png" src="../_images/d548b98ee65a6182a6f1668389fdaa380c34bbc612ae70eb397a825ca6223f2f.png" />
+<img alt="../_images/a43835369c48c562ad87deba5c780e8bd12b502fa55cb54fa4fea5d3bbfcc2cc.png" src="../_images/a43835369c48c562ad87deba5c780e8bd12b502fa55cb54fa4fea5d3bbfcc2cc.png" />
+</div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="3_time_offsets.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Time offsets</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="5_io.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Saving and loading models</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-well-timeseries-data">Plotting well timeseries data 📈</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting-fitted-data">Plotting fitted data 📉</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#color-style">Color style 🎨</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plot-style">Plot style 🎨</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user_guide/4_plotting.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
