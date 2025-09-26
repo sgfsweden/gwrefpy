@@ -543,7 +543,7 @@ class Plotter:
                 logger.info(f"Plotting fit: {fit.obs_well.name} ~ {fit.ref_well.name}")
                 self._set_plot_attributes(fit.obs_well)
                 self._set_plot_attributes(fit.ref_well)
-                self._plot_well_scatter(fit.obs_well, fit.ref_well, ax)
+                self._plot_well_scatter(fit, ax)
                 if plot_fit_period:
                     self._plot_well_scatter_fit_period(fit, ax)
                 self._plot_fitmethod(fit, ax)
@@ -573,7 +573,7 @@ class Plotter:
                 logger.info(f"Plotting fit: {fit.obs_well.name} ~ {fit.ref_well.name}")
                 self._set_plot_attributes(fit.obs_well)
                 self._set_plot_attributes(fit.ref_well)
-                self._plot_well_scatter(fit.obs_well, fit.ref_well, ax)
+                self._plot_well_scatter(fit, ax)
                 if plot_fit_period:
                     self._plot_well_scatter_fit_period(fit, ax)
                 self._plot_fitmethod(fit, ax)
