@@ -11,12 +11,6 @@ This section contains step-by-step tutorials to help you get started with gwrefp
 
         A quick introduction to the main features of the package.
 
-    .. grid-item-card:: Plotting with gwrefpy
-        :link: plotting
-        :link-type: doc
-
-        How to create various plots with gwrefpy.
-
     .. grid-item-card:: Live data
         :link: livedata
         :link-type: doc

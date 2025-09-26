@@ -17,6 +17,7 @@ from .constants import (
     tifont,
 )
 from .fitresults import FitResultData, LinRegResult
+from .methods.timeseries import groupby_time_equivalents
 from .well import Well
 
 logger = logging.getLogger(__name__)
@@ -502,7 +503,7 @@ class Plotter:
                 logger.debug(f"Plotting fit: {fit.obs_well.name} ~ {fit.ref_well.name}")
                 self._set_plot_attributes(fit.obs_well)
                 self._set_plot_attributes(fit.ref_well)
-                self._plot_well_scatter(fit.obs_well, fit.ref_well, ax)
+                self._plot_well_scatter(fit, ax)
                 if plot_fit_period:
                     self._plot_well_scatter_fit_period(fit, ax)
                 self._plot_fitmethod(fit, ax)
@@ -662,13 +663,19 @@ class Plotter:
                 **lfont,
             )
 
-    def _plot_well_scatter(self, obs_well, ref_well, ax):
+    def _plot_well_scatter(self, fit, ax):
         """Plot the time series data for a single well as a scatter plot."""
+        ref, obs, _ = groupby_time_equivalents(
+            fit.obs_well.timeseries,
+            fit.ref_well.timeseries,
+            offset=fit.offset,
+            aggregation=fit.aggregation,
+        )
         ax.scatter(
-            ref_well.timeseries.values,
-            obs_well.timeseries.values,
-            label=f"Observed data {obs_well.name} ~ {ref_well.name}",
-            color=ref_well.color,
+            ref.values,
+            obs.values,
+            label=f"Observed data {fit.obs_well.name} ~ {fit.ref_well.name}",
+            color=fit.ref_well.color,
             alpha=1,
             marker="o",
             s=6,  # markersize is in points, s is in points^2
@@ -676,14 +683,15 @@ class Plotter:
 
     def _plot_well_scatter_fit_period(self, fit, ax):
         """Plot the time series data for a single well as a scatter plot."""
-        tmin = fit.tmin
-        tmax = fit.tmax
-        # Plot the data within the fit period only
-        fit_obs_data = fit.obs_well.timeseries.loc[tmin:tmax]
-        fit_ref_data = fit.ref_well.timeseries.loc[tmin:tmax]
+        ref, obs, _ = groupby_time_equivalents(
+            fit.obs_well.timeseries.loc[fit.tmin : fit.tmax],
+            fit.ref_well.timeseries.loc[fit.tmin : fit.tmax],
+            offset=fit.offset,
+            aggregation=fit.aggregation,
+        )
         ax.scatter(
-            fit_ref_data.values,
-            fit_obs_data.values,
+            ref.values,
+            obs.values,
             label=f"Training data {fit.obs_well.name} ~ {fit.ref_well.name}",
             color=fit.obs_well.color,
             alpha=1,

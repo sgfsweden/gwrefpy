@@ -28,7 +28,7 @@ If you already have the package installed, make sure to update it to the latest 
    :titlesonly:
    :hidden:
 
-   1_models_wells.ipynb
+   1_intro_gwrefpy.ipynb
    2_fitting_wells.ipynb
    3_time_offsets.ipynb
    4_plotting.ipynb
