@@ -123,7 +123,19 @@ class Well:
                 f"`append_timeseries` to add more data or overwrite it using "
                 f"`replace_timeseries`."
             )
-        self.timeseries = timeseries
+
+        # Check for duplicate timestamps
+        if timeseries.index.has_duplicates:
+            logger.error(
+                f"Timeseries for well {self.name} contains duplicate timestamps."
+            )
+            raise ValueError(
+                f"Timeseries for well {self.name} contains duplicate timestamps."
+            )
+
+        self.timeseries = (
+            timeseries.sort_index()
+        )  # Ensure timeseries is sorted by index
         self.timeseries.name = self.name
         logger.debug(f"Added timeseries to well {self.name}")
 
