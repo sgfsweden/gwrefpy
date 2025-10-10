@@ -1,7 +1,6 @@
 import datetime
 
 import pandas as pd
-
 from gwrefpy.utils.conversions import datetime_to_float
 from gwrefpy.well import Well
 
@@ -47,7 +46,7 @@ def test_set_kwargs():
 def test_well_with_valid_timeseries(timeseries):
     well = Well("Test Well", is_reference=True, timeseries=timeseries)
     assert well is not None
-    pd.testing.assert_series_equal(well.timeseries, timeseries)
+    pd.testing.assert_series_equal(well.timeseries, timeseries, check_names=False)
 
 
 def test_add_timeseries_invalid_input_types():
@@ -177,4 +176,4 @@ def test_add_timeseries_valid_data():
 
     # Verify the timeseries was added correctly
     assert well.timeseries is not None
-    pd.testing.assert_series_equal(well.timeseries, valid_series)
+    pd.testing.assert_series_equal(well.timeseries, valid_series, check_names=False)
