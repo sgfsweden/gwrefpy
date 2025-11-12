@@ -16,7 +16,7 @@ from .constants import (
     tfont,
     tifont,
 )
-from .fitresults import FitResultData, LinRegResult
+from .fitresults import FitResultData, LinRegResult, NPolyFitResult
 from .methods.timeseries import groupby_time_equivalents
 from .well import Well
 
@@ -739,6 +739,23 @@ class Plotter:
                 label=f"RMSE = {fit.rmse:.4f}\n"
                 f"R$^2$ = {fm.rvalue**2:.4f}\n"
                 f"y = {slope:.4f}x + {intercept:.4f}",
+            )
+        elif isinstance(fm, NPolyFitResult):
+            coeffs = fm.coefficients
+            x = fit.ref_well.timeseries.values
+            x = np.linspace(np.min(x), np.max(x), 100)
+            y = np.polyval(coeffs, x)
+            ax.plot(x, y, color="black", linestyle=":", label="Polynomial fit")
+            eq_terms = [f"{c:.4f}x^{i}" for i, c in enumerate(coeffs) if i > 0]
+            eq_terms.insert(0, f"{coeffs[0]:.4f}")
+            equation = " + ".join(eq_terms)
+            ax.plot(
+                x[0],
+                y[0],
+                color="white",
+                linestyle=None,
+                marker=None,
+                label=f"RMSE = {fit.rmse:.4f}\n" f"y = {equation}",
             )
         else:
             logger.error("Fit method not recognized for plotting.")

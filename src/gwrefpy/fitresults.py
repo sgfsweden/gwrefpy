@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from .utils.conversions import datetime_to_float
@@ -52,6 +53,27 @@ class LinRegResult:
         )
 
 
+class NPolyFitResult:
+    """
+    This class contains the results of a n-degree polynomial fit.
+
+    Parameters
+    ----------
+    coefficients : np.ndarray[float]
+        The coefficients of the polynomial, ordered from highest degree to lowest.
+    """
+
+    def __init__(self, coefficients: np.array):
+        self.coefficients = coefficients
+        self.degree = len(coefficients) - 1
+
+    def __str__(self):
+        return f"NPolyFitResult(coefficients={self.coefficients})"
+
+    def __repr__(self):
+        return f"NPolyFitResult(coefficients={self.coefficients})"
+
+
 class FitResultData:
     """
     This class contains all information that is required to reproduce a fit between
@@ -67,7 +89,7 @@ class FitResultData:
         The root mean square error of the fit.
     n : int
         The number of data points used in the fit.
-    fit_method : LinRegResult
+    fit_method : LinRegResult | NPolyFitResult
         The method used for fitting (e.g., linreg).
     t_a : float
         The t-value for the given confidence level and degrees of freedom.
@@ -94,7 +116,7 @@ class FitResultData:
         ref_well: Well,
         rmse: float,
         n: int,
-        fit_method: LinRegResult,
+        fit_method: LinRegResult | NPolyFitResult,
         t_a: float,
         stderr: float,
         pred_const: float,
@@ -125,22 +147,41 @@ class FitResultData:
         """Return a nicely formatted table representation of the fit results."""
         # Header
         header = f"Fit Results: {self.obs_well.name} ~ {self.ref_well.name}"
-        separator = "=" * len(header)
+        fit_method = f"{self.fit_method.__class__.__name__}"
+        separator = "=" * max([len(header), len(fit_method)])
 
         # Build the table content
+        if isinstance(self.fit_method, LinRegResult):
+            fit_lines = [
+                f"{'R²':<15} {self.fit_method.rvalue ** 2:<12.4f} "
+                f"Coefficient of Determination",
+                f"{'R-value':<15} {self.fit_method.rvalue:<12.4f} Correlation "
+                f"Coefficient",
+                f"{'Slope':<15} {self.fit_method.slope:<12.4f} Linear Regression Slope",
+                f"{'Intercept':<15} {self.fit_method.intercept:<12.4f} "
+                f"Linear Regression Intercept",
+                f"{'P-value':<15} {self.fit_method.pvalue:<12.4f} Statistical "
+                f"Significance",
+            ]
+        elif isinstance(self.fit_method, NPolyFitResult):
+            fit_lines = [
+                f"{'Degree':<15} {self.fit_method.degree:<12d} Degree of Polynomial "
+                f"Fit",
+                *[
+                    f"{'Coefficient ' + str(i):<15} {coef:<12.4f} Polynomial "
+                    f"Coefficient"
+                    for i, coef in enumerate(self.fit_method.coefficients)
+                ],
+            ]
+        else:
+            fit_lines = []
         lines = [
             header,
             separator,
             f"{'Statistic':<15} {'Value':<12} {'Description'}",
             "-" * 50,
             f"{'RMSE':<15} {self.rmse:<12.4f} Root Mean Square Error",
-            f"{'R²':<15} {self.fit_method.rvalue**2:<12.4f} "
-            f"Coefficient of Determination",
-            f"{'R-value':<15} {self.fit_method.rvalue:<12.4f} Correlation Coefficient",
-            f"{'Slope':<15} {self.fit_method.slope:<12.4f} Linear Regression Slope",
-            f"{'Intercept':<15} {self.fit_method.intercept:<12.4f} "
-            f"Linear Regression Intercept",
-            f"{'P-value':<15} {self.fit_method.pvalue:<12.4f} Statistical Significance",
+            *fit_lines,
             f"{'N':<15} {self.n:<12d} Number of Data Points",
             f"{'Std Error':<15} {self.stderr:<12.4f} Standard Error",
             f"{'Confidence':<15} {self.p * 100:<12.1f}% Confidence Level",
@@ -235,8 +276,7 @@ class FitResultData:
 
         Parameters
         ----------
-        ref_series : pd.Series
-            The reference time series data.
+
 
         Returns
         -------
@@ -246,6 +286,10 @@ class FitResultData:
         if isinstance(self.fit_method, LinRegResult):
             return self.ref_well.timeseries.apply(
                 lambda x: self.fit_method.slope * x + self.fit_method.intercept
+            )
+        elif isinstance(self.fit_method, NPolyFitResult):
+            return self.ref_well.timeseries.apply(
+                lambda x: np.polyval(self.fit_method.coefficients, x)
             )
         else:
             raise NotImplementedError(
@@ -299,6 +343,13 @@ class FitResultData:
             The outlier values based on the fit method and RMSE.
         """
         if isinstance(self.fit_method, LinRegResult):
+            fitted_values = self.fit_timeseries()
+            outliers = pd.Series(
+                abs(self.obs_well.timeseries - fitted_values) > self.pred_const,
+                index=self.obs_well.timeseries.index,
+            )
+            return outliers
+        elif isinstance(self.fit_method, NPolyFitResult):
             fitted_values = self.fit_timeseries()
             outliers = pd.Series(
                 abs(self.obs_well.timeseries - fitted_values) > self.pred_const,
@@ -361,11 +412,15 @@ class FitResultData:
                 "pvalue": self.fit_method.pvalue,
                 "stderr": self.fit_method.stderr,
             }
+        elif dict_representation["fit_method"] == "NPolyFitResult":
+            dict_representation["NPolyFitResult"] = {
+                "coefficients": self.fit_method.coefficients.tolist(),
+            }
 
         return dict_representation
 
 
-def _unpack_dict_fit_method(data: dict) -> LinRegResult:
+def _unpack_dict_fit_method(data: dict) -> LinRegResult | NPolyFitResult:
     """
     Unpack a dictionary representation of a fit method into a LinRegResult object.
 
@@ -376,8 +431,8 @@ def _unpack_dict_fit_method(data: dict) -> LinRegResult:
 
     Returns
     -------
-    LinRegResult
-        The unpacked LinRegResult object.
+    LinRegResult | NPolyFitResult
+        The unpacked fitting method object.
     """
     fit_method_name = data.get("fit_method", None)
     if fit_method_name == "LinRegResult":
@@ -388,6 +443,11 @@ def _unpack_dict_fit_method(data: dict) -> LinRegResult:
             rvalue=linreg_data.get("rvalue", 0.0),
             pvalue=linreg_data.get("pvalue", 0.0),
             stderr=linreg_data.get("stderr", 0.0),
+        )
+    elif fit_method_name == "NPolyFitResult":
+        npoly_data = data.get("NPolyFitResult", {})
+        return NPolyFitResult(
+            coefficients=np.array(npoly_data.get("coefficients", [])),
         )
     else:
         raise ValueError(f"Unsupported fit method: {fit_method_name}")
