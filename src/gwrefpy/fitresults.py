@@ -60,7 +60,7 @@ class NPolyFitResult:
     Parameters
     ----------
     coefficients : np.ndarray[float]
-        The coefficients of the polynomial, ordered from highest degree to lowest.
+        The coefficients of the polynomial.
     """
 
     def __init__(self, coefficients: np.array):
@@ -68,10 +68,10 @@ class NPolyFitResult:
         self.degree = len(coefficients) - 1
 
     def __str__(self):
-        return f"NPolyFitResult(coefficients={self.coefficients})"
+        return f"NPolyFitResult(degree={self.degree}, coefficients={self.coefficients})"
 
     def __repr__(self):
-        return f"NPolyFitResult(coefficients={self.coefficients})"
+        return f"NPolyFitResult(degree={self.degree}, coefficients={self.coefficients})"
 
 
 class FitResultData:
@@ -153,7 +153,7 @@ class FitResultData:
         # Build the table content
         if isinstance(self.fit_method, LinRegResult):
             fit_lines = [
-                f"{'R²':<15} {self.fit_method.rvalue ** 2:<12.4f} "
+                f"{'R²':<15} {self.fit_method.rvalue**2:<12.4f} "
                 f"Coefficient of Determination",
                 f"{'R-value':<15} {self.fit_method.rvalue:<12.4f} Correlation "
                 f"Coefficient",
@@ -195,79 +195,136 @@ class FitResultData:
 
     def _repr_html_(self):
         """Return HTML representation for Jupyter notebooks."""
-        return f"""
-        <div>
-            <strong>Fit Results: {self.obs_well.name} ~ {self.ref_well.name}</strong>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="text-align: left">Statistic</th>
-                        <th style="text-align: left">Value</th>
-                        <th style="text-align: left">Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>RMSE</td>
-                        <td>{self.rmse:.4f}</td>
-                        <td>Root Mean Square Error</td>
-                    </tr>
-                    <tr>
-                        <td>R²</td>
-                        <td>{self.fit_method.rvalue**2:.4f}</td>
-                        <td>Coefficient of Determination</td>
-                    </tr>
-                    <tr>
-                        <td>R-value</td>
-                        <td>{self.fit_method.rvalue:.4f}</td>
-                        <td>Correlation Coefficient</td>
-                    </tr>
-                    <tr>
-                        <td>Slope</td>
-                        <td>{self.fit_method.slope:.4f}</td>
-                        <td>Linear Regression Slope</td>
-                    </tr>
-                    <tr>
-                        <td>Intercept</td>
-                        <td>{self.fit_method.intercept:.4f}</td>
-                        <td>Linear Regression Intercept</td>
-                    </tr>
-                    <tr>
-                        <td>P-value</td>
-                        <td>{self.fit_method.pvalue:.4f}</td>
-                        <td>Statistical Significance</td>
-                    </tr>
-                    <tr>
-                        <td>N</td>
-                        <td>{self.n}</td>
-                        <td>Number of Data Points</td>
-                    </tr>
-                    <tr>
-                        <td>Std Error</td>
-                        <td>{self.stderr:.4f}</td>
-                        <td>Standard Error</td>
-                    </tr>
-                    <tr>
-                        <td>Confidence</td>
-                        <td>{self.p * 100:.1f}%</td>
-                        <td>Confidence Level</td>
-                    </tr>
-                </tbody>
-            </table>
-            <p>
-                Calibration Period: {self.tmin} to {self.tmax}<br>
-                Time Offset: {self.offset}<br>
-                Aggregation Method: {self.aggregation}
-            </p>
-        </div>
+        if isinstance(self.fit_method, LinRegResult):
+            return f"""
+            <div>
+                <strong>Fit Results: {self.obs_well.name} ~
+                        {self.ref_well.name}</strong>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align: left">Statistic</th>
+                            <th style="text-align: left">Value</th>
+                            <th style="text-align: left">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>RMSE</td>
+                            <td>{self.rmse:.4f}</td>
+                            <td>Root Mean Square Error</td>
+                        </tr>
+                        <tr>
+                            <td>R²</td>
+                            <td>{self.fit_method.rvalue**2:.4f}</td>
+                            <td>Coefficient of Determination</td>
+                        </tr>
+                        <tr>
+                            <td>R-value</td>
+                            <td>{self.fit_method.rvalue:.4f}</td>
+                            <td>Correlation Coefficient</td>
+                        </tr>
+                        <tr>
+                            <td>Slope</td>
+                            <td>{self.fit_method.slope:.4f}</td>
+                            <td>Linear Regression Slope</td>
+                        </tr>
+                        <tr>
+                            <td>Intercept</td>
+                            <td>{self.fit_method.intercept:.4f}</td>
+                            <td>Linear Regression Intercept</td>
+                        </tr>
+                        <tr>
+                            <td>P-value</td>
+                            <td>{self.fit_method.pvalue:.4f}</td>
+                            <td>Statistical Significance</td>
+                        </tr>
+                        <tr>
+                            <td>N</td>
+                            <td>{self.n}</td>
+                            <td>Number of Data Points</td>
+                        </tr>
+                        <tr>
+                            <td>Std Error</td>
+                            <td>{self.stderr:.4f}</td>
+                            <td>Standard Error</td>
+                        </tr>
+                        <tr>
+                            <td>Confidence</td>
+                            <td>{self.p * 100:.1f}%</td>
+                            <td>Confidence Level</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>
+                    Calibration Period: {self.tmin} to {self.tmax}<br>
+                    Time Offset: {self.offset}<br>
+                    Aggregation Method: {self.aggregation}
+                </p>
+            </div>
         """
+        elif isinstance(self.fit_method, NPolyFitResult):
+            return f"""
+                        <div>
+                            <strong>Fit Results: {self.obs_well.name} ~
+                                    {self.ref_well.name}</strong>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left">Statistic</th>
+                                        <th style="text-align: left">Value</th>
+                                        <th style="text-align: left">Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>RMSE</td>
+                                        <td>{self.rmse:.4f}</td>
+                                        <td>Root Mean Square Error</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Degree</td>
+                                        <td>{self.fit_method.degree}</td>
+                                        <td>Degree of Polynomial Fit</td>
+                                    </tr>
+                                    {"".join([f"<tr><td>Coefficient {i}</td>"
+                                              f"<td>{coef:.4f}</td>"
+                                              f"<td>Polynomial Coefficient</td>"
+                                              f"</tr>" for i, coef in
+                                              enumerate(self.fit_method.coefficients)])}
+                                    <tr>
+                                        <td>N</td>
+                                        <td>{self.n}</td>
+                                        <td>Number of Data Points</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Std Error</td>
+                                        <td>{self.stderr:.4f}</td>
+                                        <td>Standard Error</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Confidence</td>
+                                        <td>{self.p * 100:.1f}%</td>
+                                        <td>Confidence Level</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p>
+                                Calibration Period: {self.tmin} to {self.tmax}<br>
+                                Time Offset: {self.offset}<br>
+                                Aggregation Method: {self.aggregation}
+                            </p>
+                        </div>
+                    """
+        else:
+            return "<div><strong>No fit method available.</strong></div>"
 
     def __repr__(self):
         """Return a concise representation for debugging."""
         return (
             f"FitResultData(ref_well='{self.ref_well.name}', "
             f"obs_well='{self.obs_well.name}', "
-            f"rmse={self.rmse:.4f}, r²={self.fit_method.rvalue**2:.4f}, n={self.n})"
+            f"rmse={self.rmse:.4f}, n={self.n})"
         )
 
     def fit_timeseries(self) -> pd.Series:

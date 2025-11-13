@@ -3,6 +3,7 @@ from typing import Literal
 
 import pandas as pd
 
+from . import LinRegResult, NPolyFitResult
 from .fitresults import FitResultData
 from .methods.linregressfit import linregressfit
 from .methods.npolyfit import npolyfit
@@ -51,9 +52,9 @@ class FitBase:
             equivalents (default is "mean").
         p : float, optional
             The confidence level for the fit (default is 0.95).
-        method : Literal["linearregression"]
+        method : Literal["linearregression", "npolyfit"]
             Method with which to perform regression. Currently only supports
-            linear regression.
+            linear regression and N-th degree polynomial fit.
         tmin: pd.Timestamp | str | None = None
             Minimum time for calibration period.
         tmax: pd.Timestamp | str | None = None
@@ -131,7 +132,7 @@ class FitBase:
         obs_well: Well,
         ref_well: Well,
         offset: pd.DateOffset | pd.Timedelta | str,
-        p: float,
+        p: float = 0.95,
         method: Literal["linearregression", "npolyfit"] = "linearregression",
         tmin: pd.Timestamp | str | None = None,
         tmax: pd.Timestamp | str | None = None,
@@ -276,7 +277,9 @@ class FitBase:
             )
         return min(local_fits, key=lambda x: x.rmse)
 
-    def get_fits(self, well: Well | str) -> list[FitResultData] | FitResultData | None:
+    def get_fits(
+        self, well: Well | str, method: str | None = None
+    ) -> list[FitResultData] | FitResultData | None:
         """
         Get all fit results involving a specific well.
 
@@ -284,6 +287,9 @@ class FitBase:
         ----------
         well : Well | str
             The well to check.
+        method : str | None, optional
+            The fitting method to filter by (default is None, which returns all
+            fits involving the well). Options are "linearregression" and "npolyfit".
 
         Returns
         -------
@@ -300,6 +306,16 @@ class FitBase:
             raise TypeError("Parameter 'well' must be a Well instance or a string.")
 
         fit_list = [fit for fit in self.fits if fit.has_well(target_well)]
+
+        if method == "linearregression":
+            fit_list = [
+                fit for fit in fit_list if isinstance(fit.fit_method, LinRegResult)
+            ]
+        elif method == "npolyfit":
+            fit_list = [
+                fit for fit in fit_list if isinstance(fit.fit_method, NPolyFitResult)
+            ]
+
         return (
             fit_list
             if len(fit_list) > 1

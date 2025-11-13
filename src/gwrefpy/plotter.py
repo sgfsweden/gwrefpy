@@ -746,8 +746,13 @@ class Plotter:
             x = np.linspace(np.min(x), np.max(x), 100)
             y = np.polyval(coeffs, x)
             ax.plot(x, y, color="black", linestyle=":", label="Polynomial fit")
-            eq_terms = [f"{c:.4f}x^{i}" for i, c in enumerate(coeffs) if i > 0]
-            eq_terms.insert(0, f"{coeffs[0]:.4f}")
+            if len(coeffs) > 2:
+                eq_terms = [f"{c:.4f}x^{i}" for i, c in enumerate(coeffs) if i > 0][:2]
+                eq_terms.insert(0, f"{coeffs[0]:.4f}")
+                eq_terms.append("...")
+            else:
+                eq_terms = [f"{c:.4f}x^{i}" for i, c in enumerate(coeffs) if i > 0]
+                eq_terms.insert(0, f"{coeffs[0]:.4f}")
             equation = " + ".join(eq_terms)
             ax.plot(
                 x[0],
@@ -755,7 +760,7 @@ class Plotter:
                 color="white",
                 linestyle=None,
                 marker=None,
-                label=f"RMSE = {fit.rmse:.4f}\n" f"y = {equation}",
+                label=f"RMSE = {fit.rmse:.4f}\ny = {equation}",
             )
         else:
             logger.error("Fit method not recognized for plotting.")
