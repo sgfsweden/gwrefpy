@@ -3,8 +3,7 @@ from typing import Literal
 
 import pandas as pd
 
-from . import LinRegResult, NPolyFitResult
-from .fitresults import FitResultData
+from .fitresults import FitResultData, LinRegResult, NPolyFitResult
 from .methods.linregressfit import linregressfit
 from .methods.npolyfit import npolyfit
 from .well import Well
