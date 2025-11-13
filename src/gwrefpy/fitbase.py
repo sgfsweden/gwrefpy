@@ -62,7 +62,8 @@ class FitBase:
             Whether to print fit results summary (default is True).
         **kwargs
             Additional keyword arguments to pass to the fitting method.
-            For example, you can use `degree` when using the `npolyfit` method.
+            For example, you can use `degree` (default is 4) when using the `npolyfit`
+            method.
 
         Returns
         -------
@@ -154,7 +155,7 @@ class FitBase:
             fit = linregressfit(obs_well, ref_well, offset, tmin, tmax, p, aggregation)
         elif method == "npolyfit":
             logger.debug("Using Nth degree polynomial fit method for fitting.")
-            degree = kwargs.get("degree", 2)
+            degree = kwargs.get("degree", 4)
             fit = npolyfit(
                 obs_well, ref_well, offset, degree, tmin, tmax, p, aggregation
             )
