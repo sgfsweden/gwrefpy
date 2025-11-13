@@ -287,11 +287,17 @@ class FitResultData:
                                         <td>{self.fit_method.degree}</td>
                                         <td>Degree of Polynomial Fit</td>
                                     </tr>
-                                    {"".join([f"<tr><td>Coefficient {i}</td>"
-                                              f"<td>{coef:.4f}</td>"
-                                              f"<td>Polynomial Coefficient</td>"
-                                              f"</tr>" for i, coef in
-                                              enumerate(self.fit_method.coefficients)])}
+                                    {
+                "".join(
+                    [
+                        f"<tr><td>Coefficient {i}</td>"
+                        f"<td>{coef:.4f}</td>"
+                        f"<td>Polynomial Coefficient</td>"
+                        f"</tr>"
+                        for i, coef in enumerate(self.fit_method.coefficients)
+                    ]
+                )
+            }
                                     <tr>
                                         <td>N</td>
                                         <td>{self.n}</td>
