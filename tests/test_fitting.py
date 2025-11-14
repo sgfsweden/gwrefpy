@@ -339,3 +339,4 @@ def test_fit_npolyfit_basic(strandangers_model) -> None:
     )
     assert isinstance(result.fit_method, NPolyFitResult)
     assert result.n == 3
+    assert result.fit_method.degree == 4
