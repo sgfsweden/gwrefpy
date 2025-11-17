@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-
 from gwrefpy import Well
 from gwrefpy.fitresults import FitResultData, NPolyFitResult
 
@@ -304,9 +303,9 @@ def test_fit_with_aggregation_parameter(strandangers_model):
     )
 
     # Check that the aggregation method was stored correctly
-    assert hasattr(result, "aggregation"), (
-        "FitResultData should have aggregation attribute"
-    )
+    assert hasattr(
+        result, "aggregation"
+    ), "FitResultData should have aggregation attribute"
     assert result.aggregation == "min", "Aggregation should be set to 'min'"
 
     # Test with 'median' aggregation method
@@ -318,9 +317,9 @@ def test_fit_with_aggregation_parameter(strandangers_model):
         report=False,
     )
 
-    assert result_median.aggregation == "median", (
-        "Aggregation should be set to 'median'"
-    )
+    assert (
+        result_median.aggregation == "median"
+    ), "Aggregation should be set to 'median'"
 
     # Test that default is 'mean'
     result_default = strandangers_model.fit(
@@ -340,3 +339,11 @@ def test_fit_npolyfit_basic(strandangers_model) -> None:
     assert isinstance(result.fit_method, NPolyFitResult)
     assert result.n == 3
     assert result.fit_method.degree == 4
+
+
+def test_fit_chebyshev_basic(strandangers_model) -> None:
+    result = strandangers_model.fit(
+        obs_well="obs", ref_well="ref", offset="3.5D", method="chebyshev", degree=6
+    )
+    assert result.n == 3
+    assert result.fit_method.degree == 6
