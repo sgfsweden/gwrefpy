@@ -30,7 +30,7 @@ jobs:
         run: uv run ruff check --fix
 
       - name: Run formatter check
-        run: uv run ruff format --check
+        run: uv run ruff format --check  --line-length 88
 
       - name: Run tests
         run: uv run python -m pytest tests/
