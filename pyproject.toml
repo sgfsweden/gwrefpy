@@ -1,6 +1,6 @@
 [project]
 name = "gwrefpy"
-version = "0.2.0"
+version = "0.3.0"
 description = "A python implementation of the Akvifär reference method for detecting deviations in groundwater level time series."
 readme = "README.md"
 license = "MIT"
@@ -10,6 +10,14 @@ authors = [
     { name = "Tobias Erlström" },
 ]
 requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "matplotlib>=3.10.5",
     "numpy>=2.3.2",

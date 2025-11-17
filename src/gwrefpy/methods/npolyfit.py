@@ -4,24 +4,26 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 
-from ..fitresults import FitResultData, LinRegResult
+from ..fitresults import FitResultData, NPolyFitResult
 from ..methods.timeseries import groupby_time_equivalents
 from ..well import Well
 
 logger = logging.getLogger(__name__)
 
 
-def linregressfit(
+def npolyfit(
     obs_well: Well,
     ref_well: Well,
     offset: pd.DateOffset | pd.Timedelta | str,
+    degree: int,
     tmin: pd.Timestamp | str | None = None,
     tmax: pd.Timestamp | str | None = None,
     p=0.95,
     aggregation="mean",
-):
+) -> FitResultData:
     """
-    Perform linear regression fit between reference and observation well time series.
+    Perform Nth degree polynomial fit between reference and observation well time
+    series.
 
     Parameters
     ----------
@@ -31,6 +33,8 @@ def linregressfit(
         The reference well object containing the time series data.
     offset: pd.DateOffset | pd.Timedelta | str
         The offset to apply when grouping the time series into time equivalents.
+    degree : int
+        The degree of the polynomial fit.
     tmin: pd.Timestamp | str | None = None
         The minimum timestamp for the calibration period.
     tmax: pd.Timestamp | str | None = None
@@ -44,7 +48,7 @@ def linregressfit(
     Returns
     -------
     fit_result : FitResultData
-        A `FitResultData` object containing the results of the linear regression fit.
+        A `FitResultData` object containing the results of the polynomial fit.
     """
 
     def _t_inv(probability, degrees_freedom):
@@ -59,8 +63,8 @@ def linregressfit(
         pc = ta * stderr * np.sqrt(1 + 1 / n)
         return pc, ta
 
-    def compute_residual_std_error(x, y, a, b, n):
-        y_pred = a * x + b
+    def compute_residual_std_error(x, y, coef, n):
+        y_pred = np.polyval(coef, x)
         residuals = y - y_pred
 
         stderr = np.sum(residuals**2) - np.sum(
@@ -83,24 +87,21 @@ def linregressfit(
         aggregation,
     )
 
-    res = sp.stats.linregress(ref_timeseries, obs_timeseries)
-    linreg = LinRegResult(
-        slope=res.slope,
-        intercept=res.intercept,
-        rvalue=res.rvalue,
-        pvalue=res.pvalue,
-        stderr=res.stderr,
+    # Perform Nth degree polynomial fit
+    coefficients, residuals, rank, singular_values, rcond = np.polyfit(
+        ref_timeseries.values, obs_timeseries.values, degree, full=True
     )
+    nfit = NPolyFitResult(coefficients=coefficients)
 
+    # Compute residual standard error
     stderr = compute_residual_std_error(
-        ref_timeseries, obs_timeseries, linreg.slope, linreg.intercept, n
+        ref_timeseries.values, obs_timeseries.values, coefficients, n
     )
-
     pred_const, t_a = _get_gwrefs_stats(p, n, stderr)
-
     rmse = np.sqrt(
         np.mean(
-            (obs_timeseries - (linreg.slope * ref_timeseries + linreg.intercept)) ** 2
+            (obs_timeseries.values - np.polyval(coefficients, ref_timeseries.values))
+            ** 2
         )
     )
 
@@ -116,7 +117,7 @@ def linregressfit(
         ref_well=ref_well,
         rmse=rmse,
         n=n,
-        fit_method=linreg,
+        fit_method=nfit,
         t_a=t_a,
         stderr=stderr,
         pred_const=pred_const,

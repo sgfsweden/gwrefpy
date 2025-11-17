@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from gwrefpy import Well
-from gwrefpy.fitresults import FitResultData
+from gwrefpy.fitresults import FitResultData, NPolyFitResult
 
 
 def test_strandangers_model_basic_fit(strandangers_model) -> None:
@@ -331,3 +331,12 @@ def test_fit_with_aggregation_parameter(strandangers_model):
     )
 
     assert result_default.aggregation == "mean", "Default aggregation should be 'mean'"
+
+
+def test_fit_npolyfit_basic(strandangers_model) -> None:
+    result = strandangers_model.fit(
+        obs_well="obs", ref_well="ref", offset="3.5D", method="npolyfit"
+    )
+    assert isinstance(result.fit_method, NPolyFitResult)
+    assert result.n == 3
+    assert result.fit_method.degree == 4

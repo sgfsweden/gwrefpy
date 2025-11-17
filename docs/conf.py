@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath(".."))
 project = "gwrefpy"
 copyright = ""
 author = ""
-release = "0.2.0"
+release = "0.3.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -50,6 +50,7 @@ master_doc = "index"
 html_theme = "pydata_sphinx_theme"
 html_title = "gwrefpy"
 html_logo = "_static/figures/logo.png"
+html_favicon = "_static/figures/logo.png"
 html_theme_options = {
     "navbar_align": "content",
     "icon_links": [

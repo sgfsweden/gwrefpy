@@ -3,8 +3,9 @@ from typing import Literal
 
 import pandas as pd
 
-from .fitresults import FitResultData
+from .fitresults import FitResultData, LinRegResult, NPolyFitResult
 from .methods.linregressfit import linregressfit
+from .methods.npolyfit import npolyfit
 from .well import Well
 
 logger = logging.getLogger(__name__)
@@ -23,10 +24,11 @@ class FitBase:
         offset: pd.DateOffset | pd.Timedelta | str,
         aggregation: Literal["mean", "median", "min", "max"] = "mean",
         p: float = 0.95,
-        method: Literal["linearregression"] = "linearregression",
+        method: Literal["linearregression", "npolyfit"] = "linearregression",
         tmin: pd.Timestamp | str | None = None,
         tmax: pd.Timestamp | str | None = None,
         report: bool = True,
+        **kwargs,
     ) -> FitResultData | list[FitResultData]:
         """
         Fit reference well(s) to observation well(s) using regression.
@@ -49,15 +51,19 @@ class FitBase:
             equivalents (default is "mean").
         p : float, optional
             The confidence level for the fit (default is 0.95).
-        method : Literal["linearregression"]
+        method : Literal["linearregression", "npolyfit"]
             Method with which to perform regression. Currently only supports
-            linear regression.
+            linear regression and N-th degree polynomial fit.
         tmin: pd.Timestamp | str | None = None
             Minimum time for calibration period.
         tmax: pd.Timestamp | str | None = None
             Maximum time for calibration period.
         report: bool, optional
             Whether to print fit results summary (default is True).
+        **kwargs
+            Additional keyword arguments to pass to the fitting method.
+            For example, you can use `degree` (default is 4) when using the `npolyfit`
+            method.
 
         Returns
         -------
@@ -78,7 +84,15 @@ class FitBase:
         # Handle single well case
         if len(obs_wells) == 1 and len(ref_wells) == 1:
             result = self._fit(
-                obs_wells[0], ref_wells[0], offset, p, method, tmin, tmax, aggregation
+                obs_wells[0],
+                ref_wells[0],
+                offset,
+                p,
+                method,
+                tmin,
+                tmax,
+                aggregation,
+                **kwargs,
             )
             logger.info(
                 f"Fitting model '{self.name}' using reference well "
@@ -100,7 +114,9 @@ class FitBase:
         # Perform fitting for each pair
         results = []
         for obs_w, ref_w in zip(obs_wells, ref_wells, strict=True):
-            result = self._fit(obs_w, ref_w, offset, p, method, tmin, tmax, aggregation)
+            result = self._fit(
+                obs_w, ref_w, offset, p, method, tmin, tmax, aggregation, **kwargs
+            )
             results.append(result)
             logger.info(
                 f"Fitting model '{self.name}' using reference well '{ref_w.name}' "
@@ -117,10 +133,11 @@ class FitBase:
         ref_well: Well,
         offset: pd.DateOffset | pd.Timedelta | str,
         p: float = 0.95,
-        method: Literal["linearregression"] = "linearregression",
+        method: Literal["linearregression", "npolyfit"] = "linearregression",
         tmin: pd.Timestamp | str | None = None,
         tmax: pd.Timestamp | str | None = None,
         aggregation: Literal["mean", "median", "min", "max"] = "mean",
+        **kwargs,
     ) -> FitResultData:
         # Check that the ref_well is a reference well
         if not ref_well.is_reference:
@@ -136,6 +153,12 @@ class FitBase:
         if method == "linearregression":
             logger.debug("Using linear regression method for fitting.")
             fit = linregressfit(obs_well, ref_well, offset, tmin, tmax, p, aggregation)
+        elif method == "npolyfit":
+            logger.debug("Using Nth degree polynomial fit method for fitting.")
+            degree = kwargs.get("degree", 4)
+            fit = npolyfit(
+                obs_well, ref_well, offset, degree, tmin, tmax, p, aggregation
+            )
         if fit is None:
             logger.error(f"Fitting method '{method}' is not implemented.")
             raise NotImplementedError(f"Fitting method '{method}' is not implemented.")
@@ -254,7 +277,9 @@ class FitBase:
             )
         return min(local_fits, key=lambda x: x.rmse)
 
-    def get_fits(self, well: Well | str) -> list[FitResultData] | FitResultData | None:
+    def get_fits(
+        self, well: Well | str, method: str | None = None
+    ) -> list[FitResultData] | FitResultData | None:
         """
         Get all fit results involving a specific well.
 
@@ -262,6 +287,9 @@ class FitBase:
         ----------
         well : Well | str
             The well to check.
+        method : str | None, optional
+            The fitting method to filter by (default is None, which returns all
+            fits involving the well). Options are "linearregression" and "npolyfit".
 
         Returns
         -------
@@ -278,6 +306,16 @@ class FitBase:
             raise TypeError("Parameter 'well' must be a Well instance or a string.")
 
         fit_list = [fit for fit in self.fits if fit.has_well(target_well)]
+
+        if method == "linearregression":
+            fit_list = [
+                fit for fit in fit_list if isinstance(fit.fit_method, LinRegResult)
+            ]
+        elif method == "npolyfit":
+            fit_list = [
+                fit for fit in fit_list if isinstance(fit.fit_method, NPolyFitResult)
+            ]
+
         return (
             fit_list
             if len(fit_list) > 1

@@ -7,11 +7,11 @@
 <p>
   <a href="https://pypi.org/project/gwrefpy/"><img src="https://img.shields.io/pypi/v/gwrefpy.svg" alt="PyPI version"></a>
   <a href="https://pypi.org/project/gwrefpy/"><img src="https://img.shields.io/pypi/pyversions/gwrefpy.svg" alt="Python versions"></a>
-  <a href="https://github.com/andersretznersgu/gwrefpy/blob/main/LICENSE"><img src="https://img.shields.io/github/license/andersretznersgu/gwrefpy.svg" alt="License"></a>
-  <a href="https://andersretznersgu.github.io/gwrefpy/"><img src="https://img.shields.io/badge/docs-latest-brightgreen.svg" alt="Documentation"></a>
-  <a href="https://github.com/andersretznersgu/gwrefpy/actions"><img src="https://img.shields.io/github/actions/workflow/status/andersretznersgu/gwrefpy/ci.yml?branch=main" alt="Build status"></a>
+  <a href="https://github.com/sgfsweden/gwrefpy/blob/main/LICENSE"><img src="https://img.shields.io/github/license/andersretznersgu/gwrefpy.svg" alt="License"></a>
+  <a href="https://sgfsweden.github.io/gwrefpy/"><img src="https://img.shields.io/badge/docs-latest-brightgreen.svg" alt="Documentation"></a>
+  <a href="https://github.com/sgfsweden/gwrefpy/actions"><img src="https://img.shields.io/github/actions/workflow/status/sgfsweden/gwrefpy/.github/workflows/publish_on_pypi.yml?branch=main" alt="Build status"></a>
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
-  <a href="https://github.com/andersretznersgu/gwrefpy"><img src="https://img.shields.io/github/stars/andersretznersgu/gwrefpy?style=social" alt="GitHub stars"></a>
+  <a href="https://github.com/sgfsweden/gwrefpy"><img src="https://img.shields.io/github/stars/sgfsweden/gwrefpy?style=social" alt="GitHub stars"></a>
 </p>
 
 A Python implementation of the Akvifär reference method for detecting deviations in groundwater level time series.
