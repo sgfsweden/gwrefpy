@@ -41,13 +41,14 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="../_static/documentation_options.js?v=e259d695"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/livedata';</script>
+    <link rel="icon" href="../_static/logo.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Exercises" href="exercises/index.html" />
@@ -392,7 +393,7 @@
   <section id="working-with-live-data">
 <h1>Working with live data<a class="headerlink" href="#working-with-live-data" title="Link to this heading">#</a></h1>
 <p>In this tutorial we will explore how to work with live data when using the <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> package.</p>
-<p>This notebook can be downloaded from the source code <a class="reference external" href="https://github.com/andersretznerSGU/gwrefpy/blob/main/docs/turorials/livedata.ipynb">here</a>.</p>
+<p>This notebook can be downloaded from the source code <a class="reference external" href="https://github.com/andersretznerSGU/gwrefpy/blob/main/docs/tutorials/livedata.ipynb">here</a>.</p>
 <p>We will cover the following topics:</p>
 <ol class="arabic simple">
 <li><p>Create some synthetic live data</p></li>
@@ -456,70 +457,71 @@
 </div>
 <div class="cell_output docutils container">
 <div class="output text_html">
-        <div>
-            <strong>Fit Results: Obs well ~ Ref well</strong>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="text-align: left">Statistic</th>
-                        <th style="text-align: left">Value</th>
-                        <th style="text-align: left">Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>RMSE</td>
-                        <td>0.2339</td>
-                        <td>Root Mean Square Error</td>
-                    </tr>
-                    <tr>
-                        <td>R²</td>
-                        <td>0.8963</td>
-                        <td>Coefficient of Determination</td>
-                    </tr>
-                    <tr>
-                        <td>R-value</td>
-                        <td>0.9467</td>
-                        <td>Correlation Coefficient</td>
-                    </tr>
-                    <tr>
-                        <td>Slope</td>
-                        <td>0.9574</td>
-                        <td>Linear Regression Slope</td>
-                    </tr>
-                    <tr>
-                        <td>Intercept</td>
-                        <td>-4.5678</td>
-                        <td>Linear Regression Intercept</td>
-                    </tr>
-                    <tr>
-                        <td>P-value</td>
-                        <td>0.0000</td>
-                        <td>Statistical Significance</td>
-                    </tr>
-                    <tr>
-                        <td>N</td>
-                        <td>180</td>
-                        <td>Number of Data Points</td>
-                    </tr>
-                    <tr>
-                        <td>Std Error</td>
-                        <td>0.2352</td>
-                        <td>Standard Error</td>
-                    </tr>
-                    <tr>
-                        <td>Confidence</td>
-                        <td>95.0%</td>
-                        <td>Confidence Level</td>
-                    </tr>
-                </tbody>
-            </table>
-            <p>
-                Calibration Period: 2020-01-01 00:00:00 to 2020-06-28 00:00:00<br>
-                Time Offset: 0D<br>
-                Aggregation Method: mean
-            </p>
-        </div>
+            <div>
+                <strong>Fit Results: Obs well ~
+                        Ref well</strong>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align: left">Statistic</th>
+                            <th style="text-align: left">Value</th>
+                            <th style="text-align: left">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>RMSE</td>
+                            <td>0.2220</td>
+                            <td>Root Mean Square Error</td>
+                        </tr>
+                        <tr>
+                            <td>R²</td>
+                            <td>0.9084</td>
+                            <td>Coefficient of Determination</td>
+                        </tr>
+                        <tr>
+                            <td>R-value</td>
+                            <td>0.9531</td>
+                            <td>Correlation Coefficient</td>
+                        </tr>
+                        <tr>
+                            <td>Slope</td>
+                            <td>0.9763</td>
+                            <td>Linear Regression Slope</td>
+                        </tr>
+                        <tr>
+                            <td>Intercept</td>
+                            <td>-4.7534</td>
+                            <td>Linear Regression Intercept</td>
+                        </tr>
+                        <tr>
+                            <td>P-value</td>
+                            <td>0.0000</td>
+                            <td>Statistical Significance</td>
+                        </tr>
+                        <tr>
+                            <td>N</td>
+                            <td>180</td>
+                            <td>Number of Data Points</td>
+                        </tr>
+                        <tr>
+                            <td>Std Error</td>
+                            <td>0.2232</td>
+                            <td>Standard Error</td>
+                        </tr>
+                        <tr>
+                            <td>Confidence</td>
+                            <td>95.0%</td>
+                            <td>Confidence Level</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>
+                    Calibration Period: 2020-01-01 00:00:00 to 2020-06-28 00:00:00<br>
+                    Time Offset: 0D<br>
+                    Aggregation Method: mean
+                </p>
+            </div>
         </div></div>
 </div>
 <p>We now take a look at the fit.</p>
@@ -530,7 +532,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/8f19d8c74d781c89ee58c5aa12f7dc80767b82c986ae3a925a01c822c3505380.png" src="../_images/8f19d8c74d781c89ee58c5aa12f7dc80767b82c986ae3a925a01c822c3505380.png" />
+<img alt="../_images/7784e1a66e3fd565cf83c0d17a528a0b49bde894d282eaf44a5fc4c83b33b79c.png" src="../_images/7784e1a66e3fd565cf83c0d17a528a0b49bde894d282eaf44a5fc4c83b33b79c.png" />
 </div>
 </div>
 <div class="admonition tip">
@@ -544,7 +546,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/90a0a196fd09a0042180ffbb13d7dd321e79b7ddace2337eed9f45be29116c69.png" src="../_images/90a0a196fd09a0042180ffbb13d7dd321e79b7ddace2337eed9f45be29116c69.png" />
+<img alt="../_images/063b2b5a6e931214ca4b85c15a09f7d1c92e3bd2d70377227fa62a31b98ef2a1.png" src="../_images/063b2b5a6e931214ca4b85c15a09f7d1c92e3bd2d70377227fa62a31b98ef2a1.png" />
 </div>
 </div>
 </section>
@@ -576,8 +578,8 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/d7d144d72ca268003806e625453f127820aff8ec9dcf32a20b50dfc558fbbb20.png" src="../_images/d7d144d72ca268003806e625453f127820aff8ec9dcf32a20b50dfc558fbbb20.png" />
-<img alt="../_images/6407aad812968b4b0b4b4d99a261fd6fe9e0a077a86fb20f4b215b4c2a4e79b0.png" src="../_images/6407aad812968b4b0b4b4d99a261fd6fe9e0a077a86fb20f4b215b4c2a4e79b0.png" />
+<img alt="../_images/dc5d55dd4f746e0d0fdb56a10bbd52a0b4a887dd38164b512cca7f6a863fe1bb.png" src="../_images/dc5d55dd4f746e0d0fdb56a10bbd52a0b4a887dd38164b512cca7f6a863fe1bb.png" />
+<img alt="../_images/ca03fa381e71cc91e8285340bbb4d11c4d79f1f07cb8a05783170b2b37653dee.png" src="../_images/ca03fa381e71cc91e8285340bbb4d11c4d79f1f07cb8a05783170b2b37653dee.png" />
 </div>
 </div>
 <p>We can see that in the new data we have a drawdown event that is clearly exceeding the prediction interval.</p>

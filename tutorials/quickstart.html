@@ -41,13 +41,14 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="../_static/documentation_options.js?v=e259d695"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/quickstart';</script>
+    <link rel="icon" href="../_static/logo.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Working with live data" href="livedata.html" />
@@ -440,10 +441,10 @@
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Plotting well: ref
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x7f5e20a0e5d0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x7fcef9533ed0&gt;
 </pre></div>
 </div>
-<img alt="../_images/108cea41d0cab1dd80a562ceaecb6e28b7fa6f2442e314b09cd834a6ec14e5a0.png" src="../_images/108cea41d0cab1dd80a562ceaecb6e28b7fa6f2442e314b09cd834a6ec14e5a0.png" />
+<img alt="../_images/056ed3a5343578b7a886ca5075eb452fe161f6ac15c28162b159b830cf2f8726.png" src="../_images/056ed3a5343578b7a886ca5075eb452fe161f6ac15c28162b159b830cf2f8726.png" />
 </div>
 </div>
 <p>Let’s fit the obervation well to our reference well. Since we know the series share the same timestamps, we can safely use <code class="docutils literal notranslate"><span class="pre">&quot;0D&quot;</span></code> as an offset (i.e., no offset).</p>
@@ -471,70 +472,71 @@
 </pre></div>
 </div>
 <div class="output text_html">
-        <div>
-            <strong>Fit Results: obs ~ ref</strong>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="text-align: left">Statistic</th>
-                        <th style="text-align: left">Value</th>
-                        <th style="text-align: left">Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>RMSE</td>
-                        <td>0.2212</td>
-                        <td>Root Mean Square Error</td>
-                    </tr>
-                    <tr>
-                        <td>R²</td>
-                        <td>0.9110</td>
-                        <td>Coefficient of Determination</td>
-                    </tr>
-                    <tr>
-                        <td>R-value</td>
-                        <td>0.9544</td>
-                        <td>Correlation Coefficient</td>
-                    </tr>
-                    <tr>
-                        <td>Slope</td>
-                        <td>0.9895</td>
-                        <td>Linear Regression Slope</td>
-                    </tr>
-                    <tr>
-                        <td>Intercept</td>
-                        <td>-0.0095</td>
-                        <td>Linear Regression Intercept</td>
-                    </tr>
-                    <tr>
-                        <td>P-value</td>
-                        <td>0.0000</td>
-                        <td>Statistical Significance</td>
-                    </tr>
-                    <tr>
-                        <td>N</td>
-                        <td>365</td>
-                        <td>Number of Data Points</td>
-                    </tr>
-                    <tr>
-                        <td>Std Error</td>
-                        <td>0.2218</td>
-                        <td>Standard Error</td>
-                    </tr>
-                    <tr>
-                        <td>Confidence</td>
-                        <td>95.0%</td>
-                        <td>Confidence Level</td>
-                    </tr>
-                </tbody>
-            </table>
-            <p>
-                Calibration Period: 2020-01-01 00:00:00 to 2020-12-30 00:00:00<br>
-                Time Offset: 0D<br>
-                Aggregation Method: mean
-            </p>
-        </div>
+            <div>
+                <strong>Fit Results: obs ~
+                        ref</strong>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align: left">Statistic</th>
+                            <th style="text-align: left">Value</th>
+                            <th style="text-align: left">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>RMSE</td>
+                            <td>0.2144</td>
+                            <td>Root Mean Square Error</td>
+                        </tr>
+                        <tr>
+                            <td>R²</td>
+                            <td>0.9166</td>
+                            <td>Coefficient of Determination</td>
+                        </tr>
+                        <tr>
+                            <td>R-value</td>
+                            <td>0.9574</td>
+                            <td>Correlation Coefficient</td>
+                        </tr>
+                        <tr>
+                            <td>Slope</td>
+                            <td>1.0006</td>
+                            <td>Linear Regression Slope</td>
+                        </tr>
+                        <tr>
+                            <td>Intercept</td>
+                            <td>0.0277</td>
+                            <td>Linear Regression Intercept</td>
+                        </tr>
+                        <tr>
+                            <td>P-value</td>
+                            <td>0.0000</td>
+                            <td>Statistical Significance</td>
+                        </tr>
+                        <tr>
+                            <td>N</td>
+                            <td>365</td>
+                            <td>Number of Data Points</td>
+                        </tr>
+                        <tr>
+                            <td>Std Error</td>
+                            <td>0.2150</td>
+                            <td>Standard Error</td>
+                        </tr>
+                        <tr>
+                            <td>Confidence</td>
+                            <td>95.0%</td>
+                            <td>Confidence Level</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>
+                    Calibration Period: 2020-01-01 00:00:00 to 2020-12-30 00:00:00<br>
+                    Time Offset: 0D<br>
+                    Aggregation Method: mean
+                </p>
+            </div>
         </div></div>
 </div>
 <p>Let’s plot the fit. We can use <code class="docutils literal notranslate"><span class="pre">model.plot_fits()</span></code> since we only have one fit. By default, any levels from the observation well falling outside the fitted confidence interval will be highlighted with a red circle.</p>
@@ -549,10 +551,10 @@
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Plotting fit: obs ~ ref
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x7f5e0719f150&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend at 0x7fcef95c4690&gt;
 </pre></div>
 </div>
-<img alt="../_images/9405afcd21c1e12622c19caeeb07fd961e3205982592031b7c46fe8fcaaf019d.png" src="../_images/9405afcd21c1e12622c19caeeb07fd961e3205982592031b7c46fe8fcaaf019d.png" />
+<img alt="../_images/b236ea5b88451185164e3961619c26a3f98498b5074b08890a7f7f59c7a3300e.png" src="../_images/b236ea5b88451185164e3961619c26a3f98498b5074b08890a7f7f59c7a3300e.png" />
 </div>
 </div>
 </section>
