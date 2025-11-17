@@ -74,6 +74,33 @@ class NPolyFitResult:
         return f"NPolyFitResult(degree={self.degree}, coefficients={self.coefficients})"
 
 
+class ChebyshevFitResult:
+    """
+    This class contains the results of a Chebyshev polynomial fit.
+
+    Parameters
+    ----------
+    coefficients : np.ndarray[float]
+        The coefficients of the Chebyshev polynomial.
+    """
+
+    def __init__(self, coefficients: np.array):
+        self.coefficients = coefficients
+        self.degree = len(coefficients) - 1
+
+    def __str__(self):
+        return (
+            f"ChebyshevFitResult(degree={self.degree}, "
+            f"coefficients={self.coefficients})"
+        )
+
+    def __repr__(self):
+        return (
+            f"ChebyshevFitResult(degree={self.degree}, "
+            f"coefficients={self.coefficients})"
+        )
+
+
 class FitResultData:
     """
     This class contains all information that is required to reproduce a fit between
@@ -116,7 +143,7 @@ class FitResultData:
         ref_well: Well,
         rmse: float,
         n: int,
-        fit_method: LinRegResult | NPolyFitResult,
+        fit_method: LinRegResult | NPolyFitResult | ChebyshevFitResult,
         t_a: float,
         stderr: float,
         pred_const: float,
@@ -170,6 +197,16 @@ class FitResultData:
                 *[
                     f"{'Coefficient ' + str(i):<15} {coef:<12.4f} Polynomial "
                     f"Coefficient"
+                    for i, coef in enumerate(self.fit_method.coefficients)
+                ],
+            ]
+        elif isinstance(self.fit_method, ChebyshevFitResult):
+            fit_lines = [
+                f"{'Degree':<15} {self.fit_method.degree:<12d} Degree of Chebyshev "
+                f"Polynomial Fit",
+                *[
+                    f"{'Coefficient ' + str(i):<15} {coef:<12.4f} Chebyshev "
+                    f"Polynomial Coefficient"
                     for i, coef in enumerate(self.fit_method.coefficients)
                 ],
             ]
@@ -322,6 +359,65 @@ class FitResultData:
                             </p>
                         </div>
                     """
+        elif isinstance(self.fit_method, ChebyshevFitResult):
+            return f"""
+                        <div>
+                            <strong>Fit Results: {self.obs_well.name} ~
+                                    {self.ref_well.name}</strong>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left">Statistic</th>
+                                        <th style="text-align: left">Value</th>
+                                        <th style="text-align: left">Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>RMSE</td>
+                                        <td>{self.rmse:.4f}</td>
+                                        <td>Root Mean Square Error</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Degree</td>
+                                        <td>{self.fit_method.degree}</td>
+                                        <td>Degree of Chebyshev Polynomial Fit</td>
+                                    </tr>
+                                    {
+                "".join(
+                    [
+                        f"<tr><td>Coefficient {i}</td>"
+                        f"<td>{coef:.4f}</td>"
+                        f"<td>Chebyshev Polynomial Coefficient</td>"
+                        f"</tr>"
+                        for i, coef in enumerate(self.fit_method.coefficients)
+                    ]
+                )
+            }
+                                    <tr>
+                                        <td>N</td>
+                                        <td>{self.n}</td>
+                                        <td>Number of Data Points</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Std Error</td>
+                                        <td>{self.stderr:.4f}</td>
+                                        <td>Standard Error</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Confidence</td>
+                                        <td>{self.p * 100:.1f}%</td>
+                                        <td>Confidence Level</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p>
+                                Calibration Period: {self.tmin} to {self.tmax}<br>
+                                Time Offset: {self.offset}<br>
+                                Aggregation Method: {self.aggregation}
+                            </p>
+                        </div>
+                    """
         else:
             return "<div><strong>No fit method available.</strong></div>"
 
@@ -353,6 +449,12 @@ class FitResultData:
         elif isinstance(self.fit_method, NPolyFitResult):
             return self.ref_well.timeseries.apply(
                 lambda x: np.polyval(self.fit_method.coefficients, x)
+            )
+        elif isinstance(self.fit_method, ChebyshevFitResult):
+            return self.ref_well.timeseries.apply(
+                lambda x: np.polynomial.chebyshev.chebval(
+                    x, self.fit_method.coefficients, tensor=False
+                )
             )
         else:
             raise NotImplementedError(
@@ -419,6 +521,13 @@ class FitResultData:
                 index=self.obs_well.timeseries.index,
             )
             return outliers
+        elif isinstance(self.fit_method, ChebyshevFitResult):
+            fitted_values = self.fit_timeseries()
+            outliers = pd.Series(
+                abs(self.obs_well.timeseries - fitted_values) > self.pred_const,
+                index=self.obs_well.timeseries.index,
+            )
+            return outliers
         else:
             raise NotImplementedError(
                 f"Fitting method {self.fit_method.__class__.__name__} is not "
@@ -479,6 +588,10 @@ class FitResultData:
             dict_representation["NPolyFitResult"] = {
                 "coefficients": self.fit_method.coefficients.tolist(),
             }
+        elif dict_representation["fit_method"] == "ChebyshevFitResult":
+            dict_representation["ChebyshevFitResult"] = {
+                "coefficients": self.fit_method.coefficients.tolist(),
+            }
 
         return dict_representation
 
@@ -494,7 +607,7 @@ def _unpack_dict_fit_method(data: dict) -> LinRegResult | NPolyFitResult:
 
     Returns
     -------
-    LinRegResult | NPolyFitResult
+    LinRegResult | NPolyFitResult | ChebyshevFitResult
         The unpacked fitting method object.
     """
     fit_method_name = data.get("fit_method", None)
@@ -511,6 +624,11 @@ def _unpack_dict_fit_method(data: dict) -> LinRegResult | NPolyFitResult:
         npoly_data = data.get("NPolyFitResult", {})
         return NPolyFitResult(
             coefficients=np.array(npoly_data.get("coefficients", [])),
+        )
+    elif fit_method_name == "ChebyshevFitResult":
+        chebyshev_data = data.get("ChebyshevFitResult", {})
+        return ChebyshevFitResult(
+            coefficients=np.array(chebyshev_data.get("coefficients", [])),
         )
     else:
         raise ValueError(f"Unsupported fit method: {fit_method_name}")
