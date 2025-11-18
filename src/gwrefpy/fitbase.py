@@ -182,7 +182,9 @@ class FitBase:
         self,
         obs_well: str | Well,
         ref_wells: list[str | Well] | None = None,
-        method: Literal["linearregression"] = "linearregression",
+        method: Literal[
+            "linearregression", "npolyfit", "chebyshev"
+        ] = "linearregression",
         **kwargs,
     ) -> FitResultData:
         """
@@ -195,7 +197,7 @@ class FitBase:
         ref_wells : Well or list of Well or None, optional
             The reference wells to test. If None, all reference wells in the
             model will be used (default is None).
-        method : Literal["linearregression"]
+        method : Literal["linearregression", "npolyfit", "chebyshev"]
             Method with which to perform regression. Currently only supports
             linear regression.
         **kwargs
@@ -213,7 +215,9 @@ class FitBase:
         self,
         obs_well: str | Well,
         ref_wells: list[str | Well] | None = None,
-        method: Literal["linearregression"] = "linearregression",
+        method: Literal[
+            "linearregression", "npolyfit", "chebyshev"
+        ] = "linearregression",
         **kwargs,
     ) -> FitResultData:
         """
@@ -226,7 +230,7 @@ class FitBase:
         ref_wells : Well or list of Well or None, optional
             The reference wells to test. If None, all reference wells in the
             model will be used (default is None).
-        method : Literal["linearregression"]
+        method : Literal["linearregression", "npolyfit", "chebyshev"]
             Method with which to perform regression. Currently only supports
             linear regression.
         **kwargs
