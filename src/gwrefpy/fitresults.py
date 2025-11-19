@@ -52,6 +52,78 @@ class LinRegResult:
             f"stderr={self.stderr:.4f})"
         )
 
+    def fit_str(self):
+        fit_lines = [
+            f"{'R²':<15} {self.rvalue**2:<12.4f} Coefficient of Determination",
+            f"{'R-value':<15} {self.rvalue:<12.4f} Correlation Coefficient",
+            f"{'Slope':<15} {self.slope:<12.4f} Linear Regression Slope",
+            f"{'Intercept':<15} {self.intercept:<12.4f} Linear Regression Intercept",
+            f"{'P-value':<15} {self.pvalue:<12.4f} Statistical Significance",
+        ]
+        return fit_lines
+
+    def html_fit_str(self):
+        return f"""
+            <tr>
+                <td>R²</td>
+                <td>{self.rvalue**2:.4f}</td>
+                <td>Coefficient of Determination</td>
+            </tr>
+            <tr>
+                <td>R-value</td>
+                <td>{self.rvalue:.4f}</td>
+                <td>Correlation Coefficient</td>
+            </tr>
+            <tr>
+                <td>Slope</td>
+                <td>{self.slope:.4f}</td>
+                <td>Linear Regression Slope</td>
+            </tr>
+            <tr>
+                <td>Intercept</td>
+                <td>{self.intercept:.4f}</td>
+                <td>Linear Regression Intercept</td>
+            </tr>
+            <tr>
+                <td>P-value</td>
+                <td>{self.pvalue:.4f}</td>
+                <td>Statistical Significance</td>
+            </tr>
+            """
+
+    def fit_timeseries(self, timeseries: pd.Series) -> pd.Series:
+        """
+        Apply the linear regression fit to a given series.
+
+        Parameters
+        ----------
+        timeseries : pd.Series
+            The input series to apply the fit to.
+
+        Returns
+        -------
+        pd.Series
+            The fitted values based on the input series.
+        """
+        return timeseries.apply(lambda x: self.slope * x + self.intercept)
+
+    def to_dict(self) -> dict:
+        """
+        Convert the LinRegResult object to a dictionary.
+
+        Returns
+        -------
+        dict
+            A dictionary representation of the LinRegResult object.
+        """
+        return {
+            "slope": self.slope,
+            "intercept": self.intercept,
+            "rvalue": self.rvalue,
+            "pvalue": self.pvalue,
+            "stderr": self.stderr,
+        }
+
 
 class NPolyFitResult:
     """
@@ -72,6 +144,156 @@ class NPolyFitResult:
 
     def __repr__(self):
         return f"NPolyFitResult(degree={self.degree}, coefficients={self.coefficients})"
+
+    def fit_str(self):
+        fit_lines = [
+            f"{'Degree':<15} {self.degree:<12d} Degree of Polynomial Fit",
+            *[
+                f"{'Coefficient ' + str(i):<15} {coef:<12.4f} Polynomial Coefficient"
+                for i, coef in enumerate(self.coefficients)
+            ],
+        ]
+        return fit_lines
+
+    def html_fit_str(self):
+        return f"""
+                <tr>
+                    <td>Degree</td>
+                    <td>{self.degree}</td>
+                    <td>Degree of Polynomial Fit</td>
+                </tr>
+                {
+            "".join(
+                [
+                    f"<tr><td>Coefficient {i}</td>"
+                    f"<td>{coef:.4f}</td>"
+                    f"<td>Polynomial Coefficient</td>"
+                    f"</tr>"
+                    for i, coef in enumerate(self.coefficients)
+                ]
+            )
+        }
+                """
+
+    def fit_timeseries(self, timeseries: pd.Series) -> pd.Series:
+        """
+        Apply the polynomial fit to a given series.
+
+        Parameters
+        ----------
+        timeseries : pd.Series
+            The input series to apply the fit to.
+
+        Returns
+        -------
+        pd.Series
+            The fitted values based on the input series.
+        """
+        return timeseries.apply(lambda x: np.polyval(self.coefficients, x))
+
+    def to_dict(self) -> dict:
+        """
+        Convert the NPolyFitResult object to a dictionary.
+
+        Returns
+        -------
+        dict
+            A dictionary representation of the NPolyFitResult object.
+        """
+        return {
+            "coefficients": self.coefficients.tolist(),
+        }
+
+
+class ChebyshevFitResult:
+    """
+    This class contains the results of a Chebyshev polynomial fit.
+
+    Parameters
+    ----------
+    coefficients : np.ndarray[float]
+        The coefficients of the Chebyshev polynomial.
+    """
+
+    def __init__(self, coefficients: np.array):
+        self.coefficients = coefficients
+        self.degree = len(coefficients) - 1
+
+    def __str__(self):
+        return (
+            f"ChebyshevFitResult(degree={self.degree}, "
+            f"coefficients={self.coefficients})"
+        )
+
+    def __repr__(self):
+        return (
+            f"ChebyshevFitResult(degree={self.degree}, "
+            f"coefficients={self.coefficients})"
+        )
+
+    def fit_str(self):
+        fit_lines = [
+            f"{'Degree':<15} {self.degree:<12d} Degree of Chebyshev Polynomial Fit",
+            *[
+                f"{'Coefficient ' + str(i):<15} {coef:<12.4f} Chebyshev "
+                f"Polynomial Coefficient"
+                for i, coef in enumerate(self.coefficients)
+            ],
+        ]
+        return fit_lines
+
+    def html_fit_str(self):
+        return f"""
+                <tr>
+                    <td>Degree</td>
+                    <td>{self.degree}</td>
+                    <td>Degree of Chebyshev Polynomial Fit</td>
+                </tr>
+                {
+            "".join(
+                [
+                    f"<tr><td>Coefficient {i}</td>"
+                    f"<td>{coef:.4f}</td>"
+                    f"<td>Chebyshev Polynomial Coefficient</td>"
+                    f"</tr>"
+                    for i, coef in enumerate(self.coefficients)
+                ]
+            )
+        }
+                """
+
+    def fit_timeseries(self, timeseries: pd.Series) -> pd.Series:
+        """
+        Apply the Chebyshev polynomial fit to a given series.
+
+        Parameters
+        ----------
+        timeseries : pd.Series
+            The input series to apply the fit to.
+
+        Returns
+        -------
+        pd.Series
+            The fitted values based on the input series.
+        """
+        return timeseries.apply(
+            lambda x: np.polynomial.chebyshev.chebval(
+                x, self.coefficients, tensor=False
+            )
+        )
+
+    def to_dict(self) -> dict:
+        """
+        Convert the ChebyshevFitResult object to a dictionary.
+
+        Returns
+        -------
+        dict
+            A dictionary representation of the ChebyshevFitResult object.
+        """
+        return {
+            "coefficients": self.coefficients.tolist(),
+        }
 
 
 class FitResultData:
@@ -116,7 +338,7 @@ class FitResultData:
         ref_well: Well,
         rmse: float,
         n: int,
-        fit_method: LinRegResult | NPolyFitResult,
+        fit_method: LinRegResult | NPolyFitResult | ChebyshevFitResult,
         t_a: float,
         stderr: float,
         pred_const: float,
@@ -151,30 +373,9 @@ class FitResultData:
         separator = "=" * max([len(header), len(fit_method)])
 
         # Build the table content
-        if isinstance(self.fit_method, LinRegResult):
-            fit_lines = [
-                f"{'R²':<15} {self.fit_method.rvalue**2:<12.4f} "
-                f"Coefficient of Determination",
-                f"{'R-value':<15} {self.fit_method.rvalue:<12.4f} Correlation "
-                f"Coefficient",
-                f"{'Slope':<15} {self.fit_method.slope:<12.4f} Linear Regression Slope",
-                f"{'Intercept':<15} {self.fit_method.intercept:<12.4f} "
-                f"Linear Regression Intercept",
-                f"{'P-value':<15} {self.fit_method.pvalue:<12.4f} Statistical "
-                f"Significance",
-            ]
-        elif isinstance(self.fit_method, NPolyFitResult):
-            fit_lines = [
-                f"{'Degree':<15} {self.fit_method.degree:<12d} Degree of Polynomial "
-                f"Fit",
-                *[
-                    f"{'Coefficient ' + str(i):<15} {coef:<12.4f} Polynomial "
-                    f"Coefficient"
-                    for i, coef in enumerate(self.fit_method.coefficients)
-                ],
-            ]
-        else:
-            fit_lines = []
+        if not hasattr(self.fit_method, "fit_str"):
+            raise ValueError("No valid fit method provided.")
+        fit_lines = self.fit_method.fit_str()
         lines = [
             header,
             separator,
@@ -195,133 +396,51 @@ class FitResultData:
 
     def _repr_html_(self):
         """Return HTML representation for Jupyter notebooks."""
-        if isinstance(self.fit_method, LinRegResult):
+        if hasattr(self.fit_method, "html_fit_str"):
+            fit_lines = self.fit_method.html_fit_str()
             return f"""
-            <div>
-                <strong>Fit Results: {self.obs_well.name} ~
-                        {self.ref_well.name}</strong>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="text-align: left">Statistic</th>
-                            <th style="text-align: left">Value</th>
-                            <th style="text-align: left">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>RMSE</td>
-                            <td>{self.rmse:.4f}</td>
-                            <td>Root Mean Square Error</td>
-                        </tr>
-                        <tr>
-                            <td>R²</td>
-                            <td>{self.fit_method.rvalue**2:.4f}</td>
-                            <td>Coefficient of Determination</td>
-                        </tr>
-                        <tr>
-                            <td>R-value</td>
-                            <td>{self.fit_method.rvalue:.4f}</td>
-                            <td>Correlation Coefficient</td>
-                        </tr>
-                        <tr>
-                            <td>Slope</td>
-                            <td>{self.fit_method.slope:.4f}</td>
-                            <td>Linear Regression Slope</td>
-                        </tr>
-                        <tr>
-                            <td>Intercept</td>
-                            <td>{self.fit_method.intercept:.4f}</td>
-                            <td>Linear Regression Intercept</td>
-                        </tr>
-                        <tr>
-                            <td>P-value</td>
-                            <td>{self.fit_method.pvalue:.4f}</td>
-                            <td>Statistical Significance</td>
-                        </tr>
-                        <tr>
-                            <td>N</td>
-                            <td>{self.n}</td>
-                            <td>Number of Data Points</td>
-                        </tr>
-                        <tr>
-                            <td>Std Error</td>
-                            <td>{self.stderr:.4f}</td>
-                            <td>Standard Error</td>
-                        </tr>
-                        <tr>
-                            <td>Confidence</td>
-                            <td>{self.p * 100:.1f}%</td>
-                            <td>Confidence Level</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <p>
-                    Calibration Period: {self.tmin} to {self.tmax}<br>
-                    Time Offset: {self.offset}<br>
-                    Aggregation Method: {self.aggregation}
-                </p>
-            </div>
-        """
-        elif isinstance(self.fit_method, NPolyFitResult):
-            return f"""
-                        <div>
-                            <strong>Fit Results: {self.obs_well.name} ~
-                                    {self.ref_well.name}</strong>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th style="text-align: left">Statistic</th>
-                                        <th style="text-align: left">Value</th>
-                                        <th style="text-align: left">Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>RMSE</td>
-                                        <td>{self.rmse:.4f}</td>
-                                        <td>Root Mean Square Error</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Degree</td>
-                                        <td>{self.fit_method.degree}</td>
-                                        <td>Degree of Polynomial Fit</td>
-                                    </tr>
-                                    {
-                "".join(
-                    [
-                        f"<tr><td>Coefficient {i}</td>"
-                        f"<td>{coef:.4f}</td>"
-                        f"<td>Polynomial Coefficient</td>"
-                        f"</tr>"
-                        for i, coef in enumerate(self.fit_method.coefficients)
-                    ]
-                )
-            }
-                                    <tr>
-                                        <td>N</td>
-                                        <td>{self.n}</td>
-                                        <td>Number of Data Points</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Std Error</td>
-                                        <td>{self.stderr:.4f}</td>
-                                        <td>Standard Error</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Confidence</td>
-                                        <td>{self.p * 100:.1f}%</td>
-                                        <td>Confidence Level</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <p>
-                                Calibration Period: {self.tmin} to {self.tmax}<br>
-                                Time Offset: {self.offset}<br>
-                                Aggregation Method: {self.aggregation}
-                            </p>
-                        </div>
-                    """
+                    <div>
+                        <strong>Fit Results: {self.obs_well.name} ~
+                                {self.ref_well.name}</strong>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left">Statistic</th>
+                                    <th style="text-align: left">Value</th>
+                                    <th style="text-align: left">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>RMSE</td>
+                                    <td>{self.rmse:.4f}</td>
+                                    <td>Root Mean Square Error</td>
+                                </tr>
+                                {"".join(fit_lines)}
+                                <tr>
+                                    <td>N</td>
+                                    <td>{self.n}</td>
+                                    <td>Number of Data Points</td>
+                                </tr>
+                                <tr>
+                                    <td>Std Error</td>
+                                    <td>{self.stderr:.4f}</td>
+                                    <td>Standard Error</td>
+                                </tr>
+                                <tr>
+                                    <td>Confidence</td>
+                                    <td>{self.p * 100:.1f}%</td>
+                                    <td>Confidence Level</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p>
+                            Calibration Period: {self.tmin} to {self.tmax}<br>
+                            Time Offset: {self.offset}<br>
+                            Aggregation Method: {self.aggregation}
+                        </p>
+                    </div>
+                """
         else:
             return "<div><strong>No fit method available.</strong></div>"
 
@@ -346,14 +465,8 @@ class FitResultData:
         pd.Series
             The fitted values based on the reference series.
         """
-        if isinstance(self.fit_method, LinRegResult):
-            return self.ref_well.timeseries.apply(
-                lambda x: self.fit_method.slope * x + self.fit_method.intercept
-            )
-        elif isinstance(self.fit_method, NPolyFitResult):
-            return self.ref_well.timeseries.apply(
-                lambda x: np.polyval(self.fit_method.coefficients, x)
-            )
+        if hasattr(self.fit_method, "fit_timeseries"):
+            return self.fit_method.fit_timeseries(self.ref_well.timeseries)
         else:
             raise NotImplementedError(
                 f"Fitting method {self.fit_method.__class__.__name__} is not "
@@ -405,14 +518,7 @@ class FitResultData:
         pd.Series
             The outlier values based on the fit method and RMSE.
         """
-        if isinstance(self.fit_method, LinRegResult):
-            fitted_values = self.fit_timeseries()
-            outliers = pd.Series(
-                abs(self.obs_well.timeseries - fitted_values) > self.pred_const,
-                index=self.obs_well.timeseries.index,
-            )
-            return outliers
-        elif isinstance(self.fit_method, NPolyFitResult):
+        if hasattr(self.fit_method, "fit_timeseries"):
             fitted_values = self.fit_timeseries()
             outliers = pd.Series(
                 abs(self.obs_well.timeseries - fitted_values) > self.pred_const,
@@ -467,23 +573,17 @@ class FitResultData:
             "tmax": datetime_to_float(self.tmax),
         }
 
-        if dict_representation["fit_method"] == "LinRegResult":
-            dict_representation["LinRegResult"] = {
-                "slope": self.fit_method.slope,
-                "intercept": self.fit_method.intercept,
-                "rvalue": self.fit_method.rvalue,
-                "pvalue": self.fit_method.pvalue,
-                "stderr": self.fit_method.stderr,
-            }
-        elif dict_representation["fit_method"] == "NPolyFitResult":
-            dict_representation["NPolyFitResult"] = {
-                "coefficients": self.fit_method.coefficients.tolist(),
-            }
+        if hasattr(self.fit_method, "to_dict"):
+            dict_representation[self.fit_method.__class__.__name__] = (
+                self.fit_method.to_dict()
+            )
 
         return dict_representation
 
 
-def _unpack_dict_fit_method(data: dict) -> LinRegResult | NPolyFitResult:
+def _unpack_dict_fit_method(
+    data: dict,
+) -> LinRegResult | NPolyFitResult | ChebyshevFitResult:
     """
     Unpack a dictionary representation of a fit method into a LinRegResult object.
 
@@ -494,7 +594,7 @@ def _unpack_dict_fit_method(data: dict) -> LinRegResult | NPolyFitResult:
 
     Returns
     -------
-    LinRegResult | NPolyFitResult
+    LinRegResult | NPolyFitResult | ChebyshevFitResult
         The unpacked fitting method object.
     """
     fit_method_name = data.get("fit_method", None)
@@ -511,6 +611,11 @@ def _unpack_dict_fit_method(data: dict) -> LinRegResult | NPolyFitResult:
         npoly_data = data.get("NPolyFitResult", {})
         return NPolyFitResult(
             coefficients=np.array(npoly_data.get("coefficients", [])),
+        )
+    elif fit_method_name == "ChebyshevFitResult":
+        chebyshev_data = data.get("ChebyshevFitResult", {})
+        return ChebyshevFitResult(
+            coefficients=np.array(chebyshev_data.get("coefficients", [])),
         )
     else:
         raise ValueError(f"Unsupported fit method: {fit_method_name}")
