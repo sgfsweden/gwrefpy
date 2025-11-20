@@ -3,8 +3,7 @@ from typing import Literal
 
 import pandas as pd
 
-from .fitresults import ChebyshevFitResult, FitResultData, LinRegResult, NPolyFitResult
-from .methods.chebyshev import chebyshevfit
+from .fitresults import FitResultData, LinRegResult, NPolyFitResult
 from .methods.linregressfit import linregressfit
 from .methods.npolyfit import npolyfit
 from .well import Well
@@ -25,9 +24,7 @@ class FitBase:
         offset: pd.DateOffset | pd.Timedelta | str,
         aggregation: Literal["mean", "median", "min", "max"] = "mean",
         p: float = 0.95,
-        method: Literal[
-            "linearregression", "npolyfit", "chebyshev"
-        ] = "linearregression",
+        method: Literal["linearregression", "npolyfit"] = "linearregression",
         tmin: pd.Timestamp | str | None = None,
         tmax: pd.Timestamp | str | None = None,
         report: bool = True,
@@ -54,9 +51,9 @@ class FitBase:
             equivalents (default is "mean").
         p : float, optional
             The confidence level for the fit (default is 0.95).
-        method : Literal["linearregression", "npolyfit", "chebyshev"]
-            Method with which to perform regression. Currently supports
-            linear regression, N-th degree polynomial fit, and Chebyshev polynomial fit.
+        method : Literal["linearregression", "npolyfit"]
+            Method with which to perform regression. Currently only supports
+            linear regression and N-th degree polynomial fit.
         tmin: pd.Timestamp | str | None = None
             Minimum time for calibration period.
         tmax: pd.Timestamp | str | None = None
@@ -66,7 +63,7 @@ class FitBase:
         **kwargs
             Additional keyword arguments to pass to the fitting method.
             For example, you can use `degree` (default is 4) when using the `npolyfit`
-            or `chebyshev` methods.
+            method.
 
         Returns
         -------
@@ -136,9 +133,7 @@ class FitBase:
         ref_well: Well,
         offset: pd.DateOffset | pd.Timedelta | str,
         p: float = 0.95,
-        method: Literal[
-            "linearregression", "npolyfit", "chebyshev"
-        ] = "linearregression",
+        method: Literal["linearregression", "npolyfit"] = "linearregression",
         tmin: pd.Timestamp | str | None = None,
         tmax: pd.Timestamp | str | None = None,
         aggregation: Literal["mean", "median", "min", "max"] = "mean",
@@ -164,12 +159,6 @@ class FitBase:
             fit = npolyfit(
                 obs_well, ref_well, offset, degree, tmin, tmax, p, aggregation
             )
-        elif method == "chebyshev":
-            logger.debug("Using Chebyshev polynomial fit method for fitting.")
-            degree = kwargs.get("degree", 4)
-            fit = chebyshevfit(
-                obs_well, ref_well, offset, degree, tmin, tmax, p, aggregation
-            )
         if fit is None:
             logger.error(f"Fitting method '{method}' is not implemented.")
             raise NotImplementedError(f"Fitting method '{method}' is not implemented.")
@@ -182,9 +171,7 @@ class FitBase:
         self,
         obs_well: str | Well,
         ref_wells: list[str | Well] | None = None,
-        method: Literal[
-            "linearregression", "npolyfit", "chebyshev"
-        ] = "linearregression",
+        method: Literal["linearregression"] = "linearregression",
         **kwargs,
     ) -> FitResultData:
         """
@@ -197,7 +184,7 @@ class FitBase:
         ref_wells : Well or list of Well or None, optional
             The reference wells to test. If None, all reference wells in the
             model will be used (default is None).
-        method : Literal["linearregression", "npolyfit", "chebyshev"]
+        method : Literal["linearregression"]
             Method with which to perform regression. Currently only supports
             linear regression.
         **kwargs
@@ -215,9 +202,7 @@ class FitBase:
         self,
         obs_well: str | Well,
         ref_wells: list[str | Well] | None = None,
-        method: Literal[
-            "linearregression", "npolyfit", "chebyshev"
-        ] = "linearregression",
+        method: Literal["linearregression"] = "linearregression",
         **kwargs,
     ) -> FitResultData:
         """
@@ -230,7 +215,7 @@ class FitBase:
         ref_wells : Well or list of Well or None, optional
             The reference wells to test. If None, all reference wells in the
             model will be used (default is None).
-        method : Literal["linearregression", "npolyfit", "chebyshev"]
+        method : Literal["linearregression"]
             Method with which to perform regression. Currently only supports
             linear regression.
         **kwargs
@@ -304,8 +289,7 @@ class FitBase:
             The well to check.
         method : str | None, optional
             The fitting method to filter by (default is None, which returns all
-            fits involving the well). Options are "linearregression", "npolyfit", and
-            "chebyshev".
+            fits involving the well). Options are "linearregression" and "npolyfit".
 
         Returns
         -------
@@ -331,12 +315,7 @@ class FitBase:
             fit_list = [
                 fit for fit in fit_list if isinstance(fit.fit_method, NPolyFitResult)
             ]
-        elif method == "chebyshev":
-            fit_list = [
-                fit
-                for fit in fit_list
-                if isinstance(fit.fit_method, ChebyshevFitResult)
-            ]
+
         return (
             fit_list
             if len(fit_list) > 1

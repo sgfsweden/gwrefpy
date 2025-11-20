@@ -340,11 +340,3 @@ def test_fit_npolyfit_basic(strandangers_model) -> None:
     assert isinstance(result.fit_method, NPolyFitResult)
     assert result.n == 3
     assert result.fit_method.degree == 4
-
-
-def test_fit_chebyshev_basic(strandangers_model) -> None:
-    result = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="chebyshev", degree=6
-    )
-    assert result.n == 3
-    assert result.fit_method.degree == 6
