@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Tutorials &#8212; gwrefpy</title>
+    <title>Fitting Methods &#8212; gwrefpy</title>
   
   
   
@@ -47,12 +47,14 @@
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/index';</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/7_fitting_methods';</script>
     <link rel="icon" href="../_static/logo.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Quickstart" href="quickstart.html" />
-    <link rel="prev" title="Fitting Methods" href="../user_guide/7_fitting_methods.html" />
+    <link rel="next" title="Tutorials" href="../tutorials/index.html" />
+    <link rel="prev" title="Logging 📄" href="6_logging.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -137,15 +139,15 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../user_guide/index.html">
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
     User guide
   </a>
 </li>
 
 
-<li class="nav-item current active">
-  <a class="nav-link nav-internal" href="#">
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
     Tutorials
   </a>
 </li>
@@ -252,15 +254,15 @@
 <nav>
   <ul class="bd-navbar-elements navbar-nav">
     
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../user_guide/index.html">
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
     User guide
   </a>
 </li>
 
 
-<li class="nav-item current active">
-  <a class="nav-link nav-internal" href="#">
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
     Tutorials
   </a>
 </li>
@@ -321,15 +323,25 @@
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
-<li class="toctree-l1"><a class="reference internal" href="livedata.html">Working with live data</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="exercises/index.html">Exercises</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="exercises/1_exercise1.html">Exercise 1: Create and fit a simple gwrefpy model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exercises/2_exercise2.html">Exercise 2: Using best fit methods in gwrefpy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exercises/3_exercise3.html">Exercise 3: Update a <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code>model with new data</a></li>
-</ul>
-</details></li>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="1_intro_gwrefpy.html">Intro to <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code></a></li>
+
+
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="2_fitting_wells.html">Fitting wells</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="3_time_offsets.html">Time offsets</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="4_plotting.html">Plotting with gwrefpy 📊</a></li>
+<li class="toctree-l1"><a class="reference internal" href="5_io.html">Saving and loading models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="6_logging.html">Logging 📄</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Fitting Methods</a></li>
+
+
+
 </ul>
 </div>
 </nav></div>
@@ -370,7 +382,10 @@
         <i class="fa-solid fa-home"></i>
       </a>
     </li>
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Tutorials</span></li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Fitting Methods</span></li>
   </ul>
 </nav>
 </div>
@@ -387,46 +402,45 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="tutorials">
-<h1>Tutorials<a class="headerlink" href="#tutorials" title="Link to this heading">#</a></h1>
-<p>This section contains step-by-step tutorials to help you get started with gwrefpy.</p>
-<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
-<div class="sd-row docutils">
-<div class="sd-col sd-d-flex-row docutils">
-<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
-<div class="sd-card-body docutils">
-<div class="sd-card-title sd-font-weight-bold docutils">
-Quickstart</div>
-<p class="sd-card-text">A quick introduction to the main features of the package.</p>
-</div>
-<a class="sd-stretched-link sd-hide-link-text reference internal" href="quickstart.html"><span class="doc">Quickstart</span></a></div>
-</div>
-<div class="sd-col sd-d-flex-row docutils">
-<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
-<div class="sd-card-body docutils">
-<div class="sd-card-title sd-font-weight-bold docutils">
-Live data</div>
-<p class="sd-card-text">A tutorial on how to work with live data.</p>
-</div>
-<a class="sd-stretched-link sd-hide-link-text reference internal" href="livedata.html"><span class="doc">Working with live data</span></a></div>
-</div>
-</div>
-</div>
-<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
-<div class="sd-row docutils">
-<div class="sd-col sd-d-flex-row docutils">
-<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
-<div class="sd-card-body docutils">
-<div class="sd-card-title sd-font-weight-bold docutils">
-Exercises</div>
-<p class="sd-card-text">A collection of exercises for the <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> package.</p>
-</div>
-<a class="sd-stretched-link sd-hide-link-text reference internal" href="exercises/index.html"><span class="doc">Exercises</span></a></div>
-</div>
-</div>
-</div>
-<div class="toctree-wrapper compound">
-</div>
+  <section class="tex2jax_ignore mathjax_ignore" id="fitting-methods">
+<h1>Fitting Methods<a class="headerlink" href="#fitting-methods" title="Link to this heading">#</a></h1>
+<p>This notebook describes various methods available in the gwrefpy package for fitting observation and reference data.</p>
+<p>Currently supported fitting methods include:</p>
+<ul class="simple">
+<li><p>Linear Regression</p></li>
+<li><p>Nth order polynomial fitting</p></li>
+<li><p>Chebyshev polynomial fitting</p></li>
+</ul>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="linear-regression">
+<h1>Linear Regression<a class="headerlink" href="#linear-regression" title="Link to this heading">#</a></h1>
+<p>The linear regression fitting method fits a straight line to the data using the least squares method. It is suitable for data that exhibits a linear relationship.</p>
+<p>The equation for a linear regression is given by:</p>
+<div class="math notranslate nohighlight">
+\[y = a_0 + a_1x\]</div>
+<p>where <span class="math notranslate nohighlight">\(a_0\)</span> and <span class="math notranslate nohighlight">\(a_1\)</span> are the coefficients.</p>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="nth-order-polynomial-fitting">
+<h1>Nth Order Polynomial Fitting<a class="headerlink" href="#nth-order-polynomial-fitting" title="Link to this heading">#</a></h1>
+<p>The Nth order polynomial fitting method fits a polynomial of degree N to the data. This method is useful when more degrees of freedom are needed to capture the relationship between the variables.</p>
+<p>The equation for a Nth order polynomial is given by:</p>
+<div class="math notranslate nohighlight">
+\[y = a_0 + a_1 x + a_2 x^2 + ... + a_N x^N\]</div>
+<p>where <span class="math notranslate nohighlight">\(a_0\)</span>, <span class="math notranslate nohighlight">\(a_1\)</span>, <span class="math notranslate nohighlight">\(...\)</span>, <span class="math notranslate nohighlight">\(a_N\)</span> are the coefficients of the polynomial.</p>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="chebyshev-polynomial-fitting">
+<h1>Chebyshev Polynomial Fitting<a class="headerlink" href="#chebyshev-polynomial-fitting" title="Link to this heading">#</a></h1>
+<p>The Chebyshev polynomial fitting method uses Chebyshev polynomials to fit the data. Chebyshev polynomials are orthogonal polynomials that can provide a good approximation for functions over a specific interval.</p>
+<p>The equation for a Chebyshev polynomial of degree N is given by:</p>
+<div class="math notranslate nohighlight">
+\[y = a_0T_0(x) + a_1T_1(x) + a_2T_2(x) + ... + a_NT_n(x)\]</div>
+<p>where <span class="math notranslate nohighlight">\(T_N(x)\)</span> is the Chebyshev polynomial of degree <span class="math notranslate nohighlight">\(N\)</span> and <span class="math notranslate nohighlight">\(a_0\)</span>, <span class="math notranslate nohighlight">\(a_1\)</span>, <span class="math notranslate nohighlight">\(...\)</span>, <span class="math notranslate nohighlight">\(a_N\)</span> are the coefficients of the polynomial. The Chebyshev polynomials are defined recursively as:</p>
+<div class="math notranslate nohighlight">
+\[T_0(x) = 1\]</div>
+<div class="math notranslate nohighlight">
+\[T_1(x) = x\]</div>
+<div class="math notranslate nohighlight">
+\[T_{n+1}(x) = 2xT_n(x) - T_{n-1}(x)\]</div>
 </section>
 
 
@@ -440,20 +454,20 @@ Exercises</div>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../user_guide/7_fitting_methods.html"
+       href="6_logging.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Fitting Methods</p>
+        <p class="prev-next-title">Logging 📄</p>
       </div>
     </a>
     <a class="right-next"
-       href="quickstart.html"
+       href="../tutorials/index.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Quickstart</p>
+        <p class="prev-next-title">Tutorials</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -469,10 +483,26 @@ Exercises</div>
 
 
   <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Fitting Methods</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#linear-regression">Linear Regression</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#nth-order-polynomial-fitting">Nth Order Polynomial Fitting</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#chebyshev-polynomial-fitting">Chebyshev Polynomial Fitting</a></li>
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/tutorials/index.rst.txt"
+      <li><a href="../_sources/user_guide/7_fitting_methods.ipynb.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div></div>

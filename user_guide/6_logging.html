@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=4621528c"></script>
+    <script src="../_static/documentation_options.js?v=71d9d8e6"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +51,7 @@
     <link rel="icon" href="../_static/logo.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Tutorials" href="../tutorials/index.html" />
+    <link rel="next" title="Fitting Methods" href="7_fitting_methods.html" />
     <link rel="prev" title="Saving and loading models" href="5_io.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -336,6 +336,10 @@
 <li class="toctree-l1"><a class="reference internal" href="4_plotting.html">Plotting with gwrefpy 📊</a></li>
 <li class="toctree-l1"><a class="reference internal" href="5_io.html">Saving and loading models</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Logging 📄</a></li>
+<li class="toctree-l1"><a class="reference internal" href="7_fitting_methods.html">Fitting Methods</a></li>
+
+
+
 </ul>
 </div>
 </nav></div>
@@ -396,7 +400,7 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="logging">
+  <section class="tex2jax_ignore mathjax_ignore" id="logging">
 <h1>Logging 📄<a class="headerlink" href="#logging" title="Link to this heading">#</a></h1>
 <p>This notebook introduces the concept of logging using Python’s built-in logging module. Logging is essential for tracking events that happen when some software runs. The module provides a way to configure different log handlers and severity levels.</p>
 <p>This notebook can be downloaded from the source code <a class="reference external" href="https://github.com/andersretznerSGU/gwrefpy/blob/main/docs/user_guide/6_logging.ipynb">here</a>.</p>
@@ -502,7 +506,7 @@
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using linear regression method for fitting.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fit completed for model &#39;Logging Example Model&#39; with RMSE 0.16024003721878063.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fit completed for model &#39;Logging Example Model&#39; with RMSE 0.13775105151608322.
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fitting model &#39;Logging Example Model&#39; using reference well &#39;Ref. well&#39; and observation well &#39;Obs. well&#39;.
@@ -512,14 +516,14 @@
 ==================================
 Statistic       Value        Description
 --------------------------------------------------
-RMSE            0.1602       Root Mean Square Error
-R²              0.8800       Coefficient of Determination
-R-value         0.9381       Correlation Coefficient
-Slope           2.0564       Linear Regression Slope
-Intercept       -12.7937     Linear Regression Intercept
+RMSE            0.1378       Root Mean Square Error
+R²              0.9101       Coefficient of Determination
+R-value         0.9540       Correlation Coefficient
+Slope           2.0258       Linear Regression Slope
+Intercept       -12.2046     Linear Regression Intercept
 P-value         0.0000       Statistical Significance
 N               80           Number of Data Points
-Std Error       0.1623       Standard Error
+Std Error       0.1395       Standard Error
 Confidence      95.0        % Confidence Level
 
 Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00
@@ -528,72 +532,74 @@ Aggregation Method: mean
 </pre></div>
 </div>
 <div class="output text_html">
-            <div>
-                <strong>Fit Results: Obs. well ~
-                        Ref. well</strong>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="text-align: left">Statistic</th>
-                            <th style="text-align: left">Value</th>
-                            <th style="text-align: left">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>RMSE</td>
-                            <td>0.1602</td>
-                            <td>Root Mean Square Error</td>
-                        </tr>
-                        <tr>
-                            <td>R²</td>
-                            <td>0.8800</td>
-                            <td>Coefficient of Determination</td>
-                        </tr>
-                        <tr>
-                            <td>R-value</td>
-                            <td>0.9381</td>
-                            <td>Correlation Coefficient</td>
-                        </tr>
-                        <tr>
-                            <td>Slope</td>
-                            <td>2.0564</td>
-                            <td>Linear Regression Slope</td>
-                        </tr>
-                        <tr>
-                            <td>Intercept</td>
-                            <td>-12.7937</td>
-                            <td>Linear Regression Intercept</td>
-                        </tr>
-                        <tr>
-                            <td>P-value</td>
-                            <td>0.0000</td>
-                            <td>Statistical Significance</td>
-                        </tr>
-                        <tr>
-                            <td>N</td>
-                            <td>80</td>
-                            <td>Number of Data Points</td>
-                        </tr>
-                        <tr>
-                            <td>Std Error</td>
-                            <td>0.1623</td>
-                            <td>Standard Error</td>
-                        </tr>
-                        <tr>
-                            <td>Confidence</td>
-                            <td>95.0%</td>
-                            <td>Confidence Level</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <p>
-                    Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00<br>
-                    Time Offset: 0D<br>
-                    Aggregation Method: mean
-                </p>
-            </div>
-        </div></div>
+                    <div>
+                        <strong>Fit Results: Obs. well ~
+                                Ref. well</strong>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left">Statistic</th>
+                                    <th style="text-align: left">Value</th>
+                                    <th style="text-align: left">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>RMSE</td>
+                                    <td>0.1378</td>
+                                    <td>Root Mean Square Error</td>
+                                </tr>
+                                
+            <tr>
+                <td>R²</td>
+                <td>0.9101</td>
+                <td>Coefficient of Determination</td>
+            </tr>
+            <tr>
+                <td>R-value</td>
+                <td>0.9540</td>
+                <td>Correlation Coefficient</td>
+            </tr>
+            <tr>
+                <td>Slope</td>
+                <td>2.0258</td>
+                <td>Linear Regression Slope</td>
+            </tr>
+            <tr>
+                <td>Intercept</td>
+                <td>-12.2046</td>
+                <td>Linear Regression Intercept</td>
+            </tr>
+            <tr>
+                <td>P-value</td>
+                <td>0.0000</td>
+                <td>Statistical Significance</td>
+            </tr>
+            
+                                <tr>
+                                    <td>N</td>
+                                    <td>80</td>
+                                    <td>Number of Data Points</td>
+                                </tr>
+                                <tr>
+                                    <td>Std Error</td>
+                                    <td>0.1395</td>
+                                    <td>Standard Error</td>
+                                </tr>
+                                <tr>
+                                    <td>Confidence</td>
+                                    <td>95.0%</td>
+                                    <td>Confidence Level</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p>
+                            Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00<br>
+                            Time Offset: 0D<br>
+                            Aggregation Method: mean
+                        </p>
+                    </div>
+                </div></div>
 </div>
 <p>As you can see both the progress and the results of the fitting are logged to the console.</p>
 <p>Usually, we do not want that much information printed to the console. For many practivale applications, the <code class="docutils literal notranslate"><span class="pre">INFO</span></code> logging level is sufficient. Let’s change the logging level and see how it affects the output. We will also enable logging to a file with the <code class="docutils literal notranslate"><span class="pre">enable_file_logging</span></code> function, here we can set the logging level to <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code> to capture all messages in the file.</p>
@@ -698,72 +704,74 @@ Aggregation Method: mean
 </pre></div>
 </div>
 <div class="output text_html">
-            <div>
-                <strong>Fit Results: Obs. well 1 ~
-                        Ref. well 1</strong>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="text-align: left">Statistic</th>
-                            <th style="text-align: left">Value</th>
-                            <th style="text-align: left">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>RMSE</td>
-                            <td>0.1617</td>
-                            <td>Root Mean Square Error</td>
-                        </tr>
-                        <tr>
-                            <td>R²</td>
-                            <td>0.8820</td>
-                            <td>Coefficient of Determination</td>
-                        </tr>
-                        <tr>
-                            <td>R-value</td>
-                            <td>0.9392</td>
-                            <td>Correlation Coefficient</td>
-                        </tr>
-                        <tr>
-                            <td>Slope</td>
-                            <td>2.1131</td>
-                            <td>Linear Regression Slope</td>
-                        </tr>
-                        <tr>
-                            <td>Intercept</td>
-                            <td>-13.8677</td>
-                            <td>Linear Regression Intercept</td>
-                        </tr>
-                        <tr>
-                            <td>P-value</td>
-                            <td>0.0000</td>
-                            <td>Statistical Significance</td>
-                        </tr>
-                        <tr>
-                            <td>N</td>
-                            <td>80</td>
-                            <td>Number of Data Points</td>
-                        </tr>
-                        <tr>
-                            <td>Std Error</td>
-                            <td>0.1637</td>
-                            <td>Standard Error</td>
-                        </tr>
-                        <tr>
-                            <td>Confidence</td>
-                            <td>95.0%</td>
-                            <td>Confidence Level</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <p>
-                    Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00<br>
-                    Time Offset: 0D<br>
-                    Aggregation Method: mean
-                </p>
-            </div>
-        </div></div>
+                    <div>
+                        <strong>Fit Results: Obs. well 1 ~
+                                Ref. well 1</strong>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left">Statistic</th>
+                                    <th style="text-align: left">Value</th>
+                                    <th style="text-align: left">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>RMSE</td>
+                                    <td>0.1363</td>
+                                    <td>Root Mean Square Error</td>
+                                </tr>
+                                
+            <tr>
+                <td>R²</td>
+                <td>0.9170</td>
+                <td>Coefficient of Determination</td>
+            </tr>
+            <tr>
+                <td>R-value</td>
+                <td>0.9576</td>
+                <td>Correlation Coefficient</td>
+            </tr>
+            <tr>
+                <td>Slope</td>
+                <td>2.1958</td>
+                <td>Linear Regression Slope</td>
+            </tr>
+            <tr>
+                <td>Intercept</td>
+                <td>-15.4050</td>
+                <td>Linear Regression Intercept</td>
+            </tr>
+            <tr>
+                <td>P-value</td>
+                <td>0.0000</td>
+                <td>Statistical Significance</td>
+            </tr>
+            
+                                <tr>
+                                    <td>N</td>
+                                    <td>80</td>
+                                    <td>Number of Data Points</td>
+                                </tr>
+                                <tr>
+                                    <td>Std Error</td>
+                                    <td>0.1380</td>
+                                    <td>Standard Error</td>
+                                </tr>
+                                <tr>
+                                    <td>Confidence</td>
+                                    <td>95.0%</td>
+                                    <td>Confidence Level</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p>
+                            Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00<br>
+                            Time Offset: 0D<br>
+                            Aggregation Method: mean
+                        </p>
+                    </div>
+                </div></div>
 </div>
 <p>As you can see, not as much will be printed to the console. But if we instead open <code class="docutils literal notranslate"><span class="pre">gwrefpy_debug.log</span></code> file we can see all the detailed logging information.</p>
 <div class="cell docutils container">
@@ -776,30 +784,30 @@ Aggregation Method: mean
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-11-20 10:53:49,479 [INFO] __main__: Creating wells with timeseries data
-2025-11-20 10:53:49,480 [DEBUG] gwrefpy.well: Added timeseries to well Obs. well 1
-2025-11-20 10:53:49,480 [DEBUG] gwrefpy.well: Added timeseries to well Ref. well 1
-2025-11-20 10:53:49,481 [DEBUG] __main__: Timeseries data added to wells
-2025-11-20 10:53:49,481 [INFO] __main__: Creating a new model
-2025-11-20 10:53:49,481 [DEBUG] gwrefpy.model: Well &#39;Obs. well 1&#39; added to model &#39;Logging Example Model DEBUG&#39;.
-2025-11-20 10:53:49,481 [DEBUG] gwrefpy.model: Well &#39;Ref. well 1&#39; added to model &#39;Logging Example Model DEBUG&#39;.
-2025-11-20 10:53:49,481 [DEBUG] __main__: The wells have been added to the model
-2025-11-20 10:53:49,485 [INFO] __main__: Running the fit method on the model
-2025-11-20 10:53:49,486 [DEBUG] gwrefpy.fitbase: Using linear regression method for fitting.
-2025-11-20 10:53:49,490 [DEBUG] gwrefpy.fitbase: Fit completed for model &#39;Logging Example Model DEBUG&#39; with RMSE 0.16167363851536576.
-2025-11-20 10:53:49,490 [INFO] gwrefpy.fitbase: Fitting model &#39;Logging Example Model DEBUG&#39; using reference well &#39;Ref. well 1&#39; and observation well &#39;Obs. well 1&#39;.
-2025-11-20 10:53:49,491 [DEBUG] gwrefpy.model: Fit Results: Obs. well 1 ~ Ref. well 1
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-11-20 11:20:57,337 [INFO] __main__: Creating wells with timeseries data
+2025-11-20 11:20:57,338 [DEBUG] gwrefpy.well: Added timeseries to well Obs. well 1
+2025-11-20 11:20:57,338 [DEBUG] gwrefpy.well: Added timeseries to well Ref. well 1
+2025-11-20 11:20:57,338 [DEBUG] __main__: Timeseries data added to wells
+2025-11-20 11:20:57,339 [INFO] __main__: Creating a new model
+2025-11-20 11:20:57,339 [DEBUG] gwrefpy.model: Well &#39;Obs. well 1&#39; added to model &#39;Logging Example Model DEBUG&#39;.
+2025-11-20 11:20:57,339 [DEBUG] gwrefpy.model: Well &#39;Ref. well 1&#39; added to model &#39;Logging Example Model DEBUG&#39;.
+2025-11-20 11:20:57,339 [DEBUG] __main__: The wells have been added to the model
+2025-11-20 11:20:57,343 [INFO] __main__: Running the fit method on the model
+2025-11-20 11:20:57,343 [DEBUG] gwrefpy.fitbase: Using linear regression method for fitting.
+2025-11-20 11:20:57,347 [DEBUG] gwrefpy.fitbase: Fit completed for model &#39;Logging Example Model DEBUG&#39; with RMSE 0.1363002372242418.
+2025-11-20 11:20:57,348 [INFO] gwrefpy.fitbase: Fitting model &#39;Logging Example Model DEBUG&#39; using reference well &#39;Ref. well 1&#39; and observation well &#39;Obs. well 1&#39;.
+2025-11-20 11:20:57,348 [DEBUG] gwrefpy.model: Fit Results: Obs. well 1 ~ Ref. well 1
 ======================================
 Statistic       Value        Description
 --------------------------------------------------
-RMSE            0.1617       Root Mean Square Error
-R²              0.8820       Coefficient of Determination
-R-value         0.9392       Correlation Coefficient
-Slope           2.1131       Linear Regression Slope
-Intercept       -13.8677     Linear Regression Intercept
+RMSE            0.1363       Root Mean Square Error
+R²              0.9170       Coefficient of Determination
+R-value         0.9576       Correlation Coefficient
+Slope           2.1958       Linear Regression Slope
+Intercept       -15.4050     Linear Regression Intercept
 P-value         0.0000       Statistical Significance
 N               80           Number of Data Points
-Std Error       0.1637       Standard Error
+Std Error       0.1380       Standard Error
 Confidence      95.0        % Confidence Level
 
 Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00
@@ -833,11 +841,11 @@ Aggregation Method: mean
       </div>
     </a>
     <a class="right-next"
-       href="../tutorials/index.html"
+       href="7_fitting_methods.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Tutorials</p>
+        <p class="prev-next-title">Fitting Methods</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
