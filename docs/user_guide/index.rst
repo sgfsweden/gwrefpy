@@ -34,3 +34,4 @@ If you already have the package installed, make sure to update it to the latest 
    4_plotting.ipynb
    5_io.ipynb
    6_logging.ipynb
+   7_fitting_methods.ipynb
