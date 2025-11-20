@@ -1,6 +1,3 @@
-__name__ = "gwrefpy"
-__version__ = "0.3.0"
-
 from .constants import print_constants
 from .methods.timeseries import analyze_offsets
 from .model import Model
@@ -12,6 +9,8 @@ from .utils import (
 )
 from .well import Well
 
+__name__ = "gwrefpy"
+__version__ = "0.3.0"
 __all__ = [
     "Model",
     "Well",

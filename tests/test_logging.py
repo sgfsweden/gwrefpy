@@ -1,8 +1,7 @@
 import logging
 
-import pytest
-
 import gwrefpy as gr
+import pytest
 
 logger = logging.getLogger(__name__)
 
