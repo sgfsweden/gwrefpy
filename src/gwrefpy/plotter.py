@@ -16,7 +16,7 @@ from .constants import (
     tfont,
     tifont,
 )
-from .fitresults import ChebyshevFitResult, FitResultData, LinRegResult, NPolyFitResult
+from .fitresults import FitResultData, LinRegResult, NPolyFitResult
 from .methods.timeseries import groupby_time_equivalents
 from .well import Well
 
@@ -756,30 +756,6 @@ class Plotter:
             equation = " + ".join(eq_terms)
             ax.plot(
                 x[0],
-                y[0],
-                color="white",
-                linestyle=None,
-                marker=None,
-                label=f"RMSE = {fit.rmse:.4f}\ny = {equation}",
-            )
-        elif isinstance(fm, ChebyshevFitResult):
-            coeffs = fm.coefficients
-            x = fit.ref_well.timeseries.values
-            x_plot = np.linspace(np.min(x), np.max(x), 100)
-            y = np.polynomial.chebyshev.chebval(x_plot, coeffs)
-            ax.plot(x_plot, y, color="black", linestyle="-.", label="Chebyshev fit")
-            if len(coeffs) > 2:
-                eq_terms = [f"{c:.4f}T{i}(x)" for i, c in enumerate(coeffs) if i > 0][
-                    :2
-                ]
-                eq_terms.insert(0, f"{coeffs[0]:.4f}")
-                eq_terms.append("...")
-            else:
-                eq_terms = [f"{c:.4f}T{i}(x)" for i, c in enumerate(coeffs) if i > 0]
-                eq_terms.insert(0, f"{coeffs[0]:.4f}")
-            equation = " + ".join(eq_terms)
-            ax.plot(
-                x_plot[0],
                 y[0],
                 color="white",
                 linestyle=None,
