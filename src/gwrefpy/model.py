@@ -2,6 +2,7 @@ import logging
 
 import pandas as pd
 
+from . import __version__
 from .fitbase import FitBase
 from .fitresults import FitResultData, LinRegResult, _unpack_dict_fit_method
 from .io.io import load, save
@@ -541,6 +542,7 @@ class Model(FitBase, Plotter):
         model_dict = {
             "name": self.name,
             "wells": [well.name for well in self.wells],
+            "gwrefpy_version": __version__,
         }
 
         # Create a dictionary representation of each well
@@ -570,6 +572,15 @@ class Model(FitBase, Plotter):
             This method adds wells, fits, and properties to the model.
         """
         self.name = data.get("name", self.name)
+
+        # Check gwrefpy version compatibility
+        gwrefpy_version = data.get("gwrefpy_version", None)
+        if gwrefpy_version is not None and gwrefpy_version != __version__:
+            logger.warning(
+                f"The model was created with gwrefpy version {gwrefpy_version}, "
+                f"but the current version is {__version__}. "
+                "There may be compatibility issues."
+            )
 
         # Unpack wells
         wells_dict = data.get("wells_dict", {})

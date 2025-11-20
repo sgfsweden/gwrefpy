@@ -1,5 +1,6 @@
-import gwrefpy as gr
 import pandas as pd
+
+import gwrefpy as gr
 
 
 def test_datetime_to_float():
