@@ -502,7 +502,7 @@
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using linear regression method for fitting.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fit completed for model &#39;Logging Example Model&#39; with RMSE 0.15069710638484163.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fit completed for model &#39;Logging Example Model&#39; with RMSE 0.1612144801629525.
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fitting model &#39;Logging Example Model&#39; using reference well &#39;Ref. well&#39; and observation well &#39;Obs. well&#39;.
@@ -512,14 +512,14 @@
 ==================================
 Statistic       Value        Description
 --------------------------------------------------
-RMSE            0.1507       Root Mean Square Error
-R²              0.9050       Coefficient of Determination
-R-value         0.9513       Correlation Coefficient
-Slope           2.4046       Linear Regression Slope
-Intercept       -19.3283     Linear Regression Intercept
+RMSE            0.1612       Root Mean Square Error
+R²              0.8847       Coefficient of Determination
+R-value         0.9406       Correlation Coefficient
+Slope           2.2904       Linear Regression Slope
+Intercept       -17.1668     Linear Regression Intercept
 P-value         0.0000       Statistical Significance
 N               80           Number of Data Points
-Std Error       0.1526       Standard Error
+Std Error       0.1633       Standard Error
 Confidence      95.0        % Confidence Level
 
 Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00
@@ -542,27 +542,27 @@ Aggregation Method: mean
                     <tbody>
                         <tr>
                             <td>RMSE</td>
-                            <td>0.1507</td>
+                            <td>0.1612</td>
                             <td>Root Mean Square Error</td>
                         </tr>
                         <tr>
                             <td>R²</td>
-                            <td>0.9050</td>
+                            <td>0.8847</td>
                             <td>Coefficient of Determination</td>
                         </tr>
                         <tr>
                             <td>R-value</td>
-                            <td>0.9513</td>
+                            <td>0.9406</td>
                             <td>Correlation Coefficient</td>
                         </tr>
                         <tr>
                             <td>Slope</td>
-                            <td>2.4046</td>
+                            <td>2.2904</td>
                             <td>Linear Regression Slope</td>
                         </tr>
                         <tr>
                             <td>Intercept</td>
-                            <td>-19.3283</td>
+                            <td>-17.1668</td>
                             <td>Linear Regression Intercept</td>
                         </tr>
                         <tr>
@@ -577,7 +577,7 @@ Aggregation Method: mean
                         </tr>
                         <tr>
                             <td>Std Error</td>
-                            <td>0.1526</td>
+                            <td>0.1633</td>
                             <td>Standard Error</td>
                         </tr>
                         <tr>
@@ -712,27 +712,27 @@ Aggregation Method: mean
                     <tbody>
                         <tr>
                             <td>RMSE</td>
-                            <td>0.1504</td>
+                            <td>0.1631</td>
                             <td>Root Mean Square Error</td>
                         </tr>
                         <tr>
                             <td>R²</td>
-                            <td>0.9060</td>
+                            <td>0.8798</td>
                             <td>Coefficient of Determination</td>
                         </tr>
                         <tr>
                             <td>R-value</td>
-                            <td>0.9519</td>
+                            <td>0.9380</td>
                             <td>Correlation Coefficient</td>
                         </tr>
                         <tr>
                             <td>Slope</td>
-                            <td>2.3019</td>
+                            <td>2.0911</td>
                             <td>Linear Regression Slope</td>
                         </tr>
                         <tr>
                             <td>Intercept</td>
-                            <td>-17.4196</td>
+                            <td>-13.4382</td>
                             <td>Linear Regression Intercept</td>
                         </tr>
                         <tr>
@@ -747,7 +747,7 @@ Aggregation Method: mean
                         </tr>
                         <tr>
                             <td>Std Error</td>
-                            <td>0.1523</td>
+                            <td>0.1651</td>
                             <td>Standard Error</td>
                         </tr>
                         <tr>
@@ -776,30 +776,30 @@ Aggregation Method: mean
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-11-17 14:01:43,539 [INFO] __main__: Creating wells with timeseries data
-2025-11-17 14:01:43,540 [DEBUG] gwrefpy.well: Added timeseries to well Obs. well 1
-2025-11-17 14:01:43,540 [DEBUG] gwrefpy.well: Added timeseries to well Ref. well 1
-2025-11-17 14:01:43,541 [DEBUG] __main__: Timeseries data added to wells
-2025-11-17 14:01:43,541 [INFO] __main__: Creating a new model
-2025-11-17 14:01:43,541 [DEBUG] gwrefpy.model: Well &#39;Obs. well 1&#39; added to model &#39;Logging Example Model DEBUG&#39;.
-2025-11-17 14:01:43,541 [DEBUG] gwrefpy.model: Well &#39;Ref. well 1&#39; added to model &#39;Logging Example Model DEBUG&#39;.
-2025-11-17 14:01:43,541 [DEBUG] __main__: The wells have been added to the model
-2025-11-17 14:01:43,545 [INFO] __main__: Running the fit method on the model
-2025-11-17 14:01:43,546 [DEBUG] gwrefpy.fitbase: Using linear regression method for fitting.
-2025-11-17 14:01:43,551 [DEBUG] gwrefpy.fitbase: Fit completed for model &#39;Logging Example Model DEBUG&#39; with RMSE 0.15035514926474733.
-2025-11-17 14:01:43,551 [INFO] gwrefpy.fitbase: Fitting model &#39;Logging Example Model DEBUG&#39; using reference well &#39;Ref. well 1&#39; and observation well &#39;Obs. well 1&#39;.
-2025-11-17 14:01:43,552 [DEBUG] gwrefpy.model: Fit Results: Obs. well 1 ~ Ref. well 1
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-11-20 10:44:34,904 [INFO] __main__: Creating wells with timeseries data
+2025-11-20 10:44:34,905 [DEBUG] gwrefpy.well: Added timeseries to well Obs. well 1
+2025-11-20 10:44:34,905 [DEBUG] gwrefpy.well: Added timeseries to well Ref. well 1
+2025-11-20 10:44:34,905 [DEBUG] __main__: Timeseries data added to wells
+2025-11-20 10:44:34,905 [INFO] __main__: Creating a new model
+2025-11-20 10:44:34,906 [DEBUG] gwrefpy.model: Well &#39;Obs. well 1&#39; added to model &#39;Logging Example Model DEBUG&#39;.
+2025-11-20 10:44:34,906 [DEBUG] gwrefpy.model: Well &#39;Ref. well 1&#39; added to model &#39;Logging Example Model DEBUG&#39;.
+2025-11-20 10:44:34,906 [DEBUG] __main__: The wells have been added to the model
+2025-11-20 10:44:34,910 [INFO] __main__: Running the fit method on the model
+2025-11-20 10:44:34,910 [DEBUG] gwrefpy.fitbase: Using linear regression method for fitting.
+2025-11-20 10:44:34,915 [DEBUG] gwrefpy.fitbase: Fit completed for model &#39;Logging Example Model DEBUG&#39; with RMSE 0.1630521560137911.
+2025-11-20 10:44:34,915 [INFO] gwrefpy.fitbase: Fitting model &#39;Logging Example Model DEBUG&#39; using reference well &#39;Ref. well 1&#39; and observation well &#39;Obs. well 1&#39;.
+2025-11-20 10:44:34,915 [DEBUG] gwrefpy.model: Fit Results: Obs. well 1 ~ Ref. well 1
 ======================================
 Statistic       Value        Description
 --------------------------------------------------
-RMSE            0.1504       Root Mean Square Error
-R²              0.9060       Coefficient of Determination
-R-value         0.9519       Correlation Coefficient
-Slope           2.3019       Linear Regression Slope
-Intercept       -17.4196     Linear Regression Intercept
+RMSE            0.1631       Root Mean Square Error
+R²              0.8798       Coefficient of Determination
+R-value         0.9380       Correlation Coefficient
+Slope           2.0911       Linear Regression Slope
+Intercept       -13.4382     Linear Regression Intercept
 P-value         0.0000       Statistical Significance
 N               80           Number of Data Points
-Std Error       0.1523       Standard Error
+Std Error       0.1651       Standard Error
 Confidence      95.0        % Confidence Level
 
 Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00
