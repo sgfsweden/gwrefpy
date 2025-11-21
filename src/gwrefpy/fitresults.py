@@ -1,3 +1,5 @@
+import uuid
+
 import numpy as np
 import pandas as pd
 
@@ -330,6 +332,8 @@ class FitResultData:
         The minimum timestamp for the calibration period.
     tmax: pd.Timestamp | str | None
         The maximum timestamp for the calibration period.
+    name: str
+        A unique name for the FitResultData object. If None, a UUID will be generated.
     """
 
     def __init__(
@@ -347,6 +351,7 @@ class FitResultData:
         aggregation: str,
         tmin: pd.Timestamp | str | None,
         tmax: pd.Timestamp | str | None,
+        name: str | None = None,
     ):
         """
         Initialize a FitResultData object to store the results of a fit between.
@@ -364,6 +369,7 @@ class FitResultData:
         self.aggregation = aggregation
         self.tmin = tmin
         self.tmax = tmax
+        self.name = name if name is not None else str(uuid.uuid4())
 
     def __str__(self):
         """Return a nicely formatted table representation of the fit results."""
@@ -571,6 +577,7 @@ class FitResultData:
             "aggregation": self.aggregation,
             "tmin": datetime_to_float(self.tmin),
             "tmax": datetime_to_float(self.tmax),
+            "name": self.name,
         }
 
         if hasattr(self.fit_method, "to_dict"):

@@ -607,6 +607,7 @@ class Model(FitBase, Plotter):
                 aggregation=fit_data.get("aggregation", "mean"),
                 tmin=float_to_datetime(fit_data.get("tmin", None)),
                 tmax=float_to_datetime(fit_data.get("tmax", None)),
+                name=fit_data.get("name", None),
             )
             self.fits.append(fit)
 

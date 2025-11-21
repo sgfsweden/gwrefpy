@@ -61,7 +61,7 @@ def load(filename):
 
     Returns
     -------
-    object
+    dict
         The loaded object.
     """
     ext = path.splitext(filename)[1]

@@ -1,6 +1,6 @@
 [project]
 name = "gwrefpy"
-version = "0.3.2"
+version = "0.4.0"
 description = "A python implementation of the Akvifär reference method for detecting deviations in groundwater level time series."
 readme = "README.md"
 license = "MIT"
