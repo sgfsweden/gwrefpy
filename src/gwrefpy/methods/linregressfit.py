@@ -5,6 +5,7 @@ import pandas as pd
 import scipy as sp
 
 from ..fitresults import FitResultData, LinRegResult
+from ..methods.common import _get_gwrefs_stats, compute_residual_std_error
 from ..methods.timeseries import groupby_time_equivalents
 from ..well import Well
 
@@ -17,6 +18,7 @@ def linregressfit(
     offset: pd.DateOffset | pd.Timedelta | str,
     tmin: pd.Timestamp | str | None = None,
     tmax: pd.Timestamp | str | None = None,
+    name: str | None = None,
     p=0.95,
     aggregation="mean",
 ):
@@ -35,6 +37,8 @@ def linregressfit(
         The minimum timestamp for the calibration period.
     tmax: pd.Timestamp | str | None = None
         The maximum timestamp for the calibration period.
+    name: str | None = None
+        An optional name for the fit result.
     p : float, optional
         The confidence level for the prediction interval (default is 0.95).
     aggregation : str, optional
@@ -46,30 +50,6 @@ def linregressfit(
     fit_result : FitResultData
         A `FitResultData` object containing the results of the linear regression fit.
     """
-
-    def _t_inv(probability, degrees_freedom):
-        """
-        Mimics Excel's T.INV function.
-        Returns the t-value for the given probability and degrees of freedom.
-        """
-        return -sp.stats.t.ppf(probability, degrees_freedom)
-
-    def _get_gwrefs_stats(p, n, stderr):
-        ta = _t_inv((1 - p) / 2, n - 1)
-        pc = ta * stderr * np.sqrt(1 + 1 / n)
-        return pc, ta
-
-    def compute_residual_std_error(x, y, a, b, n):
-        y_pred = a * x + b
-        residuals = y - y_pred
-
-        stderr = np.sum(residuals**2) - np.sum(
-            residuals * (x - np.mean(x))
-        ) ** 2 / np.sum((x - np.mean(x)) ** 2)
-        stderr *= 1 / (n - 2)
-        stderr = np.sqrt(stderr)
-
-        return stderr
 
     # Groupby time equivalents with given offset
     if ref_well.timeseries is None or obs_well.timeseries is None:
@@ -93,7 +73,7 @@ def linregressfit(
     )
 
     stderr = compute_residual_std_error(
-        ref_timeseries, obs_timeseries, linreg.slope, linreg.intercept, n
+        ref_timeseries, obs_timeseries, n, lambda x: linreg.slope * x + linreg.intercept
     )
 
     pred_const, t_a = _get_gwrefs_stats(p, n, stderr)
@@ -125,5 +105,6 @@ def linregressfit(
         aggregation=aggregation,
         tmin=tmin,
         tmax=tmax,
+        name=name,
     )
     return fit_result

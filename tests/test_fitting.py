@@ -13,10 +13,11 @@ def test_strandangers_model_basic_fit(strandangers_model) -> None:
 
     [obs, ref] = strandangers_model.wells
 
-    strandangers_model.fit(obs, ref, "3.5D")
+    strandangers_model.fit(obs, ref, "3.5D", name="test_fit")
     [fit] = strandangers_model.fits
     assert fit.n == 3
     assert fit.offset == "3.5D"
+    assert fit.name == "test_fit"
 
 
 def test_strandangers_model_best_fit_by_names(strandangers_model) -> None:
@@ -64,7 +65,9 @@ def test_strandangers_model_fit_multiple_wells(strandangers_model) -> None:
     strandangers_model.add_well(ref2)
 
     # Test fitting with lists of wells
-    results = strandangers_model.fit([obs, obs2], [ref, ref2], offset="3.5D")
+    results = strandangers_model.fit(
+        [obs, obs2], [ref, ref2], offset="3.5D", name=["test1", "test2"]
+    )
 
     # Verify we get a list of results
     assert isinstance(results, list)
@@ -75,6 +78,10 @@ def test_strandangers_model_fit_multiple_wells(strandangers_model) -> None:
         assert isinstance(result, FitResultData)
         assert result.offset == "3.5D"
 
+    # Verify names
+    assert results[0].name == "test1"
+    assert results[1].name == "test2"
+
     # Verify the correct pairings
     assert results[0].obs_well == obs
     assert results[0].ref_well == ref
@@ -83,6 +90,15 @@ def test_strandangers_model_fit_multiple_wells(strandangers_model) -> None:
 
     # Verify results were added to model fits
     assert len(strandangers_model.fits) >= 2
+
+    # Test fitting with lists of wells with no names
+    results2 = strandangers_model.fit([obs, obs2], [ref, ref2], offset="3.5D")
+
+    # verify that the names are auto-generated and are of type str(uuid4)
+    assert results2[0].name is not None
+    assert results2[1].name is not None
+    assert isinstance(results2[0].name, str)
+    assert isinstance(results2[1].name, str)
 
 
 def test_strandangers_model_fit_mismatched_lists(strandangers_model) -> None:

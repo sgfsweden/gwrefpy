@@ -30,6 +30,7 @@ class FitBase:
         ] = "linearregression",
         tmin: pd.Timestamp | str | None = None,
         tmax: pd.Timestamp | str | None = None,
+        name: str | list[str] | None = None,
         report: bool = True,
         **kwargs,
     ) -> FitResultData | list[FitResultData]:
@@ -61,6 +62,10 @@ class FitBase:
             Minimum time for calibration period.
         tmax: pd.Timestamp | str | None = None
             Maximum time for calibration period.
+        name : str | list[str] | None, optional
+            An optional name or list of names for the fit result(s). If lists of
+            wells are provided, the name list must match in length. If None,
+            default names will be assigned.
         report: bool, optional
             Whether to print fit results summary (default is True).
         **kwargs
@@ -94,6 +99,7 @@ class FitBase:
                 method,
                 tmin,
                 tmax,
+                name,
                 aggregation,
                 **kwargs,
             )
@@ -114,11 +120,32 @@ class FitBase:
             logger.error(error_msg)
             raise ValueError(error_msg)
 
+        # Validate the name parameter if provided as a list
+        if isinstance(name, list):
+            if len(name) != len(obs_wells):
+                error_msg = (
+                    f"name list length ({len(name)}) must match "
+                    f"obs_well/ref_well list length ({len(obs_wells)})"
+                )
+                logger.error(error_msg)
+                raise ValueError(error_msg)
+
         # Perform fitting for each pair
         results = []
-        for obs_w, ref_w in zip(obs_wells, ref_wells, strict=True):
+        if not isinstance(name, list):
+            name = [name] * len(obs_wells)
+        for obs_w, ref_w, fit_name in zip(obs_wells, ref_wells, name, strict=True):
             result = self._fit(
-                obs_w, ref_w, offset, p, method, tmin, tmax, aggregation, **kwargs
+                obs_w,
+                ref_w,
+                offset,
+                p,
+                method,
+                tmin,
+                tmax,
+                fit_name,
+                aggregation,
+                **kwargs,
             )
             results.append(result)
             logger.info(
@@ -141,6 +168,7 @@ class FitBase:
         ] = "linearregression",
         tmin: pd.Timestamp | str | None = None,
         tmax: pd.Timestamp | str | None = None,
+        name: str | None = None,
         aggregation: Literal["mean", "median", "min", "max"] = "mean",
         **kwargs,
     ) -> FitResultData:
@@ -157,18 +185,20 @@ class FitBase:
         fit = None
         if method == "linearregression":
             logger.debug("Using linear regression method for fitting.")
-            fit = linregressfit(obs_well, ref_well, offset, tmin, tmax, p, aggregation)
+            fit = linregressfit(
+                obs_well, ref_well, offset, tmin, tmax, name, p, aggregation
+            )
         elif method == "npolyfit":
             logger.debug("Using Nth degree polynomial fit method for fitting.")
             degree = kwargs.get("degree", 4)
             fit = npolyfit(
-                obs_well, ref_well, offset, degree, tmin, tmax, p, aggregation
+                obs_well, ref_well, offset, degree, tmin, tmax, name, p, aggregation
             )
         elif method == "chebyshev":
             logger.debug("Using Chebyshev polynomial fit method for fitting.")
             degree = kwargs.get("degree", 4)
             fit = chebyshevfit(
-                obs_well, ref_well, offset, degree, tmin, tmax, p, aggregation
+                obs_well, ref_well, offset, degree, tmin, tmax, name, p, aggregation
             )
         if fit is None:
             logger.error(f"Fitting method '{method}' is not implemented.")
