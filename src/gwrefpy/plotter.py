@@ -343,12 +343,12 @@ class Plotter:
                 logger.debug(f"Plotting fit: {fit.obs_well.name} ~ {fit.ref_well.name}")
                 self._set_plot_attributes(fit.obs_well)
                 self._set_plot_attributes(fit.ref_well)
-                self._plot_well(fit.obs_well, ax)
+                self._plot_well(fit.obs_well, ax, fit.shift)
                 self._plot_fit(fits, fit.obs_well, ax)
                 if plot_ref_well:
                     self._plot_well(fit.ref_well, ax)
                 if mark_outliers:
-                    self._plot_outliers(fit.obs_well, ax)
+                    self._plot_outliers(fit, ax)
                 if show_initiation_period:
                     self._plot_initiation_period(fit, ax)
 
@@ -378,12 +378,12 @@ class Plotter:
                 logger.info(f"Plotting fit: {fit.obs_well.name} ~ {fit.ref_well.name}")
                 self._set_plot_attributes(fit.obs_well)
                 self._set_plot_attributes(fit.ref_well)
-                self._plot_well(fit.obs_well, ax)
+                self._plot_well(fit.obs_well, ax, fit.shift)
                 self._plot_fit(fits, fit.obs_well, ax)
                 if plot_ref_well:
                     self._plot_well(fit.ref_well, ax)
                 if mark_outliers:
-                    self._plot_outliers(fit.obs_well, ax)
+                    self._plot_outliers(fit, ax)
                 if show_initiation_period:
                     self._plot_initiation_period(fit, ax)
 
@@ -405,12 +405,12 @@ class Plotter:
                 logger.info(f"Plotting fit: {fit.obs_well.name} ~ {fit.ref_well.name}")
                 self._set_plot_attributes(fit.obs_well)
                 self._set_plot_attributes(fit.ref_well)
-                self._plot_well(fit.obs_well, ax)
+                self._plot_well(fit.obs_well, ax, fit.shift)
                 self._plot_fit(fits, fit.obs_well, ax)
                 if plot_ref_well:
                     self._plot_well(fit.ref_well, ax)
                 if mark_outliers:
-                    self._plot_outliers(fit.obs_well, ax)
+                    self._plot_outliers(fit, ax)
                 if show_initiation_period:
                     self._plot_initiation_period(fit, ax)
 
@@ -656,9 +656,13 @@ class Plotter:
 
         self._offset_text = offset_text
 
-    def _plot_well(self, well, ax):
+    def _plot_well(self, well, ax, shift=None):
         """Plot the time series data for a single well."""
-        ts = well.timeseries.loc[self._plot_tmin : self._plot_tmax]
+        if shift is not None:
+            well_timeseries = well.shift_timeseries(shift)
+            ts = well_timeseries.loc[self._plot_tmin : self._plot_tmax]
+        else:
+            ts = well.timeseries.loc[self._plot_tmin : self._plot_tmax]
         ax.plot(
             ts.index,
             ts.values,
@@ -694,6 +698,7 @@ class Plotter:
             fit.ref_well.timeseries,
             offset=fit.offset,
             aggregation=fit.aggregation,
+            method=fit.te_method,
         )
         ax.scatter(
             ref.values,
@@ -712,6 +717,7 @@ class Plotter:
             fit.ref_well.timeseries.loc[fit.tmin : fit.tmax],
             offset=fit.offset,
             aggregation=fit.aggregation,
+            method=fit.te_method,
         )
         ax.scatter(
             ref.values,
@@ -819,13 +825,19 @@ class Plotter:
             raise TypeError("Fit method not recognized for plotting.")
         logger.debug(f"Plotting fit method for well: {fit.obs_well.name}")
 
-    def _plot_outliers(self, well, ax):
+    def _plot_outliers(self, fit, ax):
         """Mark outliers on the plot for a single well."""
-        fit = self.get_fits(well)
-        if isinstance(fit, list):
-            fit = fit[0]
+        well = fit.obs_well
         outliers = fit.fit_outliers()
-        well_outliers = well.timeseries[outliers].loc[self._plot_tmin : self._plot_tmax]
+        if fit.shift is not None:
+            well_timeseries = well.shift_timeseries(fit.shift)
+            well_outliers = well_timeseries[outliers].loc[
+                self._plot_tmin : self._plot_tmax
+            ]
+        else:
+            well_outliers = well.timeseries[outliers].loc[
+                self._plot_tmin : self._plot_tmax
+            ]
         if self._color_style is None:
             edgecolor = "red"  # Use matplotlib default
         else:

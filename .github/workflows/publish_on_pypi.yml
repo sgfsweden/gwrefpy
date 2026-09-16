@@ -7,6 +7,90 @@ on:
     branches: [ main ]
 
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: uv sync --locked --dev
+    
+    - name: Check version consistency
+      run: |
+        set -e
+    
+        PACKAGE_NAME="gwrefpy"
+    
+        # -----------------------------
+        # Extract versions from sources
+        # -----------------------------
+    
+        INIT_VERSION=$(python -c "from gwrefpy import __version__; print(__version__)")
+    
+        TOML_VERSION=$(python -c "import tomllib; data = tomllib.load(open('pyproject.toml', 'rb')); print(data['project']['version'] if 'version' in data['project'] else data['tool']['setuptools']['dynamic']['version'].split(\"'\")[1])" \
+          2>/dev/null || \
+          python -c "import toml; data = toml.load('pyproject.toml'); print(data.get('project', {}).get('version', ''))")
+    
+        SH_VERSION=$(python -c "from docs.conf import release; print(release)")
+    
+        # -----------------------------
+        # Fetch latest published version
+        # -----------------------------
+    
+        PUBLISHED_VERSION=$(python - <<EOF
+        import json, urllib.request
+        pkg = "$PACKAGE_NAME"
+        url = f"https://pypi.org/pypi/{pkg}/json"
+        with urllib.request.urlopen(url) as r:
+            print(json.load(r)["info"]["version"])
+        EOF
+            )
+        
+            echo "Version in __init__.py:        $INIT_VERSION"
+            echo "Version in pyproject.toml:    $TOML_VERSION"
+            echo "Version in conf.py:           $SH_VERSION"
+            echo "Published version on PyPI:    $PUBLISHED_VERSION"
+        
+            # --------------------------------
+            # Internal consistency check
+            # --------------------------------
+        
+            if [ "$INIT_VERSION" != "$TOML_VERSION" ] || \
+               [ "$INIT_VERSION" != "$SH_VERSION" ] || \
+               [ "$TOML_VERSION" != "$SH_VERSION" ]; then
+                echo "❌ Version mismatch between source files!"
+                exit 1
+            fi
+        
+            echo "✅ Internal versions match"
+        
+            # --------------------------------
+            # Compare to published PyPI version
+            # --------------------------------
+        
+            python - <<EOF
+        from packaging.version import Version
+        
+        local = Version("$INIT_VERSION")
+        published = Version("$PUBLISHED_VERSION")
+        
+        if local <= published:
+            raise SystemExit(
+                f"❌ Local version {local} must be greater than published version {published}"
+            )
+        
+        print(f"✅ Local version {local} is newer than published version {published}")
+        EOF
+        ``
+        
   test-publish:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'

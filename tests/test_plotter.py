@@ -232,6 +232,7 @@ def test_fit_result_data_plot(timeseries):
         p=0.95,
         offset="1D",
         aggregation="mean",
+        shift=None,
         tmin=timeseries.index[0],
         tmax=timeseries.index[-1],
     )
@@ -265,6 +266,7 @@ def test_fit_result_data_plot_with_tmin_tmax(timeseries):
         p=0.95,
         offset="1D",
         aggregation="mean",
+        shift=None,
         tmin=timeseries.index[0],
         tmax=timeseries.index[-1],
     )
@@ -299,6 +301,7 @@ def test_fit_result_data_plot_with_tmin_only(timeseries):
         p=0.95,
         offset="1D",
         aggregation="mean",
+        shift=None,
         tmin=timeseries.index[0],
         tmax=timeseries.index[-1],
     )
@@ -333,6 +336,7 @@ def test_fit_result_data_plot_with_tmax_only(timeseries):
         p=0.95,
         offset="1D",
         aggregation="mean",
+        shift=None,
         tmin=timeseries.index[0],
         tmax=timeseries.index[-1],
     )

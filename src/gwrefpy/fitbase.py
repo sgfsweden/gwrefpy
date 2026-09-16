@@ -30,6 +30,7 @@ class FitBase:
         ] = "linearregression",
         tmin: pd.Timestamp | str | None = None,
         tmax: pd.Timestamp | str | None = None,
+        shift: pd.Timedelta | str | None = None,
         name: str | list[str] | None = None,
         report: bool = True,
         **kwargs,
@@ -62,6 +63,9 @@ class FitBase:
             Minimum time for calibration period.
         tmax: pd.Timestamp | str | None = None
             Maximum time for calibration period.
+        shift : pd.Timedelta | str | None, optional
+            An optional time shift to apply to the observation well time series before
+            fitting.
         name : str | list[str] | None, optional
             An optional name or list of names for the fit result(s). If lists of
             wells are provided, the name list must match in length. If None,
@@ -99,6 +103,7 @@ class FitBase:
                 method,
                 tmin,
                 tmax,
+                shift,
                 name,
                 aggregation,
                 **kwargs,
@@ -143,6 +148,7 @@ class FitBase:
                 method,
                 tmin,
                 tmax,
+                shift,
                 fit_name,
                 aggregation,
                 **kwargs,
@@ -168,6 +174,7 @@ class FitBase:
         ] = "linearregression",
         tmin: pd.Timestamp | str | None = None,
         tmax: pd.Timestamp | str | None = None,
+        shift: pd.Timedelta | str | None = None,
         name: str | None = None,
         aggregation: Literal["mean", "median", "min", "max"] = "mean",
         **kwargs,
@@ -186,19 +193,37 @@ class FitBase:
         if method == "linearregression":
             logger.debug("Using linear regression method for fitting.")
             fit = linregressfit(
-                obs_well, ref_well, offset, tmin, tmax, name, p, aggregation
+                obs_well, ref_well, offset, tmin, tmax, shift, name, p, aggregation
             )
         elif method == "npolyfit":
             logger.debug("Using Nth degree polynomial fit method for fitting.")
             degree = kwargs.get("degree", 4)
             fit = npolyfit(
-                obs_well, ref_well, offset, degree, tmin, tmax, name, p, aggregation
+                obs_well,
+                ref_well,
+                offset,
+                degree,
+                tmin,
+                tmax,
+                shift,
+                name,
+                p,
+                aggregation,
             )
         elif method == "chebyshev":
             logger.debug("Using Chebyshev polynomial fit method for fitting.")
             degree = kwargs.get("degree", 4)
             fit = chebyshevfit(
-                obs_well, ref_well, offset, degree, tmin, tmax, name, p, aggregation
+                obs_well,
+                ref_well,
+                offset,
+                degree,
+                tmin,
+                tmax,
+                shift,
+                name,
+                p,
+                aggregation,
             )
         if fit is None:
             logger.error(f"Fitting method '{method}' is not implemented.")
