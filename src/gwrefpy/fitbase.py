@@ -339,12 +339,33 @@ class FitBase:
                 f"Testing fit for observation well '{target_obs_well.name}' "
                 f"and reference well '{ref_well.name}'."
             )
-            fit = self._fit(target_obs_well, ref_well, method=method, **kwargs)
+            try:
+                fit = self._fit(target_obs_well, ref_well, method=method, **kwargs)
+            except Exception as e:
+                logger.error(
+                    f"Error occurred while fitting observation well "
+                    f"'{target_obs_well.name}' "
+                    f"and reference well '{ref_well.name}': {e}"
+                )
+                continue
             local_fits.append(fit)
             logger.debug(
                 f"Fit result for observation well '{target_obs_well.name}' and"
                 f"reference well '{ref_well.name}': RMSE={fit.rmse}"
             )
+
+        if not local_fits:
+            logger.error(
+                f"No successful fits found for observation well "
+                f"'{target_obs_well.name}' "
+                f"with the provided reference wells."
+            )
+            raise ValueError(
+                f"No successful fits found for observation well "
+                f"'{target_obs_well.name}' "
+                f"with the provided reference wells."
+            )
+
         return min(local_fits, key=lambda x: x.rmse)
 
     def get_fits(
