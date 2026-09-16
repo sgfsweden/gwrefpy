@@ -48,6 +48,7 @@ def compute_residual_std_error(x, y, n, fit_method_func):
 
     return stderr
 
+
 def _validate_timeseries_len(n, degree, method):
     if n < degree + 1:
         raise ValueError(
