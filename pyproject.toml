@@ -42,7 +42,12 @@ dev = [
     "sgu-client",
     "pre-commit>=4.6.2",
 ]
-recommended = ["notebook", "sgu-client"]
+
+[project.optional-dependencies]
+recommended = [
+    "notebook", 
+    "sgu-client",
+]
 
 [tool.ruff]
 line-length = 88
