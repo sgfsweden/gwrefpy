@@ -61,3 +61,12 @@ def _validate_timeseries_len(n, degree, method):
             f"Not enough data points ({n}) to compute statistics for {method}. "
             "At least 3 data points are required."
         )
+
+
+def _validate_input_timeseries(obs_timeseries, ref_timeseries):
+    if obs_timeseries.empty:
+        raise ValueError("The observation time series is empty.")
+    if ref_timeseries.empty:
+        raise ValueError("The reference time series is empty.")
+    if obs_timeseries.equals(ref_timeseries):
+        raise ValueError("The observation and reference time series are identical.")

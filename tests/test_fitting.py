@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 
 from gwrefpy import Well
@@ -175,7 +176,10 @@ def test_strandangers_model_remove_fits_by_n(strandangers_model) -> None:
     # Add another observation well to make sure it remains intact when removing from
     # the other, and add a perfect fit reference well to make sure it remains intact
     obs = strandangers_model.get_wells("obs")  # type: Well
-    ref_perfect = Well("ref_perfect", is_reference=True, timeseries=obs.timeseries)
+    # distort one value to make sure they are not identical
+    ts_obs2 = obs.timeseries.copy()
+    ts_obs2.iloc[0] += 1e-5
+    ref_perfect = Well("ref_perfect", is_reference=True, timeseries=ts_obs2)
     strandangers_model.add_well(ref_perfect)
     ts_obs2 = obs.timeseries + 1.0
     obs2 = Well("obs2", is_reference=False, timeseries=ts_obs2)
@@ -322,7 +326,7 @@ def test_fit_result_test_fit(strandangers_model) -> None:
     assert abs(fit_result.rmse - rmse) < 1e-10
     assert abs(fit_result.stderr - stderr) < 1e-10
     result = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="npolyfit"
+        obs_well="obs", ref_well="ref", offset="3.5D", method="npolyfit", degree=2
     )
 
     # Get the statistical test result
@@ -334,7 +338,7 @@ def test_fit_result_test_fit(strandangers_model) -> None:
 
     # Test chebyshev method
     result_chebyshev = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="chebyshev", degree=5
+        obs_well="obs", ref_well="ref", offset="3.5D", method="chebyshev", degree=2
     )
 
     # Get the statistical test result
@@ -390,16 +394,68 @@ def test_fit_with_aggregation_parameter(strandangers_model):
 
 def test_fit_npolyfit_basic(strandangers_model) -> None:
     result = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="npolyfit"
+        obs_well="obs", ref_well="ref", offset="3.5D", method="npolyfit", degree=2
     )
     assert isinstance(result.fit_method, NPolyFitResult)
     assert result.n == 3
-    assert result.fit_method.degree == 4
+    assert result.fit_method.degree == 2
 
 
 def test_fit_chebyshev_basic(strandangers_model) -> None:
     result = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="chebyshev", degree=6
+        obs_well="obs", ref_well="ref", offset="3.5D", method="chebyshev", degree=2
     )
     assert result.n == 3
-    assert result.fit_method.degree == 6
+    assert result.fit_method.degree == 2
+
+
+def test_fit_timeseries_validation(strandangers_model) -> None:
+    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+
+    # Test with valid timeseries
+    result = strandangers_model.fit(
+        obs_well=obs, ref_well=ref, offset="3.5D", method="npolyfit", degree=2
+    )
+    assert isinstance(result, FitResultData)
+
+    # Test with invalid timeseries (None)
+    obs_invalid = Well("obs_invalid", is_reference=False, timeseries=ref.timeseries)
+    obs_invalid.timeseries = pd.Series([], dtype=float, name="obs")
+    strandangers_model.add_well(obs_invalid)
+
+    with pytest.raises(ValueError, match="The observation time series is empty."):
+        strandangers_model.fit(
+            obs_well=obs_invalid,
+            ref_well=ref,
+            offset="3.5D",
+            method="npolyfit",
+            degree=2,
+        )
+
+    ref_invalid = Well("ref_invalid", is_reference=True, timeseries=ref.timeseries)
+    ref_invalid.timeseries = pd.Series([], dtype=float, name="ref")
+    strandangers_model.add_well(ref_invalid)
+
+    with pytest.raises(ValueError, match="The reference time series is empty."):
+        strandangers_model.fit(
+            obs_well=obs,
+            ref_well=ref_invalid,
+            offset="3.5D",
+            method="npolyfit",
+            degree=2,
+        )
+
+    # Test identical timeseries (should raise ValueError)
+    obs_identical = Well("obs_identical", is_reference=False, timeseries=ref.timeseries)
+    strandangers_model.add_well(obs_identical)
+
+    with pytest.raises(
+        ValueError, match="The observation and reference time series are identical."
+    ):
+        strandangers_model.fit(
+            obs_well=obs_identical,
+            ref_well=ref,
+            offset="3.5D",
+            method="npolyfit",
+            degree=2,
+        )
