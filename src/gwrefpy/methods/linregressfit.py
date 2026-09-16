@@ -5,7 +5,7 @@ import pandas as pd
 import scipy as sp
 
 from ..fitresults import FitResultData, LinRegResult
-from ..methods.common import _get_gwrefs_stats, compute_residual_std_error
+from ..methods.common import _get_gwrefs_stats, _validate_timeseries_len, compute_residual_std_error
 from ..methods.timeseries import groupby_time_equivalents
 from ..well import Well
 
@@ -81,6 +81,8 @@ def linregressfit(
         aggregation,
         te_method,
     )
+
+    _validate_timeseries_len(n, 1, "Linear Regression")
 
     res = sp.stats.linregress(ref_timeseries, obs_timeseries)
     linreg = LinRegResult(

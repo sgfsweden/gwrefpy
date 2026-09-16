@@ -47,3 +47,10 @@ def compute_residual_std_error(x, y, n, fit_method_func):
     stderr = np.sqrt(stderr)
 
     return stderr
+
+def _validate_timeseries_len(n, degree, method):
+    if n < degree + 1:
+        raise ValueError(
+            f"Not enough data points ({n}) to fit a {method} of degree {degree}. "
+            "At least degree + 1 data points are required."
+        )
