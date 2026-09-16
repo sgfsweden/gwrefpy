@@ -55,3 +55,9 @@ def _validate_timeseries_len(n, degree, method):
             f"Not enough data points ({n}) to fit a {method} of degree {degree}. "
             "At least degree + 1 data points are required."
         )
+
+    if n < 3:
+        raise ValueError(
+            f"Not enough data points ({n}) to compute statistics for {method}. "
+            "At least 3 data points are required."
+        )
