@@ -459,3 +459,35 @@ def test_fit_timeseries_validation(strandangers_model) -> None:
             method="npolyfit",
             degree=2,
         )
+
+
+def test_strandangers_model_skip_raise_error(strandangers_model) -> None:
+    # introduce a second reference well
+    ref = strandangers_model.get_wells("ref")  # type: Well
+    for i in range(10):
+        ts2 = ref.timeseries * np.random.rand(*ref.timeseries.shape) + 10
+        ref2 = Well(f"ref{i + 2}", is_reference=True, timeseries=ts2)
+        strandangers_model.add_well(ref2)
+
+    obs = strandangers_model.obs_wells[0]
+
+    # Make ref empty to force a fit failure
+    ref.timeseries = pd.Series([], dtype=float, name="obs")
+
+    # Test that skip_raise_error=True allows the process to continue even if a fit fails
+    best_fit = strandangers_model.best_fit(
+        obs_well=obs,
+        ref_wells=[ref] + strandangers_model.ref_wells[1:],
+        offset="3.5D",
+        skip_raise_error=True,
+    )
+    assert best_fit is not None
+
+    # Test that skip_raise_error=False raises an error when a fit fails
+    with pytest.raises(ValueError, match="The reference time series is empty."):
+        strandangers_model.best_fit(
+            obs_well=obs,
+            ref_wells=[ref] + strandangers_model.ref_wells[1:],
+            offset="3.5D",
+            skip_raise_error=False,
+        )
