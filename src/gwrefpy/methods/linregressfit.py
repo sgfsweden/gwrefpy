@@ -5,7 +5,12 @@ import pandas as pd
 import scipy as sp
 
 from ..fitresults import FitResultData, LinRegResult
-from ..methods.common import _get_gwrefs_stats, compute_residual_std_error
+from ..methods.common import (
+    _get_gwrefs_stats,
+    _validate_input_timeseries,
+    _validate_timeseries_len,
+    compute_residual_std_error,
+)
 from ..methods.timeseries import groupby_time_equivalents
 from ..well import Well
 
@@ -64,10 +69,8 @@ def linregressfit(
        https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.linregress.html
     """
 
-    # Groupby time equivalents with given offset
-    if ref_well.timeseries is None or obs_well.timeseries is None:
-        logger.critical("Missing time series data for for either ref or obs well")
-        return None
+    # Validate timeseries input
+    _validate_input_timeseries(obs_well.timeseries, ref_well.timeseries)
 
     if shift is not None:
         obs_timeseries = obs_well.shift_timeseries(shift)
@@ -81,6 +84,8 @@ def linregressfit(
         aggregation,
         te_method,
     )
+
+    _validate_timeseries_len(n, 1, "Linear Regression")
 
     res = sp.stats.linregress(ref_timeseries, obs_timeseries)
     linreg = LinRegResult(
