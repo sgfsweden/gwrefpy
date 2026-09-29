@@ -240,10 +240,13 @@ class FitBase:
         method: Literal[
             "linearregression", "npolyfit", "chebyshev"
         ] = "linearregression",
+        skip_raise_error: bool = False,
         **kwargs,
     ) -> FitResultData:
         """
         Find the best fit for the model using the provided wells.
+        Note that all successful fits will be stored in the model's `fits` attribute.
+        The best fit is determined by the lowest RMSE value.
 
         Parameters
         ----------
@@ -255,6 +258,9 @@ class FitBase:
         method : Literal["linearregression", "npolyfit", "chebyshev"]
             Method with which to perform regression. Currently only supports
             linear regression.
+        skip_raise_error: bool, optional
+            If True, will skip wells that raise exceptions during fitting and continue.
+            If False, will raise the exception and stop execution (default is False).
         **kwargs
             Keyword arguments to pass to the fitting method. For example, you can use
             `offset`, `p`, `tmin`, `tmax`, and `aggregation` to control the fitting
@@ -264,7 +270,9 @@ class FitBase:
         FitResultData
             Returns the best fit for the given observation well.
         """
-        return self._best_fit(obs_well, ref_wells, method, **kwargs)
+        return self._best_fit(
+            obs_well, ref_wells, method, skip_raise_error=skip_raise_error, **kwargs
+        )
 
     def _best_fit(
         self,
@@ -273,6 +281,7 @@ class FitBase:
         method: Literal[
             "linearregression", "npolyfit", "chebyshev"
         ] = "linearregression",
+        skip_raise_error: bool = False,
         **kwargs,
     ) -> FitResultData:
         """
@@ -288,6 +297,9 @@ class FitBase:
         method : Literal["linearregression", "npolyfit", "chebyshev"]
             Method with which to perform regression. Currently only supports
             linear regression.
+        skip_raise_error: bool, optional
+            If True, will skip wells that raise exceptions during fitting and continue.
+            If False, will raise the exception and stop execution (default is False).
         **kwargs
             Keyword arguments to pass to the fitting method. For example, you can use
             `offset`, `p`, `tmin`, `tmax`, and `aggregation` to control the fitting
@@ -334,17 +346,50 @@ class FitBase:
                     )
 
         local_fits: list[FitResultData] = []
-        for ref_well in target_ref_wells:
-            logger.debug(
-                f"Testing fit for observation well '{target_obs_well.name}' "
-                f"and reference well '{ref_well.name}'."
+        if skip_raise_error:
+            for ref_well in target_ref_wells:
+                logger.debug(
+                    f"Testing fit for observation well '{target_obs_well.name}' "
+                    f"and reference well '{ref_well.name}'."
+                )
+                try:
+                    fit = self._fit(target_obs_well, ref_well, method=method, **kwargs)
+                    local_fits.append(fit)
+                    logger.debug(
+                        f"Fit result for observation well '{target_obs_well.name}' and"
+                        f"reference well '{ref_well.name}': RMSE={fit.rmse}"
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"Error occurred while fitting observation well "
+                        f"'{target_obs_well.name}' "
+                        f"and reference well '{ref_well.name}': {e}"
+                    )
+        else:
+            for ref_well in target_ref_wells:
+                logger.debug(
+                    f"Testing fit for observation well '{target_obs_well.name}' "
+                    f"and reference well '{ref_well.name}'."
+                )
+                fit = self._fit(target_obs_well, ref_well, method=method, **kwargs)
+                local_fits.append(fit)
+                logger.debug(
+                    f"Fit result for observation well '{target_obs_well.name}' and"
+                    f"reference well '{ref_well.name}': RMSE={fit.rmse}"
+                )
+
+        if not local_fits:
+            logger.error(
+                f"No successful fits found for observation well "
+                f"'{target_obs_well.name}' "
+                f"with the provided reference wells."
             )
-            fit = self._fit(target_obs_well, ref_well, method=method, **kwargs)
-            local_fits.append(fit)
-            logger.debug(
-                f"Fit result for observation well '{target_obs_well.name}' and"
-                f"reference well '{ref_well.name}': RMSE={fit.rmse}"
+            raise ValueError(
+                f"No successful fits found for observation well "
+                f"'{target_obs_well.name}' "
+                f"with the provided reference wells."
             )
+
         return min(local_fits, key=lambda x: x.rmse)
 
     def get_fits(
