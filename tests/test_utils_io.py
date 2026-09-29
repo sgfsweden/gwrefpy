@@ -31,3 +31,26 @@ def test_save_load_project(tmp_path, strandangers_model):
         assert well.name == loaded_well.name
         assert well.is_reference == loaded_well.is_reference
         pd.testing.assert_series_equal(well.timeseries, loaded_well.timeseries)
+
+
+def test_save_load_polynomial_prediction_constants(tmp_path, strandangers_model):
+    strandangers_model.fit("obs", "ref", offset="3.5D", method="npolyfit", degree=1)
+    expected = strandangers_model.fits[0].pred_const
+    ref = strandangers_model.get_wells("ref")
+    new_index = ref.timeseries.index.max() + pd.Timedelta(days=30)
+    ref.append_timeseries(pd.Series([12.0], index=[new_index], name="ref"))
+
+    project_path = str(tmp_path / "polynomial_project")
+    strandangers_model.save_project(project_path)
+    loaded_project = gr.Model(name="temp")
+    loaded_project.open_project(project_path)
+
+    actual = loaded_project.fits[0].pred_const
+    assert isinstance(actual, pd.Series)
+    pd.testing.assert_series_equal(actual, expected)
+
+    new_reference = pd.Series([12.0], index=[new_index], name="ref")
+    pd.testing.assert_series_equal(
+        loaded_project.fits[0].get_prediction_constant(new_reference),
+        strandangers_model.fits[0].get_prediction_constant(new_reference),
+    )

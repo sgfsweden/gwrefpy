@@ -593,6 +593,19 @@ class Model(FitBase, Plotter):
         # Unpack fits
         fits_list = data.get("fits", [])
         for fit_data in fits_list:
+            pred_const = fit_data.get("pred_const", None)
+            if isinstance(pred_const, list):
+                pred_const_index = fit_data.get("pred_const_index")
+                if pred_const_index is not None:
+                    pred_const_index = [
+                        float_to_datetime(timestamp) for timestamp in pred_const_index
+                    ]
+                else:
+                    ref_index = self.wells[
+                        self.well_names.index(fit_data["ref_well"])
+                    ].timeseries.index
+                    pred_const_index = ref_index[: len(pred_const)]
+                pred_const = pd.Series(pred_const, index=pred_const_index)
             fit = FitResultData(
                 ref_well=self.wells[self.well_names.index(fit_data["ref_well"])],
                 obs_well=self.wells[self.well_names.index(fit_data["obs_well"])],
@@ -601,7 +614,10 @@ class Model(FitBase, Plotter):
                 fit_method=_unpack_dict_fit_method(fit_data),
                 t_a=fit_data.get("t_a", None),
                 stderr=fit_data.get("stderr", None),
-                pred_const=fit_data.get("pred_const", None),
+                pred_const=pred_const,
+                prediction_leverage_matrix=fit_data.get(
+                    "prediction_leverage_matrix", None
+                ),
                 p=fit_data.get("p", None),
                 offset=fit_data.get("offset", None),
                 aggregation=fit_data.get("aggregation", "mean"),

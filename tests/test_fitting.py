@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import scipy as sp
 
 from gwrefpy import Well
 from gwrefpy.fitresults import FitResultData, NPolyFitResult
@@ -326,7 +327,7 @@ def test_fit_result_test_fit(strandangers_model) -> None:
     assert abs(fit_result.rmse - rmse) < 1e-10
     assert abs(fit_result.stderr - stderr) < 1e-10
     result = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="npolyfit", degree=2
+        obs_well="obs", ref_well="ref", offset="3.5D", method="npolyfit", degree=1
     )
 
     # Get the statistical test result
@@ -338,7 +339,7 @@ def test_fit_result_test_fit(strandangers_model) -> None:
 
     # Test chebyshev method
     result_chebyshev = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="chebyshev", degree=2
+        obs_well="obs", ref_well="ref", offset="3.5D", method="chebyshev", degree=1
     )
 
     # Get the statistical test result
@@ -394,19 +395,111 @@ def test_fit_with_aggregation_parameter(strandangers_model):
 
 def test_fit_npolyfit_basic(strandangers_model) -> None:
     result = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="npolyfit", degree=2
+        obs_well="obs", ref_well="ref", offset="3.5D", method="npolyfit", degree=1
     )
     assert isinstance(result.fit_method, NPolyFitResult)
     assert result.n == 3
-    assert result.fit_method.degree == 2
+    assert result.fit_method.degree == 1
 
 
 def test_fit_chebyshev_basic(strandangers_model) -> None:
     result = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="chebyshev", degree=2
+        obs_well="obs", ref_well="ref", offset="3.5D", method="chebyshev", degree=1
     )
     assert result.n == 3
-    assert result.fit_method.degree == 2
+    assert result.fit_method.degree == 1
+
+
+@pytest.mark.parametrize("method", ["npolyfit", "chebyshev"])
+def test_polynomial_prediction_constant_uses_leverage(strandangers_model, method):
+    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+    result = strandangers_model.fit(obs, ref, offset="3.5D", method=method, degree=1)
+
+    assert isinstance(result.pred_const, pd.Series)
+    assert result.pred_const.index.equals(ref.timeseries.index)
+
+    from gwrefpy.methods.timeseries import groupby_time_equivalents
+
+    training_x, training_y, n = groupby_time_equivalents(
+        obs.timeseries,
+        ref.timeseries,
+        offset="3.5D",
+        aggregation="mean",
+        method="anchor",
+    )
+    if method == "npolyfit":
+        training_matrix = np.vander(training_x.values, 2)
+        prediction_matrix = np.vander(ref.timeseries.values, 2)
+    else:
+        training_matrix = np.polynomial.chebyshev.chebvander(training_x.values, 1)
+        prediction_matrix = np.polynomial.chebyshev.chebvander(ref.timeseries.values, 1)
+        fitted_training_values = np.polynomial.chebyshev.chebval(
+            training_x.values, result.fit_method.coefficients
+        )
+
+    if method == "npolyfit":
+        fitted_training_values = np.polyval(
+            result.fit_method.coefficients, training_x.values
+        )
+
+    covariance = np.linalg.inv(training_matrix.T @ training_matrix)
+    leverage = np.einsum(
+        "ij,jk,ik->i", prediction_matrix, covariance, prediction_matrix
+    )
+    expected = result.t_a * result.stderr * np.sqrt(1 + leverage)
+    expected_stderr = np.sqrt(
+        np.sum((training_y.values - fitted_training_values) ** 2) / (n - 2)
+    )
+    expected_t = -sp.stats.t.ppf((1 - result.p) / 2, n - 2)
+
+    np.testing.assert_allclose(result.pred_const.values, expected)
+    np.testing.assert_allclose(result.stderr, expected_stderr)
+    np.testing.assert_allclose(result.t_a, expected_t)
+    assert np.ptp(result.pred_const.values) > 0
+    pd.testing.assert_series_equal(
+        result.get_upper_confidence_bound() - result.get_fit_timeseries(),
+        result.pred_const,
+        check_names=False,
+    )
+
+
+@pytest.mark.parametrize("method", ["npolyfit", "chebyshev"])
+def test_polynomial_prediction_width_for_appended_reference_data(
+    strandangers_model, method
+):
+    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+    result = strandangers_model.fit(obs, ref, offset="3.5D", method=method, degree=1)
+
+    new_index = ref.timeseries.index.max() + pd.Timedelta(days=30)
+    new_reference = pd.Series([12.0], index=[new_index], name="ref")
+    ref.append_timeseries(new_reference)
+
+    widths = result.get_prediction_constant()
+    upper = result.get_upper_confidence_bound()
+    lower = result.get_lower_confidence_bound()
+    fitted = result.get_fit_timeseries()
+
+    assert new_index in widths.index
+    assert np.isfinite(widths.loc[new_index])
+    assert upper.loc[new_index] == pytest.approx(
+        fitted.loc[new_index] + widths.loc[new_index]
+    )
+    assert lower.loc[new_index] == pytest.approx(
+        fitted.loc[new_index] - widths.loc[new_index]
+    )
+
+
+@pytest.mark.parametrize("method", ["npolyfit", "chebyshev"])
+def test_polynomial_fit_rejects_rank_deficient_reference(strandangers_model, method):
+    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+    index = pd.date_range("2023-01-01", periods=5, freq="D")
+    ref.replace_timeseries(pd.Series(np.ones(5), index=index, name="ref"))
+    obs.replace_timeseries(
+        pd.Series(np.arange(5, dtype=float), index=index, name="obs")
+    )
+
+    with pytest.raises(ValueError, match="design matrix is rank deficient"):
+        strandangers_model.fit(obs, ref, offset="0D", method=method, degree=1)
 
 
 def test_fit_timeseries_validation(strandangers_model) -> None:
@@ -414,7 +507,7 @@ def test_fit_timeseries_validation(strandangers_model) -> None:
 
     # Test with valid timeseries
     result = strandangers_model.fit(
-        obs_well=obs, ref_well=ref, offset="3.5D", method="npolyfit", degree=2
+        obs_well=obs, ref_well=ref, offset="3.5D", method="npolyfit", degree=1
     )
     assert isinstance(result, FitResultData)
 
