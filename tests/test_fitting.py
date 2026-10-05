@@ -5,6 +5,7 @@ import scipy as sp
 
 from gwrefpy import Well
 from gwrefpy.fitresults import FitResultData, NPolyFitResult
+from gwrefpy.methods.timeseries import groupby_time_equivalents
 
 
 def test_strandangers_model_basic_fit(strandangers_model) -> None:
@@ -417,8 +418,6 @@ def test_polynomial_prediction_constant_uses_leverage(strandangers_model, method
 
     assert isinstance(result.pred_const, pd.Series)
     assert result.pred_const.index.equals(ref.timeseries.index)
-
-    from gwrefpy.methods.timeseries import groupby_time_equivalents
 
     training_x, training_y, n = groupby_time_equivalents(
         obs.timeseries,
