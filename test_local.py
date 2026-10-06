@@ -51,9 +51,9 @@ obs = gr.Well(name="ref3", timeseries=timeseries2, is_reference=False)
 model.add_well([ref, obs])
 
 # make the ref empty
-#ref.timeseries = pd.Series([], dtype=float, name="obs")
+# ref.timeseries = pd.Series([], dtype=float, name="obs")
 
-#model.fit(obs_well=obs, ref_well=ref, method="linearregression", degree=3, offset="0D")
+# model.fit(obs_well=obs, ref_well=ref, method="linearregression", degree=3, offset="0D")
 model.fit(
     obs_well=obs,
     ref_well=ref,
@@ -62,7 +62,7 @@ model.fit(
     offset="0D",
     tmax="2020-02-01",
 )
-#model.best_fit(obs_well=obs, ref_wells=[ref, ref2, ref3], method="npolyfit", degree=3, offset="0D", skip_raise_error=False, tmax="2020-03-01")
+# model.best_fit(obs_well=obs, ref_wells=[ref, ref2, ref3], method="npolyfit", degree=3, offset="0D", skip_raise_error=False, tmax="2020-03-01")
 
 # Plot the results
 model.plot_wells()
