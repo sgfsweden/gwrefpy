@@ -33,19 +33,19 @@ jobs:
         # Extract versions from sources
         # -----------------------------
     
-        INIT_VERSION=$(python -c "from gwrefpy import __version__; print(__version__)")
+        INIT_VERSION=$(uv run python -c "from gwrefpy import __version__; print(__version__)")
     
-        TOML_VERSION=$(python -c "import tomllib; data = tomllib.load(open('pyproject.toml', 'rb')); print(data['project']['version'] if 'version' in data['project'] else data['tool']['setuptools']['dynamic']['version'].split(\"'\")[1])" \
+        TOML_VERSION=$(uv run python -c "import tomllib; data = tomllib.load(open('pyproject.toml', 'rb')); print(data['project']['version'] if 'version' in data['project'] else data['tool']['setuptools']['dynamic']['version'].split(\"'\")[1])" \
           2>/dev/null || \
-          python -c "import toml; data = toml.load('pyproject.toml'); print(data.get('project', {}).get('version', ''))")
+          uv run python -c "import toml; data = toml.load('pyproject.toml'); print(data.get('project', {}).get('version', ''))")
     
-        SH_VERSION=$(python -c "from docs.conf import release; print(release)")
+        SH_VERSION=$(uv run python -c "from docs.conf import release; print(release)")
     
         # -----------------------------
         # Fetch latest published version
         # -----------------------------
     
-        PUBLISHED_VERSION=$(python - <<EOF
+        PUBLISHED_VERSION=$(uv run python - <<EOF
         import json, urllib.request
         pkg = "$PACKAGE_NAME"
         url = f"https://pypi.org/pypi/{pkg}/json"
@@ -76,7 +76,7 @@ jobs:
             # Compare to published PyPI version
             # --------------------------------
         
-            python - <<EOF
+            uv run python - <<EOF
         from packaging.version import Version
         
         local = Version("$INIT_VERSION")
