@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=c87aa342"></script>
+    <script src="../_static/documentation_options.js?v=8d563738"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -333,6 +333,7 @@
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Time offsets</a></li>
 
 
+
 <li class="toctree-l1"><a class="reference internal" href="4_plotting.html">Plotting with gwrefpy 📊</a></li>
 <li class="toctree-l1"><a class="reference internal" href="5_io.html">Saving and loading models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="6_logging.html">Logging 📄</a></li>
@@ -413,7 +414,14 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="n">gr</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="s2">&quot;CRITICAL&quot;</span><span class="p">)</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Log level set to CRITICAL
 </pre></div>
 </div>
 </div>
@@ -547,18 +555,30 @@
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="using-time-offsets">
 <h1>Using time offsets<a class="headerlink" href="#using-time-offsets" title="Link to this heading">#</a></h1>
-<p>Our two wells have only one shared timestamp, but we know that they have several timestamps that are close to each other. To compare the two time series, we can introduce a time offset.</p>
-<p>A time offset is defined as a time interval. All data points within this interval will be considered as having the same timestamp. For example, if we set an offset of 1 day, all data points within 1 day of each other will be considered as having the same timestamp. If multiple data points fall within the same interval, the mean value will be used default. As of version 0.2.0 we also include median, max and min as aggregation method within an offset (see the API reference for the <code class="docutils literal notranslate"><span class="pre">Model</span></code> class and its <code class="docutils literal notranslate"><span class="pre">fit</span></code> method).</p>
+<p>Our two wells have only one shared timestamp, but several timestamps that are close to each other. To compare the two time series, we can introduce a time offset.</p>
+<p>A time offset defines a <code class="docutils literal notranslate"><span class="pre">±offset</span></code> window around each observation time point. All reference points falling within that window are aggregated (mean by default) into a single matched value for that observation. This is called the <strong>anchor method</strong>, and it is the default since version 1.0.0.</p>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p>The offset extends in both directions. For example, if we have a timestamp of 2023-02-25 and an offset of 1 day, all data points between 2023-02-24 and 2023-02-26 will be considered as having the same timestamp.</p>
+<p>The offset extends in both directions. For example, given an observation timestamp of 2023-02-25 and an offset of 3 days, all reference points between 2023-02-22 and 2023-02-28 will be matched to that observation.</p>
 </div>
-<p>The offset argument can be given as a string or a <code class="docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code> object. Refer to the <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Timedelta.html">pandas documentation</a> for more information about the accepted strings.</p>
-<p>We provide a helper function for analyzing multiple time offsets at once: <code class="docutils literal notranslate"><span class="pre">analyze_offsets</span></code>. This function takes a list of offsets and computes the number of matching data pairs. Let’s see how it works by analyzing offsets of 0, 1, and 3 days.</p>
+<p>The offset argument can be given as a string or a <code class="docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code> object. Refer to the <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Timedelta.html">pandas documentation</a> for more information about accepted strings.</p>
+<p>As of version 0.2.0 the aggregation within an offset can be set to <code class="docutils literal notranslate"><span class="pre">&quot;mean&quot;</span></code> (default), <code class="docutils literal notranslate"><span class="pre">&quot;median&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;min&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code> (see the API reference for the <code class="docutils literal notranslate"><span class="pre">Model</span></code> class and its <code class="docutils literal notranslate"><span class="pre">fit</span></code> method).</p>
+<section id="grouping-methods">
+<h2>Grouping methods<a class="headerlink" href="#grouping-methods" title="Link to this heading">#</a></h2>
+<p>Two grouping methods are available via the <code class="docutils literal notranslate"><span class="pre">method</span></code> parameter:</p>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">&quot;anchor&quot;</span></code> (default)</strong>: each observation time is the center of a <code class="docutils literal notranslate"><span class="pre">±offset</span></code> window; all reference points inside that window are aggregated into one output pair per observation. Works reliably for both sparse and dense/high-frequency reference data.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">&quot;consecutive&quot;</span></code></strong>: all timestamps from both series are merged, sorted, and split into groups wherever the gap between consecutive timestamps exceeds <code class="docutils literal notranslate"><span class="pre">offset</span></code>. Both reference and observation values within each group are aggregated. This was the default prior to version 1.0.0, and remains available for very sparse, irregular monitoring data where the chaining behaviour is intentional.</p></li>
+</ul>
+</section>
+<section id="analysing-offsets">
+<h2>Analysing offsets<a class="headerlink" href="#analysing-offsets" title="Link to this heading">#</a></h2>
+<p>We provide a helper function for analysing multiple time offsets at once: <code class="docutils literal notranslate"><span class="pre">analyze_offsets</span></code>. This function takes a list of offsets and returns the number of matching data pairs. <code class="docutils literal notranslate"><span class="pre">analyze_offsets(obs,</span> <span class="pre">ref,</span> <span class="pre">...)</span></code> uses the <strong>obs</strong> timestamps as anchors, so it answers the question: <em>“for how many observation measurements can a matching reference be found?”</em> Both methods are supported via the <code class="docutils literal notranslate"><span class="pre">method</span></code> parameter (default <code class="docutils literal notranslate"><span class="pre">&quot;anchor&quot;</span></code>).</p>
+<p>Let’s analyse offsets of 0, 1, and 3 days.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">offsets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;0D&quot;</span><span class="p">,</span> <span class="s2">&quot;1D&quot;</span><span class="p">,</span> <span class="s2">&quot;3D&quot;</span><span class="p">]</span>
-<span class="n">results</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">analyze_offsets</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">analyze_offsets</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -672,13 +692,14 @@
 <img alt="../_images/05f9a5e15d3ab953a939ddfcf4b6d6207eb1ef0c8d68425612b6e4dd3634669c.png" src="../_images/05f9a5e15d3ab953a939ddfcf4b6d6207eb1ef0c8d68425612b6e4dd3634669c.png" />
 </div>
 </div>
-<p>For this simple example, we can demonstrate that a time offset of 3 days seems reasonable. This offset allows for several matching data pairs, while still being small enough to avoid grouping timestamps that are too far apart.</p>
-<p>As mentioned, any points within the offset interval are averaged. The newly constructed timestamps are taken as the mean of the grouped timestamps. Given an offset of 3 days:</p>
+<p>For this simple example, a time offset of 3 days seems reasonable.</p>
+<p>With the default <strong>anchor method</strong> and <code class="docutils literal notranslate"><span class="pre">offset=&quot;3D&quot;</span></code>, each observation timestamp is the center of a <code class="docutils literal notranslate"><span class="pre">±3D</span></code> window:</p>
 <ul class="simple">
-<li><p>for the first period (January), a data pair is formed because the data point from each well fall within their respective offsets</p></li>
-<li><p>for the second period (February), the first data point from the reference well is paired with the data point from the observation well, because their offset intervals intersect</p></li>
-<li><p>for the third period (March), <strong>two</strong> data points and their offset interval fall within the offset interval of the single data point from the observation well. This means that a single data pair will be formed between the average of the data points from the reference well, and the single data point from the observation well.</p></li>
+<li><p><strong>Period 1</strong> (January): obs <code class="docutils literal notranslate"><span class="pre">2023-01-07</span></code> window spans Jan 4–10. Ref <code class="docutils literal notranslate"><span class="pre">2023-01-08</span></code> is 1 day away → one matched pair.</p></li>
+<li><p><strong>Period 2</strong> (early February): obs <code class="docutils literal notranslate"><span class="pre">2023-02-01</span></code> window spans Jan 29–Feb 4. Ref <code class="docutils literal notranslate"><span class="pre">2023-02-03</span></code> is 2 days away → matched. Ref <code class="docutils literal notranslate"><span class="pre">2023-02-09</span></code> is 8 days away → not matched. One matched pair.</p></li>
+<li><p><strong>Period 3</strong> (late February): obs <code class="docutils literal notranslate"><span class="pre">2023-02-25</span></code> window spans Feb 22–28. Both ref <code class="docutils literal notranslate"><span class="pre">2023-02-25</span></code> (0 days) and ref <code class="docutils literal notranslate"><span class="pre">2023-02-28</span></code> (3 days) fall inside → <strong>both are aggregated into one pair</strong> (mean of 9.3 and 9.5 = 9.4).</p></li>
 </ul>
+<p>Fitting produces <strong>3 data pairs</strong> — one per observation point.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="admonition hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -747,6 +768,72 @@
 </div>
 </div>
 <p>When fitting these two wells with an offset of 3 days, three data pairs will formed as explained above.</p>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="shifting-timeseries">
+<h1>Shifting timeseries<a class="headerlink" href="#shifting-timeseries" title="Link to this heading">#</a></h1>
+<p>It is possible to shift the timeries of an observation well to accout for delays in the response.</p>
+<p>We will import the deviations exampel and shift the obervation well with 10 days.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s2">&quot;small_example.gwref&quot;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">well_names</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fits</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="n">obs_well</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">obs_wells</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">ref_well</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">ref_wells</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="c1"># shift the time for this example</span>
+<span class="n">shift</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="s2">&quot;-10D&quot;</span><span class="p">)</span>
+<span class="n">obs_well</span><span class="o">.</span><span class="n">timeseries</span> <span class="o">=</span> <span class="n">obs_well</span><span class="o">.</span><span class="n">shift_timeseries</span><span class="p">(</span><span class="n">shift</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">plot_wells</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 1000x600 with 1 Axes&gt;,
+ &lt;Axes: title={&#39;center&#39;: &#39;Wells Plot&#39;}, xlabel=&#39;Time&#39;, ylabel=&#39;Measurement&#39;&gt;)
+</pre></div>
+</div>
+<img alt="../_images/e48345f5994d679993184cff7eb12251264fb40b75091af251cdc5011ed8bb5b.png" src="../_images/e48345f5994d679993184cff7eb12251264fb40b75091af251cdc5011ed8bb5b.png" />
+</div>
+</div>
+<p>The fit of the two wells are now</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fit0</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">obs_well</span><span class="o">=</span><span class="n">obs_well</span><span class="p">,</span> <span class="n">ref_well</span><span class="o">=</span><span class="n">ref_well</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="s2">&quot;0D&quot;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">plot_fitmethod</span><span class="p">(</span><span class="n">fit0</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">plot_fits</span><span class="p">(</span><span class="n">fit0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 1000x600 with 1 Axes&gt;,
+ &lt;Axes: xlabel=&#39;Time&#39;, ylabel=&#39;Measurements&#39;&gt;)
+</pre></div>
+</div>
+<img alt="../_images/ba89b0634a743be2cc4237328205077ca6092d138bb79a95542e27a7dc274a11.png" src="../_images/ba89b0634a743be2cc4237328205077ca6092d138bb79a95542e27a7dc274a11.png" />
+<img alt="../_images/f107e9484e328526afbd0f61b394f4ae8d5d1a1991e16c7c82757ced6117ee49.png" src="../_images/f107e9484e328526afbd0f61b394f4ae8d5d1a1991e16c7c82757ced6117ee49.png" />
+</div>
+</div>
+<p>and we can compare this fit with another one with a shift</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fit1</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">obs_well</span><span class="o">=</span><span class="n">obs_well</span><span class="p">,</span> <span class="n">ref_well</span><span class="o">=</span><span class="n">ref_well</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="s2">&quot;0D&quot;</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="s2">&quot;10D&quot;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">plot_fitmethod</span><span class="p">(</span><span class="n">fit1</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">plot_fits</span><span class="p">(</span><span class="n">fit1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(&lt;Figure size 1000x600 with 1 Axes&gt;,
+ &lt;Axes: xlabel=&#39;Time&#39;, ylabel=&#39;Measurements&#39;&gt;)
+</pre></div>
+</div>
+<img alt="../_images/ae528592ff3620acc900886a2389960f9c800e72d0b3ecd16819493f31be98f7.png" src="../_images/ae528592ff3620acc900886a2389960f9c800e72d0b3ecd16819493f31be98f7.png" />
+<img alt="../_images/c63bdb236a5427bbfa660a5b782edddb62ee855a7413a7689eebe921659e51f2.png" src="../_images/c63bdb236a5427bbfa660a5b782edddb62ee855a7413a7689eebe921659e51f2.png" />
+</div>
+</div>
 <p>This concludes this notebook on time offsets in <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code>. Happy fitting!</p>
 </section>
 
@@ -799,7 +886,12 @@
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Time offsets</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#data">Data</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#using-time-offsets">Using time offsets</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#using-time-offsets">Using time offsets</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#grouping-methods">Grouping methods</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analysing-offsets">Analysing offsets</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#shifting-timeseries">Shifting timeseries</a></li>
 </ul>
 
   </nav></div>

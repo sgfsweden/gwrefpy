@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=c87aa342"></script>
+    <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -383,6 +383,7 @@
     <span class="n">ref_timeseries</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
     <span class="n">offset</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">aggregation</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;anchor&quot;</span><span class="p">,</span> <span class="s2">&quot;consecutive&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;anchor&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Groups the reference and observation timeseries by their time equivalents.</span>
@@ -394,10 +395,22 @@
 <span class="sd">    ref_timeseries : pd.Series</span>
 <span class="sd">        The reference timeseries data.</span>
 <span class="sd">    offset: pd.DateOffset | pd.Timedelta | str</span>
-<span class="sd">        Maximum date offset to allow to group pairs of data points.</span>
+<span class="sd">        Maximum date offset to allow for matching reference points to each observation</span>
+<span class="sd">        point.</span>
 <span class="sd">    aggregation: Literal[&quot;mean&quot;, &quot;median&quot;, &quot;min&quot;, &quot;max&quot;], optional</span>
-<span class="sd">        The aggregation method to use when grouping data points.</span>
+<span class="sd">        The aggregation method to use when grouping data points within time equivalents.</span>
 <span class="sd">        Default is &quot;mean&quot;.</span>
+<span class="sd">    method: Literal[&quot;anchor&quot;, &quot;consecutive&quot;], optional</span>
+<span class="sd">        The grouping method to use.</span>
+
+<span class="sd">        ``&quot;anchor&quot;`` (default): each observation time point is the center of a</span>
+<span class="sd">        ``±offset`` window; all reference points inside that window are aggregated into</span>
+<span class="sd">        one output pair per observation time.</span>
+
+<span class="sd">        ``&quot;consecutive&quot;``: all timestamps from both series are merged and sorted, then</span>
+<span class="sd">        split into groups wherever the gap between consecutive timestamps exceeds</span>
+<span class="sd">        ``offset``. Both reference and observation values within each group are</span>
+<span class="sd">        aggregated together.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -409,29 +422,91 @@
 <span class="sd">        Number of grouped pairs of data points.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">obs_timeseries</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="n">obs_timeseries</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;obs&quot;</span><span class="p">:</span>
-        <span class="n">obs_timeseries</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;obs&quot;</span>
+        <span class="n">obs_timeseries</span> <span class="o">=</span> <span class="n">obs_timeseries</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s2">&quot;obs&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">ref_timeseries</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="n">ref_timeseries</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;ref&quot;</span><span class="p">:</span>
-        <span class="n">ref_timeseries</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;ref&quot;</span>
+        <span class="n">ref_timeseries</span> <span class="o">=</span> <span class="n">ref_timeseries</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s2">&quot;ref&quot;</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">offset_td</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">):</span>
+        <span class="n">offset_td</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">offset</span><span class="o">.</span><span class="n">days</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="s2">&quot;days&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">offset_td</span> <span class="o">=</span> <span class="n">offset</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;anchor&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_anchor_method</span><span class="p">(</span><span class="n">obs_timeseries</span><span class="p">,</span> <span class="n">ref_timeseries</span><span class="p">,</span> <span class="n">offset_td</span><span class="p">,</span> <span class="n">aggregation</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;consecutive&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_consecutive_method</span><span class="p">(</span><span class="n">obs_timeseries</span><span class="p">,</span> <span class="n">ref_timeseries</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">aggregation</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Unknown method: </span><span class="si">{</span><span class="n">method</span><span class="si">!r}</span><span class="s2">. Must be &#39;anchor&#39; or &#39;consecutive&#39;.&quot;</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_anchor_method</span><span class="p">(</span>
+    <span class="n">obs_timeseries</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
+    <span class="n">ref_timeseries</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
+    <span class="n">offset_td</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">,</span>
+    <span class="n">aggregation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">obs_timeseries</span><span class="o">.</span><span class="n">empty</span> <span class="ow">or</span> <span class="n">ref_timeseries</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ref&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;obs&quot;</span><span class="p">),</span>
+            <span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">obs_arr</span> <span class="o">=</span> <span class="n">obs_timeseries</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
+    <span class="n">ref_arr</span> <span class="o">=</span> <span class="n">ref_timeseries</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
+    <span class="n">offset_ns</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">offset_td</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">*</span> <span class="mf">1e9</span><span class="p">)</span>
+
+    <span class="c1"># (n_obs × n_ref) boolean mask of matching pairs</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">obs_arr</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">ref_arr</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">diff</span> <span class="o">&lt;=</span> <span class="n">offset_ns</span>
+
+    <span class="n">valid</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">valid</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ref&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;obs&quot;</span><span class="p">),</span>
+            <span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Replace non-matching ref values with NaN, then aggregate only matched rows</span>
+    <span class="n">ref_vals</span> <span class="o">=</span> <span class="n">ref_timeseries</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">masked_valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">[</span><span class="n">valid</span><span class="p">],</span> <span class="n">ref_vals</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="n">agg_fn</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">,</span>
+        <span class="s2">&quot;median&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">,</span>
+        <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">,</span>
+        <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">,</span>
+    <span class="p">}[</span><span class="n">aggregation</span><span class="p">]</span>
+    <span class="n">agg_vals</span> <span class="o">=</span> <span class="n">agg_fn</span><span class="p">(</span><span class="n">masked_valid</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">ref_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">agg_vals</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">obs_timeseries</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">valid</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ref&quot;</span><span class="p">)</span>
+    <span class="n">obs_series</span> <span class="o">=</span> <span class="n">obs_timeseries</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s2">&quot;obs&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ref_series</span><span class="p">,</span> <span class="n">obs_series</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">valid</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_consecutive_method</span><span class="p">(</span>
+    <span class="n">obs_timeseries</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
+    <span class="n">ref_timeseries</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
+    <span class="n">offset</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">aggregation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
     <span class="n">time_equivalents</span> <span class="o">=</span> <span class="n">_create_time_equivalents</span><span class="p">(</span>
         <span class="n">obs_timeseries</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">ref_timeseries</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">offset</span>
     <span class="p">)</span>
-
     <span class="n">combined</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">obs_timeseries</span><span class="p">,</span> <span class="n">ref_timeseries</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;columns&quot;</span><span class="p">)</span>
     <span class="n">combined_time_eqs</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">time_equivalents</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">grouped</span> <span class="o">=</span> <span class="n">combined_time_eqs</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">combined_time_eqs</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
-
-    <span class="c1"># Apply the specified aggregation method</span>
-    <span class="n">time_eq_aggregated</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">grouped</span><span class="p">,</span> <span class="n">aggregation</span><span class="p">)()</span>
-
-    <span class="n">time_eq_aggregated</span> <span class="o">=</span> <span class="n">time_eq_aggregated</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-
+    <span class="n">time_eq_aggregated</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">grouped</span><span class="p">,</span> <span class="n">aggregation</span><span class="p">)()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
     <span class="k">return</span> <span class="p">(</span>
         <span class="n">time_eq_aggregated</span><span class="p">[</span><span class="n">ref_timeseries</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
         <span class="n">time_eq_aggregated</span><span class="p">[</span><span class="n">obs_timeseries</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
         <span class="nb">len</span><span class="p">(</span><span class="n">time_eq_aggregated</span><span class="p">),</span>
-    <span class="p">)</span></div>
-
+    <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_create_time_equivalents</span><span class="p">(</span>
@@ -443,16 +518,16 @@
     <span class="n">ts_diffs</span> <span class="o">=</span> <span class="n">timestamps</span><span class="o">.</span><span class="n">diff</span><span class="p">()</span>
     <span class="n">starts</span> <span class="o">=</span> <span class="n">ts_diffs</span> <span class="o">&gt;</span> <span class="n">offset</span>
     <span class="n">starts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-
     <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">timestamps</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">starts</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;time_equivalents&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="analyze_offsets">
 <a class="viewcode-back" href="../../../../constants.html#src.gwrefpy.methods.timeseries.analyze_offsets">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">analyze_offsets</span><span class="p">(</span>
-    <span class="n">ref</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">|</span> <span class="n">Well</span><span class="p">,</span>
     <span class="n">obs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">|</span> <span class="n">Well</span><span class="p">,</span>
+    <span class="n">ref</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">|</span> <span class="n">Well</span><span class="p">,</span>
     <span class="n">offsets</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span> <span class="o">|</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">method</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;anchor&quot;</span><span class="p">,</span> <span class="s2">&quot;consecutive&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;anchor&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Tests the grouping of time series data by different offsets. This can be helpful</span>
@@ -460,30 +535,31 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    ref: pd.Series | Well</span>
-<span class="sd">        The reference time series data.</span>
 <span class="sd">    obs: pd.Series | Well</span>
 <span class="sd">        The observed time series data.</span>
+<span class="sd">    ref: pd.Series | Well</span>
+<span class="sd">        The reference time series data.</span>
 <span class="sd">    offsets: list[pd.DateOffset | pd.Timedelta | str]</span>
 <span class="sd">        The list of offsets to test.</span>
+<span class="sd">    method: Literal[&quot;anchor&quot;, &quot;consecutive&quot;], optional</span>
+<span class="sd">        The grouping method to use (default is &quot;anchor&quot;).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    pd.Series</span>
 <span class="sd">        The number of grouped pairs of data points for each offset.</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="n">Well</span><span class="p">):</span>
-        <span class="n">ref</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">timeseries</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">Well</span><span class="p">):</span>
         <span class="n">obs</span> <span class="o">=</span> <span class="n">obs</span><span class="o">.</span><span class="n">timeseries</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="n">Well</span><span class="p">):</span>
+        <span class="n">ref</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">timeseries</span>
 
     <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">offset</span> <span class="ow">in</span> <span class="n">offsets</span><span class="p">:</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">n_pairs</span> <span class="o">=</span> <span class="n">groupby_time_equivalents</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">n_pairs</span> <span class="o">=</span> <span class="n">groupby_time_equivalents</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">ref</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
         <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_pairs</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">):</span>
             <span class="n">idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">offset</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>

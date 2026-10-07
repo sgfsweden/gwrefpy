@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=c87aa342"></script>
+    <script src="../../../_static/documentation_options.js?v=8d563738"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -997,8 +997,10 @@
                 <span class="n">p</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                 <span class="n">offset</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;offset&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                 <span class="n">aggregation</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;aggregation&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">),</span>
+                <span class="n">te_method</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;te_method&quot;</span><span class="p">,</span> <span class="s2">&quot;anchor&quot;</span><span class="p">),</span>
                 <span class="n">tmin</span><span class="o">=</span><span class="n">float_to_datetime</span><span class="p">(</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tmin&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)),</span>
                 <span class="n">tmax</span><span class="o">=</span><span class="n">float_to_datetime</span><span class="p">(</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tmax&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)),</span>
+                <span class="n">shift</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;shift&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                 <span class="n">name</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fit</span><span class="p">)</span>

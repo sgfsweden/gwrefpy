@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=c87aa342"></script>
+    <script src="../_static/documentation_options.js?v=8d563738"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -333,6 +333,7 @@
 <li class="toctree-l1"><a class="reference internal" href="3_time_offsets.html">Time offsets</a></li>
 
 
+
 <li class="toctree-l1"><a class="reference internal" href="4_plotting.html">Plotting with gwrefpy 📊</a></li>
 <li class="toctree-l1"><a class="reference internal" href="5_io.html">Saving and loading models</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Logging 📄</a></li>
@@ -507,7 +508,7 @@
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using linear regression method for fitting.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fit completed for model &#39;Logging Example Model&#39; with RMSE 0.1465912233767511.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fit completed for model &#39;Logging Example Model&#39; with RMSE 0.1472007304981646.
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Fitting model &#39;Logging Example Model&#39; using reference well &#39;Ref. well&#39; and observation well &#39;Obs. well&#39;.
@@ -517,19 +518,21 @@
 ==================================
 Statistic       Value        Description
 --------------------------------------------------
-RMSE            0.1466       Root Mean Square Error
-R²              0.9098       Coefficient of Determination
-R-value         0.9538       Correlation Coefficient
-Slope           2.3243       Linear Regression Slope
-Intercept       -17.8463     Linear Regression Intercept
+RMSE            0.1472       Root Mean Square Error
+R²              0.9015       Coefficient of Determination
+R-value         0.9495       Correlation Coefficient
+Slope           2.2627       Linear Regression Slope
+Intercept       -16.6620     Linear Regression Intercept
 P-value         0.0000       Statistical Significance
 N               80           Number of Data Points
-Std Error       0.1485       Standard Error
+Std Error       0.1491       Standard Error
 Confidence      95.0        % Confidence Level
 
 Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00
 Time Offset: 0D
+Shift: None
 Aggregation Method: mean
+Grouping Method: anchor
 </pre></div>
 </div>
 <div class="output text_html">
@@ -547,28 +550,28 @@ Aggregation Method: mean
                             <tbody>
                                 <tr>
                                     <td>RMSE</td>
-                                    <td>0.1466</td>
+                                    <td>0.1472</td>
                                     <td>Root Mean Square Error</td>
                                 </tr>
                                 
             <tr>
                 <td>R²</td>
-                <td>0.9098</td>
+                <td>0.9015</td>
                 <td>Coefficient of Determination</td>
             </tr>
             <tr>
                 <td>R-value</td>
-                <td>0.9538</td>
+                <td>0.9495</td>
                 <td>Correlation Coefficient</td>
             </tr>
             <tr>
                 <td>Slope</td>
-                <td>2.3243</td>
+                <td>2.2627</td>
                 <td>Linear Regression Slope</td>
             </tr>
             <tr>
                 <td>Intercept</td>
-                <td>-17.8463</td>
+                <td>-16.6620</td>
                 <td>Linear Regression Intercept</td>
             </tr>
             <tr>
@@ -584,7 +587,7 @@ Aggregation Method: mean
                                 </tr>
                                 <tr>
                                     <td>Std Error</td>
-                                    <td>0.1485</td>
+                                    <td>0.1491</td>
                                     <td>Standard Error</td>
                                 </tr>
                                 <tr>
@@ -597,6 +600,7 @@ Aggregation Method: mean
                         <p>
                             Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00<br>
                             Time Offset: 0D<br>
+                            Shift: None<br>
                             Aggregation Method: mean
                         </p>
                     </div>
@@ -719,28 +723,28 @@ Aggregation Method: mean
                             <tbody>
                                 <tr>
                                     <td>RMSE</td>
-                                    <td>0.1284</td>
+                                    <td>0.1402</td>
                                     <td>Root Mean Square Error</td>
                                 </tr>
                                 
             <tr>
                 <td>R²</td>
-                <td>0.9242</td>
+                <td>0.9096</td>
                 <td>Coefficient of Determination</td>
             </tr>
             <tr>
                 <td>R-value</td>
-                <td>0.9613</td>
+                <td>0.9537</td>
                 <td>Correlation Coefficient</td>
             </tr>
             <tr>
                 <td>Slope</td>
-                <td>2.1725</td>
+                <td>2.1308</td>
                 <td>Linear Regression Slope</td>
             </tr>
             <tr>
                 <td>Intercept</td>
-                <td>-14.9711</td>
+                <td>-14.2023</td>
                 <td>Linear Regression Intercept</td>
             </tr>
             <tr>
@@ -756,7 +760,7 @@ Aggregation Method: mean
                                 </tr>
                                 <tr>
                                     <td>Std Error</td>
-                                    <td>0.1300</td>
+                                    <td>0.1420</td>
                                     <td>Standard Error</td>
                                 </tr>
                                 <tr>
@@ -769,6 +773,7 @@ Aggregation Method: mean
                         <p>
                             Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00<br>
                             Time Offset: 0D<br>
+                            Shift: None<br>
                             Aggregation Method: mean
                         </p>
                     </div>
@@ -785,35 +790,37 @@ Aggregation Method: mean
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:15,752 [INFO] __main__: Creating wells with timeseries data
-2026-01-29 06:54:15,752 [DEBUG] gwrefpy.well: Added timeseries to well Obs. well 1
-2026-01-29 06:54:15,753 [DEBUG] gwrefpy.well: Added timeseries to well Ref. well 1
-2026-01-29 06:54:15,753 [DEBUG] __main__: Timeseries data added to wells
-2026-01-29 06:54:15,753 [INFO] __main__: Creating a new model
-2026-01-29 06:54:15,753 [DEBUG] gwrefpy.model: Well &#39;Obs. well 1&#39; added to model &#39;Logging Example Model DEBUG&#39;.
-2026-01-29 06:54:15,754 [DEBUG] gwrefpy.model: Well &#39;Ref. well 1&#39; added to model &#39;Logging Example Model DEBUG&#39;.
-2026-01-29 06:54:15,754 [DEBUG] __main__: The wells have been added to the model
-2026-01-29 06:54:15,757 [INFO] __main__: Running the fit method on the model
-2026-01-29 06:54:15,758 [DEBUG] gwrefpy.fitbase: Using linear regression method for fitting.
-2026-01-29 06:54:15,763 [DEBUG] gwrefpy.fitbase: Fit completed for model &#39;Logging Example Model DEBUG&#39; with RMSE 0.12835401062636076.
-2026-01-29 06:54:15,763 [INFO] gwrefpy.fitbase: Fitting model &#39;Logging Example Model DEBUG&#39; using reference well &#39;Ref. well 1&#39; and observation well &#39;Obs. well 1&#39;.
-2026-01-29 06:54:15,764 [DEBUG] gwrefpy.model: Fit Results: Obs. well 1 ~ Ref. well 1
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:12:49,811 [INFO] __main__: Creating wells with timeseries data
+2026-10-07 20:12:49,811 [DEBUG] gwrefpy.well: Added timeseries to well Obs. well 1
+2026-10-07 20:12:49,812 [DEBUG] gwrefpy.well: Added timeseries to well Ref. well 1
+2026-10-07 20:12:49,812 [DEBUG] __main__: Timeseries data added to wells
+2026-10-07 20:12:49,812 [INFO] __main__: Creating a new model
+2026-10-07 20:12:49,812 [DEBUG] gwrefpy.model: Well &#39;Obs. well 1&#39; added to model &#39;Logging Example Model DEBUG&#39;.
+2026-10-07 20:12:49,812 [DEBUG] gwrefpy.model: Well &#39;Ref. well 1&#39; added to model &#39;Logging Example Model DEBUG&#39;.
+2026-10-07 20:12:49,812 [DEBUG] __main__: The wells have been added to the model
+2026-10-07 20:12:49,817 [INFO] __main__: Running the fit method on the model
+2026-10-07 20:12:49,817 [DEBUG] gwrefpy.fitbase: Using linear regression method for fitting.
+2026-10-07 20:12:49,820 [DEBUG] gwrefpy.fitbase: Fit completed for model &#39;Logging Example Model DEBUG&#39; with RMSE 0.14017840132801643.
+2026-10-07 20:12:49,820 [INFO] gwrefpy.fitbase: Fitting model &#39;Logging Example Model DEBUG&#39; using reference well &#39;Ref. well 1&#39; and observation well &#39;Obs. well 1&#39;.
+2026-10-07 20:12:49,821 [DEBUG] gwrefpy.model: Fit Results: Obs. well 1 ~ Ref. well 1
 ======================================
 Statistic       Value        Description
 --------------------------------------------------
-RMSE            0.1284       Root Mean Square Error
-R²              0.9242       Coefficient of Determination
-R-value         0.9613       Correlation Coefficient
-Slope           2.1725       Linear Regression Slope
-Intercept       -14.9711     Linear Regression Intercept
+RMSE            0.1402       Root Mean Square Error
+R²              0.9096       Coefficient of Determination
+R-value         0.9537       Correlation Coefficient
+Slope           2.1308       Linear Regression Slope
+Intercept       -14.2023     Linear Regression Intercept
 P-value         0.0000       Statistical Significance
 N               80           Number of Data Points
-Std Error       0.1300       Standard Error
+Std Error       0.1420       Standard Error
 Confidence      95.0        % Confidence Level
 
 Calibration Period: 2020-01-01 00:00:00 to 2020-03-20 00:00:00
 Time Offset: 0D
+Shift: None
 Aggregation Method: mean
+Grouping Method: anchor
 </pre></div>
 </div>
 </div>

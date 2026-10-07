@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=c87aa342"></script>
+    <script src="../_static/documentation_options.js?v=8d563738"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -333,6 +333,7 @@
 <li class="toctree-l1"><a class="reference internal" href="3_time_offsets.html">Time offsets</a></li>
 
 
+
 <li class="toctree-l1"><a class="reference internal" href="4_plotting.html">Plotting with gwrefpy 📊</a></li>
 <li class="toctree-l1"><a class="reference internal" href="5_io.html">Saving and loading models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="6_logging.html">Logging 📄</a></li>
@@ -447,7 +448,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/2a91f47c82b6b4f9dfab0c50b85d71cee8b3d23b2d74df041fb1057f4907241d.png" src="../_images/2a91f47c82b6b4f9dfab0c50b85d71cee8b3d23b2d74df041fb1057f4907241d.png" />
+<img alt="../_images/9edf73d8162c906f3b5b4cec4e04be1651cc0083eb3cf19b8ee0941b0c9ee62e.png" src="../_images/9edf73d8162c906f3b5b4cec4e04be1651cc0083eb3cf19b8ee0941b0c9ee62e.png" />
 </div>
 </div>
 </section>
@@ -548,10 +549,10 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:22,495 - gwrefpy.methods.linregressfit - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:03,703 - gwrefpy.methods.linregressfit - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:22,496 - gwrefpy.methods.linregressfit - WARNING - tmax is None, setting to max common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:03,703 - gwrefpy.methods.linregressfit - WARNING - tmax is None, setting to max common time of both wells
 </pre></div>
 </div>
 <div class="output text_html">
@@ -619,6 +620,7 @@
                         <p>
                             Calibration Period: 2018-01-01 00:00:00 to 2025-09-24 00:00:00<br>
                             Time Offset: 0D<br>
+                            Shift: None<br>
                             Aggregation Method: mean
                         </p>
                     </div>
@@ -717,12 +719,12 @@
       <th>0</th>
       <td>obs</td>
       <td>observation</td>
-      <td>20144</td>
+      <td>20395</td>
       <td>1970-12-05</td>
-      <td>2026-01-28</td>
-      <td>150.004634</td>
-      <td>149.734</td>
-      <td>2026-01-28</td>
+      <td>2026-10-06</td>
+      <td>149.979687</td>
+      <td>149.528</td>
+      <td>2026-10-06</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -735,12 +737,12 @@
       <th>1</th>
       <td>ref</td>
       <td>reference</td>
-      <td>23766</td>
+      <td>24018</td>
       <td>1961-01-01</td>
-      <td>2026-01-25</td>
-      <td>49.997896</td>
-      <td>38.000</td>
-      <td>2026-01-25</td>
+      <td>2026-10-04</td>
+      <td>49.733533</td>
+      <td>2.000</td>
+      <td>2026-10-04</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -778,58 +780,58 @@
 <p class="expanded admonition-title">Hide code cell output</p>
 </summary>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,133 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:09,509 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,140 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:10,683 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,147 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:11,849 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,154 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:13,012 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,160 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:14,172 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,167 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:15,335 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,174 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:16,498 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,182 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:17,658 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,189 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:18,814 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,196 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:19,970 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,203 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:21,124 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,210 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:22,283 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,217 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:23,447 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,224 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:24,616 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,230 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:25,821 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,237 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:26,981 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,245 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:28,162 - gwrefpy.methods.npolyfit - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-01-29 06:54:26,252 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2026-10-07 20:13:29,327 - gwrefpy.methods.chebyshev - WARNING - tmin is None, setting to min common time of both wells
 </pre></div>
 </div>
 </div>
@@ -844,7 +846,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/bd1f46458dfe483547c2f700a2904e30193bd9debc6bfe5da59e47b57061727b.png" src="../_images/bd1f46458dfe483547c2f700a2904e30193bd9debc6bfe5da59e47b57061727b.png" />
+<img alt="../_images/b937a78da5025bb27bf7a4d3d83490c6a92c3c00ba20c19552f37c80ae6eab5f.png" src="../_images/b937a78da5025bb27bf7a4d3d83490c6a92c3c00ba20c19552f37c80ae6eab5f.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -854,7 +856,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/d6f6ef093402c38c4d56a0505f61aa1237ba6316821eb04959419edeb0a6f9eb.png" src="../_images/d6f6ef093402c38c4d56a0505f61aa1237ba6316821eb04959419edeb0a6f9eb.png" />
+<img alt="../_images/734411b3535ad5d8196df58e68cbd6d3c7c06954509ed40b8164aaef99d2cea8.png" src="../_images/734411b3535ad5d8196df58e68cbd6d3c7c06954509ed40b8164aaef99d2cea8.png" />
 </div>
 </div>
 <p>Looks like the number of outliers greatly increase after 2005?</p>

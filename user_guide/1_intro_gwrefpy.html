@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=c87aa342"></script>
+    <script src="../_static/documentation_options.js?v=8d563738"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -333,6 +333,7 @@
 <li class="toctree-l1"><a class="reference internal" href="3_time_offsets.html">Time offsets</a></li>
 
 
+
 <li class="toctree-l1"><a class="reference internal" href="4_plotting.html">Plotting with gwrefpy 📊</a></li>
 <li class="toctree-l1"><a class="reference internal" href="5_io.html">Saving and loading models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="6_logging.html">Logging 📄</a></li>
@@ -403,14 +404,20 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="intro-to-gwrefpy">
 <h1>Intro to <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code><a class="headerlink" href="#intro-to-gwrefpy" title="Link to this heading">#</a></h1>
-<p>This notebook introduces the objects models and wells and how they are used in <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code>.</p>
-<p>This notebook can be downloaded from the source code <a class="reference external" href="https://github.com/andersretznerSGU/gwrefpy/blob/main/docs/user_guide/1_intro_gwrefpy.ipynb">here</a>.</p>
-<p>Models and wells are important and they build the foundation of <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code>. Models are used to represent a site or area of interest, and wells are used to represent locations where groundwater data is collected. There is no limit to the number of models or wells that can be created in gwrefpy, nor is there a restriction on the order in which they are created. Models and wells can be created independently of one another, and they can be linked together later.</p>
-<p>We will start by importing the necessary packages and then begin with creating a model. For this notebook we besides the <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> also need the pandas package.</p>
+<p><code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> is a Python package for <strong>detecting deviations in groundwater time series</strong>.</p>
+<p>This notebook can be downloaded from the source code <a class="reference external" href="https://github.com/sgfsweden/gwrefpy/blob/main/docs/user_guide/1_intro_gwrefpy.ipynb">here</a>.</p>
+<div class="note admonition">
+<p class="admonition-title">Problem Statement</p>
+<p><strong>The problem:</strong> Groundwater levels rise and fall naturally with weather and the seasons. So when an observation well behaves unexpectedly, how do we tell whether human activity (pumping, construction, drainage) is to blame, or whether it is just natural variation?</p>
+<p><strong>How <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> solves it:</strong> An <strong>observation well</strong> (the one we care about) is compared against one or more <strong>reference wells</strong> that represent undisturbed, natural conditions. <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> fits the observation well to the reference wells by regression; once later measurements stop following that fit, a deviation — some kind of influence — has occurred.</p>
+</div>
+<p>The two building blocks of <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> are <strong><code class="docutils literal notranslate"><span class="pre">Model</span></code></strong> — a site or area of interest — and <strong><code class="docutils literal notranslate"><span class="pre">Well</span></code></strong> — a location where groundwater data is collected. A <code class="docutils literal notranslate"><span class="pre">Model</span></code> holds any number of <code class="docutils literal notranslate"><span class="pre">Well</span></code> objects, and the two can be created independently and linked together later.</p>
+<p>Let’s start by importing <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> (along with <code class="docutils literal notranslate"><span class="pre">pandas</span></code>, which we use to load the data).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">gwrefpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gr</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">gwrefpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gr</span>
 </pre></div>
 </div>
 </div>
@@ -418,7 +425,7 @@
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="creating-a-model">
 <h1>Creating a Model<a class="headerlink" href="#creating-a-model" title="Link to this heading">#</a></h1>
-<p>A model is typically a representation of a site or area of interest. Models can be made up of any number of wells. In this case we create a model with the name ‘My First gwrefpy Model’</p>
+<p>A <strong><code class="docutils literal notranslate"><span class="pre">Model</span></code></strong> represents a site or area of interest and is made up of any number of wells. Here we create one named <code class="docutils literal notranslate"><span class="pre">&quot;My</span> <span class="pre">First</span> <span class="pre">gwrefpy</span> <span class="pre">Model&quot;</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;My First gwrefpy Model&quot;</span><span class="p">)</span>
@@ -429,226 +436,82 @@
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="creating-wells">
 <h1>Creating Wells<a class="headerlink" href="#creating-wells" title="Link to this heading">#</a></h1>
-<p>Models are made up of wells. A well is typically a location where groundwater data is collected. Wells can be created independently of models, and they can be linked to models later. Wells can either be an observation well or a reference well.</p>
+<p>A <strong><code class="docutils literal notranslate"><span class="pre">Well</span></code></strong> is a location where groundwater data is collected. Each well is either an <em>observation</em> well or a <em>reference</em> well.</p>
 <dl class="simple glossary">
 <dt id="term-Reference-wells"><em>Reference wells</em><a class="headerlink" href="#term-Reference-wells" title="Link to this term">#</a></dt><dd><p>Wells that are used to represent natural conditions.</p>
 </dd>
 <dt id="term-Observation-wells"><em>Observation wells</em><a class="headerlink" href="#term-Observation-wells" title="Link to this term">#</a></dt><dd><p>Wells that the user is interested in to see if they are influenced by anthropogenic activities.</p>
 </dd>
 </dl>
-<p>In this notebook we create one observation wells and one reference wells to later include in our existing model.</p>
+<p>We will create two observation wells and two reference wells and later add them to our model.</p>
 <section id="creating-data-timeseries">
 <h2>Creating data timeseries<a class="headerlink" href="#creating-data-timeseries" title="Link to this heading">#</a></h2>
-<p>To create our wells, we first need to convert our groundwater data to pandas timeseries for each well. In this example this is made by using CSV-files.</p>
+<p>A well’s data is a <code class="docutils literal notranslate"><span class="pre">pandas</span></code> time series. In this example we build those series from CSV files.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>Data types can be other than CSV. Check the pandas documentation for inspiration.</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_obs1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;https://github.com/andersretznerSGU/gwrefpy/raw/dev/docs/user_guide/data/obs1_mod_wel.csv&#39;</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;;&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">df_ref1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;https://github.com/andersretznerSGU/gwrefpy/raw/dev/docs/user_guide/data/obs1_mod_wel.csv&#39;</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;;&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">df_obs2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;https://github.com/andersretznerSGU/gwrefpy/raw/dev/docs/user_guide/data/obs1_mod_wel.csv&#39;</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;;&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">df_ref2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;https://github.com/andersretznerSGU/gwrefpy/raw/dev/docs/user_guide/data/obs1_mod_wel.csv&#39;</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;;&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/sgfsweden/gwrefpy/raw/dev/docs/user_guide/data&quot;</span>
 
-<span class="c1">#Create pandas series from the dataframes.</span>
 
-<span class="n">obs1_series</span> <span class="o">=</span> <span class="n">df_obs1</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> 
-<span class="n">ref1_series</span> <span class="o">=</span> <span class="n">df_ref1</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
-<span class="n">obs2_series</span> <span class="o">=</span> <span class="n">df_obs2</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
-<span class="n">ref2_series</span> <span class="o">=</span> <span class="n">df_ref2</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">HTTPError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">line</span> <span class="mi">1</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">df_obs1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;https://github.com/andersretznerSGU/gwrefpy/raw/dev/docs/user_guide/data/obs1_mod_wel.csv&#39;</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;;&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="n">df_ref1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;https://github.com/andersretznerSGU/gwrefpy/raw/dev/docs/user_guide/data/obs1_mod_wel.csv&#39;</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;;&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="n">df_obs2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;https://github.com/andersretznerSGU/gwrefpy/raw/dev/docs/user_guide/data/obs1_mod_wel.csv&#39;</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;;&#39;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_series</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span>
+        <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">parse_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Each CSV has a single value column; take it as a pandas Series.</span>
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
 
-<span class="nn">File ~/work/gwrefpy/gwrefpy/.venv/lib/python3.11/site-packages/pandas/io/parsers/readers.py:1026,</span> in <span class="ni">read_csv</span><span class="nt">(filepath_or_buffer, sep, delimiter, header, names, index_col, usecols, dtype, engine, converters, true_values, false_values, skipinitialspace, skiprows, skipfooter, nrows, na_values, keep_default_na, na_filter, verbose, skip_blank_lines, parse_dates, infer_datetime_format, keep_date_col, date_parser, date_format, dayfirst, cache_dates, iterator, chunksize, compression, thousands, decimal, lineterminator, quotechar, quoting, doublequote, escapechar, comment, encoding, encoding_errors, dialect, on_bad_lines, delim_whitespace, low_memory, memory_map, float_precision, storage_options, dtype_backend)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1013</span> <span class="n">kwds_defaults</span> <span class="o">=</span> <span class="n">_refine_defaults_read</span><span class="p">(</span>
-<span class="g g-Whitespace">   </span><span class="mi">1014</span>     <span class="n">dialect</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1015</span>     <span class="n">delimiter</span><span class="p">,</span>
-   <span class="p">(</span><span class="o">...</span><span class="p">)</span>   <span class="mi">1022</span>     <span class="n">dtype_backend</span><span class="o">=</span><span class="n">dtype_backend</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1023</span> <span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1024</span> <span class="n">kwds</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwds_defaults</span><span class="p">)</span>
-<span class="ne">-&gt; </span><span class="mi">1026</span> <span class="k">return</span> <span class="n">_read</span><span class="p">(</span><span class="n">filepath_or_buffer</span><span class="p">,</span> <span class="n">kwds</span><span class="p">)</span>
 
-<span class="nn">File ~/work/gwrefpy/gwrefpy/.venv/lib/python3.11/site-packages/pandas/io/parsers/readers.py:620,</span> in <span class="ni">_read</span><span class="nt">(filepath_or_buffer, kwds)</span>
-<span class="g g-Whitespace">    </span><span class="mi">617</span> <span class="n">_validate_names</span><span class="p">(</span><span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;names&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
-<span class="g g-Whitespace">    </span><span class="mi">619</span> <span class="c1"># Create the parser.</span>
-<span class="ne">--&gt; </span><span class="mi">620</span> <span class="n">parser</span> <span class="o">=</span> <span class="n">TextFileReader</span><span class="p">(</span><span class="n">filepath_or_buffer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">622</span> <span class="k">if</span> <span class="n">chunksize</span> <span class="ow">or</span> <span class="n">iterator</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">623</span>     <span class="k">return</span> <span class="n">parser</span>
-
-<span class="nn">File ~/work/gwrefpy/gwrefpy/.venv/lib/python3.11/site-packages/pandas/io/parsers/readers.py:1620,</span> in <span class="ni">TextFileReader.__init__</span><span class="nt">(self, f, engine, **kwds)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1617</span>     <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;has_index_names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwds</span><span class="p">[</span><span class="s2">&quot;has_index_names&quot;</span><span class="p">]</span>
-<span class="g g-Whitespace">   </span><span class="mi">1619</span> <span class="bp">self</span><span class="o">.</span><span class="n">handles</span><span class="p">:</span> <span class="n">IOHandles</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="ne">-&gt; </span><span class="mi">1620</span> <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_engine</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
-
-<span class="nn">File ~/work/gwrefpy/gwrefpy/.venv/lib/python3.11/site-packages/pandas/io/parsers/readers.py:1880,</span> in <span class="ni">TextFileReader._make_engine</span><span class="nt">(self, f, engine)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1878</span>     <span class="k">if</span> <span class="s2">&quot;b&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mode</span><span class="p">:</span>
-<span class="g g-Whitespace">   </span><span class="mi">1879</span>         <span class="n">mode</span> <span class="o">+=</span> <span class="s2">&quot;b&quot;</span>
-<span class="ne">-&gt; </span><span class="mi">1880</span> <span class="bp">self</span><span class="o">.</span><span class="n">handles</span> <span class="o">=</span> <span class="n">get_handle</span><span class="p">(</span>
-<span class="g g-Whitespace">   </span><span class="mi">1881</span>     <span class="n">f</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1882</span>     <span class="n">mode</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1883</span>     <span class="n">encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;encoding&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-<span class="g g-Whitespace">   </span><span class="mi">1884</span>     <span class="n">compression</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;compression&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-<span class="g g-Whitespace">   </span><span class="mi">1885</span>     <span class="n">memory_map</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;memory_map&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
-<span class="g g-Whitespace">   </span><span class="mi">1886</span>     <span class="n">is_text</span><span class="o">=</span><span class="n">is_text</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1887</span>     <span class="n">errors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;encoding_errors&quot;</span><span class="p">,</span> <span class="s2">&quot;strict&quot;</span><span class="p">),</span>
-<span class="g g-Whitespace">   </span><span class="mi">1888</span>     <span class="n">storage_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;storage_options&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-<span class="g g-Whitespace">   </span><span class="mi">1889</span> <span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1890</span> <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">handles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-<span class="g g-Whitespace">   </span><span class="mi">1891</span> <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handles</span><span class="o">.</span><span class="n">handle</span>
-
-<span class="nn">File ~/work/gwrefpy/gwrefpy/.venv/lib/python3.11/site-packages/pandas/io/common.py:728,</span> in <span class="ni">get_handle</span><span class="nt">(path_or_buf, mode, encoding, compression, memory_map, is_text, errors, storage_options)</span>
-<span class="g g-Whitespace">    </span><span class="mi">725</span>     <span class="n">codecs</span><span class="o">.</span><span class="n">lookup_error</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">727</span> <span class="c1"># open URLs</span>
-<span class="ne">--&gt; </span><span class="mi">728</span> <span class="n">ioargs</span> <span class="o">=</span> <span class="n">_get_filepath_or_buffer</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">729</span>     <span class="n">path_or_buf</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">730</span>     <span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">731</span>     <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">732</span>     <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">733</span>     <span class="n">storage_options</span><span class="o">=</span><span class="n">storage_options</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">734</span> <span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">736</span> <span class="n">handle</span> <span class="o">=</span> <span class="n">ioargs</span><span class="o">.</span><span class="n">filepath_or_buffer</span>
-<span class="g g-Whitespace">    </span><span class="mi">737</span> <span class="n">handles</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseBuffer</span><span class="p">]</span>
-
-<span class="nn">File ~/work/gwrefpy/gwrefpy/.venv/lib/python3.11/site-packages/pandas/io/common.py:384,</span> in <span class="ni">_get_filepath_or_buffer</span><span class="nt">(filepath_or_buffer, encoding, compression, mode, storage_options)</span>
-<span class="g g-Whitespace">    </span><span class="mi">382</span> <span class="c1"># assuming storage_options is to be interpreted as headers</span>
-<span class="g g-Whitespace">    </span><span class="mi">383</span> <span class="n">req_info</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="n">filepath_or_buffer</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">storage_options</span><span class="p">)</span>
-<span class="ne">--&gt; </span><span class="mi">384</span> <span class="k">with</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">req_info</span><span class="p">)</span> <span class="k">as</span> <span class="n">req</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">385</span>     <span class="n">content_encoding</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Content-Encoding&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">386</span>     <span class="k">if</span> <span class="n">content_encoding</span> <span class="o">==</span> <span class="s2">&quot;gzip&quot;</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">387</span>         <span class="c1"># Override compression based on Content-Encoding header</span>
-
-<span class="nn">File ~/work/gwrefpy/gwrefpy/.venv/lib/python3.11/site-packages/pandas/io/common.py:289,</span> in <span class="ni">urlopen</span><span class="nt">(*args, **kwargs)</span>
-<span class="g g-Whitespace">    </span><span class="mi">283</span><span class="w"> </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="g g-Whitespace">    </span><span class="mi">284</span><span class="sd"> Lazy-import wrapper for stdlib urlopen, as that imports a big chunk of</span>
-<span class="g g-Whitespace">    </span><span class="mi">285</span><span class="sd"> the stdlib.</span>
-<span class="g g-Whitespace">    </span><span class="mi">286</span><span class="sd"> &quot;&quot;&quot;</span>
-<span class="g g-Whitespace">    </span><span class="mi">287</span> <span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span>
-<span class="ne">--&gt; </span><span class="mi">289</span> <span class="k">return</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-<span class="nn">File ~/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/urllib/request.py:216,</span> in <span class="ni">urlopen</span><span class="nt">(url, data, timeout, cafile, capath, cadefault, context)</span>
-<span class="g g-Whitespace">    </span><span class="mi">214</span> <span class="k">else</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">215</span>     <span class="n">opener</span> <span class="o">=</span> <span class="n">_opener</span>
-<span class="ne">--&gt; </span><span class="mi">216</span> <span class="k">return</span> <span class="n">opener</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
-
-<span class="nn">File ~/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/urllib/request.py:525,</span> in <span class="ni">OpenerDirector.open</span><span class="nt">(self, fullurl, data, timeout)</span>
-<span class="g g-Whitespace">    </span><span class="mi">523</span> <span class="k">for</span> <span class="n">processor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="p">[]):</span>
-<span class="g g-Whitespace">    </span><span class="mi">524</span>     <span class="n">meth</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">processor</span><span class="p">,</span> <span class="n">meth_name</span><span class="p">)</span>
-<span class="ne">--&gt; </span><span class="mi">525</span>     <span class="n">response</span> <span class="o">=</span> <span class="n">meth</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">527</span> <span class="k">return</span> <span class="n">response</span>
-
-<span class="nn">File ~/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/urllib/request.py:634,</span> in <span class="ni">HTTPErrorProcessor.http_response</span><span class="nt">(self, request, response)</span>
-<span class="g g-Whitespace">    </span><span class="mi">631</span> <span class="c1"># According to RFC 2616, &quot;2xx&quot; code indicates that the client&#39;s</span>
-<span class="g g-Whitespace">    </span><span class="mi">632</span> <span class="c1"># request was successfully received, understood, and accepted.</span>
-<span class="g g-Whitespace">    </span><span class="mi">633</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">200</span> <span class="o">&lt;=</span> <span class="n">code</span> <span class="o">&lt;</span> <span class="mi">300</span><span class="p">):</span>
-<span class="ne">--&gt; </span><span class="mi">634</span>     <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">635</span>         <span class="s1">&#39;http&#39;</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">hdrs</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">637</span> <span class="k">return</span> <span class="n">response</span>
-
-<span class="nn">File ~/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/urllib/request.py:557,</span> in <span class="ni">OpenerDirector.error</span><span class="nt">(self, proto, *args)</span>
-<span class="g g-Whitespace">    </span><span class="mi">555</span>     <span class="n">http_err</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="g g-Whitespace">    </span><span class="mi">556</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">proto</span><span class="p">,</span> <span class="n">meth_name</span><span class="p">)</span> <span class="o">+</span> <span class="n">args</span>
-<span class="ne">--&gt; </span><span class="mi">557</span> <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_chain</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">558</span> <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">559</span>     <span class="k">return</span> <span class="n">result</span>
-
-<span class="nn">File ~/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/urllib/request.py:496,</span> in <span class="ni">OpenerDirector._call_chain</span><span class="nt">(self, chain, kind, meth_name, *args)</span>
-<span class="g g-Whitespace">    </span><span class="mi">494</span> <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">handlers</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">495</span>     <span class="n">func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">meth_name</span><span class="p">)</span>
-<span class="ne">--&gt; </span><span class="mi">496</span>     <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">497</span>     <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">498</span>         <span class="k">return</span> <span class="n">result</span>
-
-<span class="nn">File ~/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/urllib/request.py:749,</span> in <span class="ni">HTTPRedirectHandler.http_error_302</span><span class="nt">(self, req, fp, code, msg, headers)</span>
-<span class="g g-Whitespace">    </span><span class="mi">746</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-<span class="g g-Whitespace">    </span><span class="mi">747</span> <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="ne">--&gt; </span><span class="mi">749</span> <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">new</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-
-<span class="nn">File ~/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/urllib/request.py:525,</span> in <span class="ni">OpenerDirector.open</span><span class="nt">(self, fullurl, data, timeout)</span>
-<span class="g g-Whitespace">    </span><span class="mi">523</span> <span class="k">for</span> <span class="n">processor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="p">[]):</span>
-<span class="g g-Whitespace">    </span><span class="mi">524</span>     <span class="n">meth</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">processor</span><span class="p">,</span> <span class="n">meth_name</span><span class="p">)</span>
-<span class="ne">--&gt; </span><span class="mi">525</span>     <span class="n">response</span> <span class="o">=</span> <span class="n">meth</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">527</span> <span class="k">return</span> <span class="n">response</span>
-
-<span class="nn">File ~/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/urllib/request.py:634,</span> in <span class="ni">HTTPErrorProcessor.http_response</span><span class="nt">(self, request, response)</span>
-<span class="g g-Whitespace">    </span><span class="mi">631</span> <span class="c1"># According to RFC 2616, &quot;2xx&quot; code indicates that the client&#39;s</span>
-<span class="g g-Whitespace">    </span><span class="mi">632</span> <span class="c1"># request was successfully received, understood, and accepted.</span>
-<span class="g g-Whitespace">    </span><span class="mi">633</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">200</span> <span class="o">&lt;=</span> <span class="n">code</span> <span class="o">&lt;</span> <span class="mi">300</span><span class="p">):</span>
-<span class="ne">--&gt; </span><span class="mi">634</span>     <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">635</span>         <span class="s1">&#39;http&#39;</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">hdrs</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">637</span> <span class="k">return</span> <span class="n">response</span>
-
-<span class="nn">File ~/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/urllib/request.py:563,</span> in <span class="ni">OpenerDirector.error</span><span class="nt">(self, proto, *args)</span>
-<span class="g g-Whitespace">    </span><span class="mi">561</span> <span class="k">if</span> <span class="n">http_err</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">562</span>     <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="s1">&#39;http_error_default&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">orig_args</span>
-<span class="ne">--&gt; </span><span class="mi">563</span>     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_chain</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-
-<span class="nn">File ~/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/urllib/request.py:496,</span> in <span class="ni">OpenerDirector._call_chain</span><span class="nt">(self, chain, kind, meth_name, *args)</span>
-<span class="g g-Whitespace">    </span><span class="mi">494</span> <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">handlers</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">495</span>     <span class="n">func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">meth_name</span><span class="p">)</span>
-<span class="ne">--&gt; </span><span class="mi">496</span>     <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">497</span>     <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">498</span>         <span class="k">return</span> <span class="n">result</span>
-
-<span class="nn">File ~/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/urllib/request.py:643,</span> in <span class="ni">HTTPDefaultErrorHandler.http_error_default</span><span class="nt">(self, req, fp, code, msg, hdrs)</span>
-<span class="g g-Whitespace">    </span><span class="mi">642</span> <span class="k">def</span><span class="w"> </span><span class="nf">http_error_default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">hdrs</span><span class="p">):</span>
-<span class="ne">--&gt; </span><span class="mi">643</span>     <span class="k">raise</span> <span class="n">HTTPError</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">full_url</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">hdrs</span><span class="p">,</span> <span class="n">fp</span><span class="p">)</span>
-
-<span class="ne">HTTPError</span>: HTTP Error 404: Not Found
+<span class="n">obs1_series</span> <span class="o">=</span> <span class="n">load_series</span><span class="p">(</span><span class="s2">&quot;obs1_mod_wel.csv&quot;</span><span class="p">)</span>
+<span class="n">ref1_series</span> <span class="o">=</span> <span class="n">load_series</span><span class="p">(</span><span class="s2">&quot;ref1_mod_wel.csv&quot;</span><span class="p">)</span>
+<span class="n">obs2_series</span> <span class="o">=</span> <span class="n">load_series</span><span class="p">(</span><span class="s2">&quot;obs2_mod_wel.csv&quot;</span><span class="p">)</span>
+<span class="n">ref2_series</span> <span class="o">=</span> <span class="n">load_series</span><span class="p">(</span><span class="s2">&quot;ref2_mod_wel.csv&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>Next we create well objects and add our timeseries to them.</p>
-<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
-<summary class="sd-summary-title sd-card-header">
-<span class="sd-summary-text">The well object</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
-<p class="sd-card-text">The well object takes three input arguments. A name as a string. A boolean to decide if it´s a reference or observation well. And the last argument is the pandas timeseries we created earlier.</p>
-</div>
-</details><div class="admonition important">
-<p class="admonition-title">Important</p>
-<p>Wells must have unique names. However the model will check that aswell and you´ll receive an error if that’s not the case.</p>
+<p>Next we create the <code class="docutils literal notranslate"><span class="pre">Well</span></code> objects and attach the time series to them.</p>
+<div class="note admonition">
+<p class="admonition-title">The Well object</p>
+<p><code class="docutils literal notranslate"><span class="pre">Well</span></code> takes three arguments: a <code class="docutils literal notranslate"><span class="pre">name</span></code> (string), <code class="docutils literal notranslate"><span class="pre">is_reference</span></code> (a boolean choosing reference or observation well), and the <code class="docutils literal notranslate"><span class="pre">timeseries</span></code> (the pandas series we created earlier).</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">obs1</span><span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;obs1&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeseries</span><span class="o">=</span><span class="n">obs1_series</span><span class="p">)</span>
-<span class="n">ref1</span><span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ref1&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeseries</span><span class="o">=</span><span class="n">ref1_series</span><span class="p">)</span>
-<span class="n">obs2</span><span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;obs2&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeseries</span><span class="o">=</span><span class="n">obs2_series</span><span class="p">)</span>
-<span class="n">ref2</span><span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ref2&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeseries</span><span class="o">=</span><span class="n">ref2_series</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">obs1</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;obs1&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeseries</span><span class="o">=</span><span class="n">obs1_series</span><span class="p">)</span>
+<span class="n">ref1</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ref1&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeseries</span><span class="o">=</span><span class="n">ref1_series</span><span class="p">)</span>
+<span class="n">obs2</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;obs2&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeseries</span><span class="o">=</span><span class="n">obs2_series</span><span class="p">)</span>
+<span class="n">ref2</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">Well</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ref2&quot;</span><span class="p">,</span> <span class="n">is_reference</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeseries</span><span class="o">=</span><span class="n">ref2_series</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>Now we move on to adding our newly created wells to our model.</p>
+<p>Now we add the wells to the model.</p>
 </section>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="add-wells-to-the-model">
 <h1>Add wells to the model<a class="headerlink" href="#add-wells-to-the-model" title="Link to this heading">#</a></h1>
-<p>Next we add the wells to the model by using the add_well function. A model can have any number of wells. This can either be done through by entering a list as an input argument or by entering a single well.</p>
+<p>We add wells with <code class="docutils literal notranslate"><span class="pre">add_well()</span></code>, passing either a single well or a list of wells.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#Adding wells from a list</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_well</span><span class="p">([</span><span class="n">obs1</span><span class="p">,</span><span class="n">ref1</span><span class="p">,</span><span class="n">obs2</span><span class="p">])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add several wells at once with a list</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_well</span><span class="p">([</span><span class="n">obs1</span><span class="p">,</span> <span class="n">ref1</span><span class="p">,</span> <span class="n">obs2</span><span class="p">])</span>
 
-<span class="c1">#Adding single well</span>
+<span class="c1"># Add a single well</span>
 <span class="n">model</span><span class="o">.</span><span class="n">add_well</span><span class="p">(</span><span class="n">ref2</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>After adding the wells to the model, we can now doublecheck to see that they´re actually included in the model we’ve created.</p>
+<p>Now let’s confirm the wells are stored in the model.</p>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="check-which-wells-are-included-in-the-model">
 <h1>Check which wells are included in the model<a class="headerlink" href="#check-which-wells-are-included-in-the-model" title="Link to this heading">#</a></h1>
-<p>Now we check that our wells are stored in the model by using the function get_wells to see which wells are reference wells and which are observation wells.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">obs_wells</span></code> and <code class="docutils literal notranslate"><span class="pre">ref_wells</span></code> properties list the observation and reference wells in the model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">obs_wells</span>
@@ -661,7 +524,7 @@
 </div>
 </div>
 </div>
-<p>Check reference wells</p>
+<p>Check the reference wells:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">ref_wells</span>
@@ -674,11 +537,11 @@
 </div>
 </div>
 </div>
-<p>We can also check if a specific <strong>well</strong> is in the model</p>
+<p>We can look up specific wells by name with <code class="docutils literal notranslate"><span class="pre">get_wells()</span></code>, passing one name or a list of names.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">get_wells</span><span class="p">(</span><span class="s1">&#39;obs1&#39;</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">get_wells</span><span class="p">([</span><span class="s1">&#39;obs1&#39;</span><span class="p">,</span><span class="s1">&#39;ref1&#39;</span><span class="p">])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">get_wells</span><span class="p">(</span><span class="s2">&quot;obs1&quot;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">get_wells</span><span class="p">([</span><span class="s2">&quot;obs1&quot;</span><span class="p">,</span> <span class="s2">&quot;ref1&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -688,7 +551,7 @@
 </div>
 </div>
 </div>
-<p>We can also check the names of the wells that are included in our model.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">well_names</span></code> property returns just the names of the wells in the model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">well_names</span>
@@ -701,8 +564,8 @@
 </div>
 </div>
 </div>
-<p>Now we have checked that the model contains two observation wells and two reference wells, which later can be used for further analysis.</p>
-<p>We can also get a summary of the wells in the model.</p>
+<p>The model now holds two observation wells and two reference wells, ready for further analysis.</p>
+<p>For an overview, <code class="docutils literal notranslate"><span class="pre">wells_summary()</span></code> returns a <code class="docutils literal notranslate"><span class="pre">pandas</span></code> DataFrame summarising every well.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">wells_summary</span><span class="p">()</span>
@@ -754,7 +617,7 @@
       <td>2020-01-01</td>
       <td>2025-09-08</td>
       <td>15.467492</td>
-      <td>14.877</td>
+      <td>14.877000</td>
       <td>2025-09-08</td>
       <td>None</td>
       <td>None</td>
@@ -771,8 +634,8 @@
       <td>2078</td>
       <td>2020-01-01</td>
       <td>2025-09-08</td>
-      <td>15.467492</td>
-      <td>14.877</td>
+      <td>14.977455</td>
+      <td>14.832391</td>
       <td>2025-09-08</td>
       <td>None</td>
       <td>None</td>
@@ -789,8 +652,8 @@
       <td>2078</td>
       <td>2020-01-01</td>
       <td>2025-09-08</td>
-      <td>15.467492</td>
-      <td>14.877</td>
+      <td>25.799352</td>
+      <td>24.795000</td>
       <td>2025-09-08</td>
       <td>None</td>
       <td>None</td>
@@ -804,12 +667,12 @@
       <th>3</th>
       <td>ref2</td>
       <td>reference</td>
-      <td>2078</td>
+      <td>2079</td>
       <td>2020-01-01</td>
       <td>2025-09-08</td>
-      <td>15.467492</td>
-      <td>14.877</td>
-      <td>2025-09-08</td>
+      <td>25.666046</td>
+      <td>25.900000</td>
+      <td>NaT</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -825,12 +688,12 @@
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="delete-wells-from-the-model">
 <h1>Delete wells from the model<a class="headerlink" href="#delete-wells-from-the-model" title="Link to this heading">#</a></h1>
-<p>We can also remove wells from the model by using the function <em><strong>delete_well</strong></em>. This function takes a single input argument, the name of the well.</p>
+<p>We remove wells with <code class="docutils literal notranslate"><span class="pre">delete_well()</span></code>, passing a <code class="docutils literal notranslate"><span class="pre">Well</span></code> object (or a list of them).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">delete_well</span><span class="p">([</span><span class="n">ref1</span><span class="p">])</span>
 
-<span class="c1"># and check that it is deleted</span>
+<span class="c1"># Confirm it was removed</span>
 <span class="n">model</span><span class="o">.</span><span class="n">well_names</span>
 </pre></div>
 </div>
@@ -841,8 +704,8 @@
 </div>
 </div>
 </div>
-<p>This is all for the intro to <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> notebook.</p>
-<p>In future notebooks we will explore using a model to a explore the other parts of <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code> such as pairing of observation- and reference wells and fitting and then plotting.</p>
+<p>That’s it for the intro to <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code>.</p>
+<p>The next notebooks build on this model to cover the rest of <code class="docutils literal notranslate"><span class="pre">gwrefpy</span></code>: pairing observation and reference wells, fitting them, and plotting the results.</p>
 </section>
 
 
