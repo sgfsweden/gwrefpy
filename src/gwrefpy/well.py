@@ -200,6 +200,33 @@ class Well:
         self.timeseries.name = self.name
         logger.debug(f"Replaced timeseries of well {self.name}")
 
+    def shift_timeseries(self, shift: pd.Timedelta | str):
+        """
+        Shift the timeseries of the well by a given time delta.
+
+        Parameters
+        ----------
+        shift : pd.Timedelta | str
+            The time delta to shift the timeseries by.
+
+        Returns
+        -------
+        pd.Series
+            The shifted timeseries.
+        """
+        if self.timeseries is None:
+            logger.error(f"Well {self.name} has no timeseries to shift.")
+            raise ValueError(f"Well {self.name} has no timeseries to shift.")
+        if isinstance(shift, str):
+            shift = pd.Timedelta(shift)
+        shifted_index = self.timeseries.index + shift
+        shifted_timeseries = pd.Series(
+            index=shifted_index,
+            data=self.timeseries.values,
+            name=self.timeseries.name,
+        )
+        return shifted_timeseries
+
     def _validate_timeseries(self, timeseries: pd.Series):
         """
         Validate the timeseries data and data types.

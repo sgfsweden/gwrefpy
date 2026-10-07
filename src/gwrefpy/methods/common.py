@@ -47,3 +47,26 @@ def compute_residual_std_error(x, y, n, fit_method_func):
     stderr = np.sqrt(stderr)
 
     return stderr
+
+
+def _validate_timeseries_len(n, degree, method):
+    if n < degree + 1:
+        raise ValueError(
+            f"Not enough data points ({n}) to fit a {method} of degree {degree}. "
+            "At least degree + 1 data points are required."
+        )
+
+    if n < 3:
+        raise ValueError(
+            f"Not enough data points ({n}) to compute statistics for {method}. "
+            "At least 3 data points are required."
+        )
+
+
+def _validate_input_timeseries(obs_timeseries, ref_timeseries):
+    if obs_timeseries.empty:
+        raise ValueError("The observation time series is empty.")
+    if ref_timeseries.empty:
+        raise ValueError("The reference time series is empty.")
+    if obs_timeseries.equals(ref_timeseries):
+        raise ValueError("The observation and reference time series are identical.")

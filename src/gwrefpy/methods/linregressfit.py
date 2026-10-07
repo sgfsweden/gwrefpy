@@ -5,7 +5,12 @@ import pandas as pd
 import scipy as sp
 
 from ..fitresults import FitResultData, LinRegResult
-from ..methods.common import _get_gwrefs_stats, compute_residual_std_error
+from ..methods.common import (
+    _get_gwrefs_stats,
+    _validate_input_timeseries,
+    _validate_timeseries_len,
+    compute_residual_std_error,
+)
 from ..methods.timeseries import groupby_time_equivalents
 from ..well import Well
 
@@ -18,9 +23,11 @@ def linregressfit(
     offset: pd.DateOffset | pd.Timedelta | str,
     tmin: pd.Timestamp | str | None = None,
     tmax: pd.Timestamp | str | None = None,
+    shift: pd.Timedelta | str | None = None,
     name: str | None = None,
     p=0.95,
     aggregation="mean",
+    te_method="anchor",
 ):
     """
     Perform linear regression fit between reference and observation well time series.
@@ -37,6 +44,9 @@ def linregressfit(
         The minimum timestamp for the calibration period.
     tmax: pd.Timestamp | str | None = None
         The maximum timestamp for the calibration period.
+    shift : pd.Timedelta | str | None, optional
+        An optional time shift to apply to the observation well time series before
+        fitting.
     name: str | None = None
         An optional name for the fit result.
     p : float, optional
@@ -44,6 +54,9 @@ def linregressfit(
     aggregation : str, optional
         The aggregation method to use when grouping data points within time
         equivalents (default is "mean"). Can be "mean", "median", "min", or "max".
+    te_method : str, optional
+        The time equivalent grouping method (default is "anchor"). Can be "anchor"
+        or "consecutive".
 
     Returns
     -------
@@ -56,17 +69,23 @@ def linregressfit(
        https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.linregress.html
     """
 
-    # Groupby time equivalents with given offset
-    if ref_well.timeseries is None or obs_well.timeseries is None:
-        logger.critical("Missing time series data for for either ref or obs well")
-        return None
+    # Validate timeseries input
+    _validate_input_timeseries(obs_well.timeseries, ref_well.timeseries)
+
+    if shift is not None:
+        obs_timeseries = obs_well.shift_timeseries(shift)
+    else:
+        obs_timeseries = obs_well.timeseries
 
     ref_timeseries, obs_timeseries, n = groupby_time_equivalents(
-        obs_well.timeseries.loc[tmin:tmax],
+        obs_timeseries.loc[tmin:tmax],
         ref_well.timeseries.loc[tmin:tmax],
         offset,
         aggregation,
+        te_method,
     )
+
+    _validate_timeseries_len(n, 1, "Linear Regression")
 
     res = sp.stats.linregress(ref_timeseries, obs_timeseries)
     linreg = LinRegResult(
@@ -108,8 +127,10 @@ def linregressfit(
         p=p,
         offset=offset,
         aggregation=aggregation,
+        te_method=te_method,
         tmin=tmin,
         tmax=tmax,
+        shift=shift,
         name=name,
     )
     return fit_result
