@@ -33,7 +33,7 @@ jobs:
         # Extract versions from sources
         # -----------------------------
     
-        INIT_VERSION=$(uv run python -c "from gwrefpy import __version__; print(__version__)")
+        INIT_VERSION=$(uv run python -c "import ast; from pathlib import Path; tree = ast.parse(Path('src/gwrefpy/__init__.py').read_text()); print(next(ast.literal_eval(node.value) for node in tree.body if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == '__version__' for target in node.targets)))")
     
         TOML_VERSION=$(uv run python -c "import tomllib; data = tomllib.load(open('pyproject.toml', 'rb')); print(data['project']['version'] if 'version' in data['project'] else data['tool']['setuptools']['dynamic']['version'].split(\"'\")[1])" \
           2>/dev/null || \
