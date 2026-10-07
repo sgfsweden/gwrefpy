@@ -1,6 +1,6 @@
 [project]
 name = "gwrefpy"
-version = "0.4.1"
+version = "1.0.0"
 description = "A Python package for detection of deviations in groundwater time series."
 readme = "README.md"
 license = "MIT"
