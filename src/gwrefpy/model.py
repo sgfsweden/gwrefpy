@@ -1,10 +1,12 @@
 import logging
+import warnings
 
 import pandas as pd
 
 from . import __version__
 from .fitbase import FitBase
-from .fitresults import FitResultData, LinRegResult, _unpack_dict_fit_method
+from .fitcollection import FitCollection
+from .fitresults import FitResultData, _unpack_dict_fit_method
 from .io.io import load, save
 from .plotter import Plotter
 from .utils.conversions import float_to_datetime
@@ -33,7 +35,7 @@ class Model(FitBase, Plotter):
         self.wells: list[Well] = []
 
         # Fit attributes
-        self.fits: list[FitResultData] = []
+        self.fits: FitCollection = FitCollection._root()
 
         # Check if the name ends with the .gwref extension
         ext = name.split(".")[-1].lower()
@@ -141,12 +143,9 @@ class Model(FitBase, Plotter):
             }
 
             # Find best fit for this observation well
-            fits = self.get_fits(well)
+            fits = self.fits._select(obs=well)
             if fits:
-                if isinstance(fits, list):
-                    best_fit = min(fits, key=lambda x: x.rmse)
-                else:
-                    best_fit = fits
+                best_fit = fits.best()
                 row["best_fit_ref_well"] = best_fit.ref_well.name
                 row["best_rmse"] = best_fit.rmse
             else:
@@ -216,14 +215,10 @@ class Model(FitBase, Plotter):
             }
 
             # Find all fits using this reference well
-            fits = self.get_fits(well)
+            fits = self.fits._select(ref=well)
             if fits:
-                if isinstance(fits, list):
-                    row["num_fits"] = len(fits)
-                    row["avg_rmse"] = sum(fit.rmse for fit in fits) / len(fits)
-                else:
-                    row["num_fits"] = 1
-                    row["avg_rmse"] = fits.rmse
+                row["num_fits"] = len(fits)
+                row["avg_rmse"] = sum(fit.rmse for fit in fits) / len(fits)
             else:
                 row["num_fits"] = 0
                 row["avg_rmse"] = None
@@ -259,6 +254,9 @@ class Model(FitBase, Plotter):
         """
         Get a summary DataFrame of all fit results in the model.
 
+        .. deprecated:: 1.1.0
+            Use ``model.fits.to_dataframe()`` instead.
+
         Returns
         -------
         pd.DataFrame
@@ -266,43 +264,13 @@ class Model(FitBase, Plotter):
             rmse, etc.) and method-specific columns with appropriate prefixes
             (e.g., linreg_slope, linreg_intercept)
         """
-        if not self.fits:
-            return pd.DataFrame()
-
-        data = []
-        for fit in self.fits:
-            # Common columns from FitResultData attributes
-            row = {
-                "ref_well_name": fit.ref_well.name,
-                "obs_well_name": fit.obs_well.name,
-                "method": fit.fit_method.__class__.__name__,
-                "rmse": fit.rmse,
-                "n_points": fit.n,
-                "stderr": fit.stderr,
-                "confidence_level": fit.p,
-                "calibration_start": fit.tmin,
-                "calibration_end": fit.tmax,
-                "time_offset": str(fit.offset),
-                "t_a": fit.t_a,
-                "pred_const": fit.pred_const,
-            }
-
-            # Method-specific columns with prefixes
-            if isinstance(fit.fit_method, LinRegResult):
-                row.update(
-                    {
-                        "linreg_slope": fit.fit_method.slope,
-                        "linreg_intercept": fit.fit_method.intercept,
-                        "linreg_rvalue": fit.fit_method.rvalue,
-                        "linreg_pvalue": fit.fit_method.pvalue,
-                        "linreg_stderr": fit.fit_method.stderr,
-                    }
-                )
-            # Future fitting methods would be added here as elif branches
-
-            data.append(row)
-
-        return pd.DataFrame(data)
+        warnings.warn(
+            "fits_summary() is deprecated and will be removed in 2.0. "
+            "Use model.fits.to_dataframe() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.fits.to_dataframe()
 
     @property
     def well_names(self) -> list[str]:
@@ -611,7 +579,7 @@ class Model(FitBase, Plotter):
                 shift=fit_data.get("shift", None),
                 name=fit_data.get("name", None),
             )
-            self.fits.append(fit)
+            self.fits._add_renaming(fit)
 
     def save_project(self, filename=None, overwrite=False):
         """

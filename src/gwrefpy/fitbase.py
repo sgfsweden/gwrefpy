@@ -1,9 +1,11 @@
 import logging
+import warnings
 from typing import Literal
 
 import pandas as pd
 
-from .fitresults import ChebyshevFitResult, FitResultData, LinRegResult, NPolyFitResult
+from .fitcollection import METHODS, FitCollection
+from .fitresults import FitResultData
 from .methods.chebyshev import chebyshevfit
 from .methods.linregressfit import linregressfit
 from .methods.npolyfit import npolyfit
@@ -12,11 +14,19 @@ from .well import Well
 logger = logging.getLogger(__name__)
 
 
+def _default_fit_name(obs_well: Well, ref_well: Well, method: str, degree: int) -> str:
+    """Readable default fit name, e.g. ``"obs~ref:npolyfit4"``."""
+    label = method
+    if method in ("npolyfit", "chebyshev"):
+        label += str(degree)
+    return f"{obs_well.name}~{ref_well.name}:{label}"
+
+
 class FitBase:
     def __init__(self):
         self.ref_wells = None
         self.name = None
-        self.fits = None
+        self.fits: FitCollection = FitCollection._root()
 
     def fit(
         self,
@@ -34,7 +44,7 @@ class FitBase:
         name: str | list[str] | None = None,
         report: bool = True,
         **kwargs,
-    ) -> FitResultData | list[FitResultData]:
+    ) -> FitResultData | FitCollection:
         """
         Fit reference well(s) to observation well(s) using regression.
 
@@ -68,8 +78,9 @@ class FitBase:
             fitting.
         name : str | list[str] | None, optional
             An optional name or list of names for the fit result(s). If lists of
-            wells are provided, the name list must match in length. If None,
-            default names will be assigned.
+            wells are provided, names must be a list matching in length. If None,
+            default names like ``"obs~ref:linearregression"`` are assigned. A fit
+            replaces any existing fit with the same name.
         report: bool, optional
             Whether to print fit results summary (default is True).
         **kwargs
@@ -79,10 +90,10 @@ class FitBase:
 
         Returns
         -------
-        FitResultData | list[FitResultData]
+        FitResultData | FitCollection
             If single wells are provided, returns a single FitResultData object.
-            If lists of wells are provided, returns a list of FitResultData objects
-            for each obs_well/ref_well pair.
+            If lists of wells are provided, returns a detached FitCollection with
+            the fit for each obs_well/ref_well pair.
 
         Raises
         ------
@@ -137,8 +148,16 @@ class FitBase:
 
         # Perform fitting for each pair
         results = []
-        if not isinstance(name, list):
-            name = [name] * len(obs_wells)
+        if isinstance(name, str):
+            # Fit names are unique, so one name would make each fit replace the last
+            error_msg = (
+                "When fitting lists of wells, pass a list of names (one per pair) "
+                "or None for default names."
+            )
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+        if name is None:
+            name = [None] * len(obs_wells)
         for obs_w, ref_w, fit_name in zip(obs_wells, ref_wells, name, strict=True):
             result = self._fit(
                 obs_w,
@@ -161,7 +180,7 @@ class FitBase:
             if report:
                 self._display_result(result)
 
-        return results
+        return FitCollection(results)
 
     def _fit(
         self,
@@ -189,6 +208,10 @@ class FitBase:
             logger.error(f"The well '{obs_well.name}' is not an observation well.")
             raise ValueError(f"The well '{obs_well.name}' is not an observation well.")
 
+        degree = kwargs.get("degree", 4)
+        if name is None:
+            name = _default_fit_name(obs_well, ref_well, method, degree)
+
         fit = None
         if method == "linearregression":
             logger.debug("Using linear regression method for fitting.")
@@ -197,7 +220,6 @@ class FitBase:
             )
         elif method == "npolyfit":
             logger.debug("Using Nth degree polynomial fit method for fitting.")
-            degree = kwargs.get("degree", 4)
             fit = npolyfit(
                 obs_well,
                 ref_well,
@@ -212,7 +234,6 @@ class FitBase:
             )
         elif method == "chebyshev":
             logger.debug("Using Chebyshev polynomial fit method for fitting.")
-            degree = kwargs.get("degree", 4)
             fit = chebyshevfit(
                 obs_well,
                 ref_well,
@@ -229,7 +250,7 @@ class FitBase:
             logger.error(f"Fitting method '{method}' is not implemented.")
             raise NotImplementedError(f"Fitting method '{method}' is not implemented.")
 
-        self.fits.append(fit)
+        self.fits._add_or_replace(fit)
         logger.debug(f"Fit completed for model '{self.name}' with RMSE {fit.rmse}.")
         return fit
 
@@ -398,6 +419,9 @@ class FitBase:
         """
         Get all fit results involving a specific well.
 
+        .. deprecated:: 1.1.0
+            Use ``model.fits.filter(obs=..., ref=..., method=...)`` instead.
+
         Parameters
         ----------
         well : Well | str
@@ -412,6 +436,12 @@ class FitBase:
         list[FitResultData] | FitResultData | None
             A list of fit results involving the specified well.
         """
+        warnings.warn(
+            "get_fits() is deprecated and will be removed in 2.0. "
+            "Use model.fits.filter(obs=..., ref=..., method=...) instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         target_well: Well
         if isinstance(well, str):
             target_well = self.get_wells(well)  # type: ignore
@@ -421,22 +451,12 @@ class FitBase:
             logger.error("Parameter 'well' must be a Well instance or a string.")
             raise TypeError("Parameter 'well' must be a Well instance or a string.")
 
-        fit_list = [fit for fit in self.fits if fit.has_well(target_well)]
-
-        if method == "linearregression":
-            fit_list = [
-                fit for fit in fit_list if isinstance(fit.fit_method, LinRegResult)
-            ]
-        elif method == "npolyfit":
-            fit_list = [
-                fit for fit in fit_list if isinstance(fit.fit_method, NPolyFitResult)
-            ]
-        elif method == "chebyshev":
-            fit_list = [
-                fit
-                for fit in fit_list
-                if isinstance(fit.fit_method, ChebyshevFitResult)
-            ]
+        # Unknown methods were ignored before the deprecation; keep doing so
+        if method not in METHODS:
+            method = None
+        fit_list = list(
+            self.fits._select(lambda fit: fit.has_well(target_well), method=method)
+        )
         return (
             fit_list
             if len(fit_list) > 1
@@ -447,6 +467,9 @@ class FitBase:
         """
         Remove fit results for a specific observation well. Keeps only the best n fits
         based on RMSE.
+
+        .. deprecated:: 1.1.0
+            Use ``model.fits.keep_best(n, by="obs")`` instead.
 
         Parameters
         ----------
@@ -460,6 +483,12 @@ class FitBase:
         None
             Removes fits from the model's fit list.
         """
+        warnings.warn(
+            "remove_fits_by_n() is deprecated and will be removed in 2.0. "
+            'Use model.fits.keep_best(n, by="obs") instead.',
+            DeprecationWarning,
+            stacklevel=2,
+        )
         # Check that n is a positive integer
         if not isinstance(n, int) or n < 1:
             logger.error("Parameter 'n' must be a positive integer.")
@@ -482,14 +511,10 @@ class FitBase:
                 f"The well '{target_well.name}' is not an observation well."
             )
 
-        # Get all fits for the target well
-        obs_fits = self.get_fits(target_well)
-        if obs_fits is None:
+        obs_fits = self.fits._select(obs=target_well)
+        if not obs_fits:
             logger.warning(f"No fits found for well '{target_well.name}'.")
             return
-
-        if isinstance(obs_fits, FitResultData):
-            obs_fits = [obs_fits]
 
         if len(obs_fits) <= n:
             logger.warning(
@@ -498,20 +523,8 @@ class FitBase:
             )
             return
 
-        # Get all other fits not involving the target well
-        other_fits = [fit for fit in self.fits if not fit.has_well(target_well)]
-
-        # Get the RMSE values for the fits involving the target well
-        rmse_fits = [f.rmse for f in obs_fits]
-
-        # Get the best n fits index
-        best_n_fits = sorted(rmse_fits)[:n]
-        ind = [rmse_fits.index(rmse) for rmse in best_n_fits]
-
-        # keep only the best n number of fits
-        obs_fits = [obs_fits[i] for i in ind]
-
-        self.fits = other_fits + obs_fits
+        best = obs_fits.top(n)
+        self.fits.remove([fit for fit in obs_fits if fit not in best])
 
         logger.info(
             f"Removed fits for well '{target_well.name}' to retain only the best {n} "

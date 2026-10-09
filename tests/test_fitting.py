@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from gwrefpy import Well
+from gwrefpy import FitCollection, Well
 from gwrefpy.fitresults import FitResultData, NPolyFitResult
 
 
@@ -31,7 +31,7 @@ def test_strandangers_model_best_fit_by_names(strandangers_model) -> None:
     best_fit = strandangers_model.best_fit("obs", ["ref", "ref2"], offset="3.5D")
     assert isinstance(best_fit, FitResultData)
 
-    model_fits = strandangers_model.get_fits("obs")
+    model_fits = strandangers_model.fits.filter(obs="obs")
     assert len(model_fits) == 2
 
     assert best_fit == min(model_fits, key=lambda x: x.rmse)
@@ -47,7 +47,7 @@ def test_strandangers_model_best_fit_by_objects(strandangers_model) -> None:
     best_fit = strandangers_model.best_fit(obs, [ref, ref2], offset="3.5D")
     assert isinstance(best_fit, FitResultData)
 
-    model_fits = strandangers_model.get_fits(obs)
+    model_fits = strandangers_model.fits.filter(obs=obs)
     assert len(model_fits) == 2
 
 
@@ -70,8 +70,8 @@ def test_strandangers_model_fit_multiple_wells(strandangers_model) -> None:
         [obs, obs2], [ref, ref2], offset="3.5D", name=["test1", "test2"]
     )
 
-    # Verify we get a list of results
-    assert isinstance(results, list)
+    # Verify we get a collection of results
+    assert isinstance(results, FitCollection)
     assert len(results) == 2
 
     # Verify each result is a FitResultData instance
@@ -95,11 +95,9 @@ def test_strandangers_model_fit_multiple_wells(strandangers_model) -> None:
     # Test fitting with lists of wells with no names
     results2 = strandangers_model.fit([obs, obs2], [ref, ref2], offset="3.5D")
 
-    # verify that the names are auto-generated and are of type str(uuid4)
-    assert results2[0].name is not None
-    assert results2[1].name is not None
-    assert isinstance(results2[0].name, str)
-    assert isinstance(results2[1].name, str)
+    # verify that the names are auto-generated from the wells and method
+    assert results2[0].name == "obs~ref:linearregression"
+    assert results2[1].name == "obs2~ref2:linearregression"
 
 
 def test_strandangers_model_fit_mismatched_lists(strandangers_model) -> None:
@@ -139,7 +137,7 @@ def test_strandangers_model_fit_string_names(strandangers_model) -> None:
     results_list = strandangers_model.fit(
         ["obs", "obs2"], ["ref", "ref2"], offset="3.5D"
     )
-    assert isinstance(results_list, list)
+    assert isinstance(results_list, FitCollection)
     assert len(results_list) == 2
     assert results_list[0].obs_well.name == "obs"
     assert results_list[0].ref_well.name == "ref"
@@ -148,7 +146,7 @@ def test_strandangers_model_fit_string_names(strandangers_model) -> None:
 
     # Test mixed Well objects and strings
     result_mixed = strandangers_model.fit([obs, "obs2"], ["ref", ref2], offset="3.5D")
-    assert isinstance(result_mixed, list)
+    assert isinstance(result_mixed, FitCollection)
     assert len(result_mixed) == 2
     assert result_mixed[0].obs_well == obs
     assert result_mixed[0].ref_well.name == "ref"
@@ -165,7 +163,7 @@ def test_strandangers_model_fit_invalid_well_name(strandangers_model) -> None:
         strandangers_model.fit("obs", "nonexistent", offset="3.5D")
 
 
-def test_strandangers_model_remove_fits_by_n(strandangers_model) -> None:
+def test_strandangers_model_keep_best(strandangers_model) -> None:
     # introduce a second reference well
     ref = strandangers_model.get_wells("ref")  # type: Well
     for i in range(10):
@@ -193,38 +191,19 @@ def test_strandangers_model_remove_fits_by_n(strandangers_model) -> None:
     assert initial_fit_count == 12
 
     # Test the n input validation
-    with pytest.raises(ValueError, match="Parameter 'n' must be a positive integer."):
-        strandangers_model.remove_fits_by_n("obs", 0)
-    with pytest.raises(ValueError, match="Parameter 'n' must be a positive integer."):
-        strandangers_model.remove_fits_by_n("obs", -3)
-    with pytest.raises(ValueError, match="Parameter 'n' must be a positive integer."):
-        strandangers_model.remove_fits_by_n("obs", 2.5)
-    with pytest.raises(ValueError, match="Parameter 'n' must be a positive integer."):
-        strandangers_model.remove_fits_by_n("obs", "three")
+    for n in [0, -3, 2.5, "three"]:
+        with pytest.raises(
+            ValueError, match="Parameter 'n' must be a positive integer."
+        ):
+            strandangers_model.fits.keep_best(n, by="obs")
 
-    # test that observation well is an observation well
-    with pytest.raises(ValueError, match="The well 'ref' is not an observation well."):
-        strandangers_model.remove_fits_by_n("ref", 3)
-
-    # Test passing somthing else as a obs_well
-    with pytest.raises(
-        TypeError, match="Parameter 'obs_well' must be a Well instance or a string."
-    ):
-        strandangers_model.remove_fits_by_n(5, 3)
-    with pytest.raises(
-        TypeError, match="Parameter 'obs_well' must be a Well instance or a string."
-    ):
-        strandangers_model.remove_fits_by_n(strandangers_model.fits[0], 3)
-
-    # Test that nothing happens if there are fewer fits than n
-    strandangers_model.remove_fits_by_n("obs2", 300)
-    assert len(strandangers_model.fits) == initial_fit_count
-
-    # Remove fits by observation well name
-    strandangers_model.remove_fits_by_n("obs", 3)
+    # Keep the best 3 fits per observation well; obs2 has only one fit
+    strandangers_model.fits.keep_best(3, by="obs")
     assert any(
-        fit.ref_well.name == "ref_perfect" for fit in strandangers_model.get_fits("obs")
+        fit.ref_well.name == "ref_perfect"
+        for fit in strandangers_model.fits.filter(obs="obs")
     )
+    assert len(strandangers_model.fits.filter(obs="obs2")) == 1
 
     new_fit_count = len(strandangers_model.fits)
     assert new_fit_count == 4

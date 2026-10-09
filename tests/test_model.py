@@ -220,24 +220,24 @@ def test_wells_summary_combined() -> None:
     assert ref_row["mean_level"] == 12.0
 
 
-def test_fits_summary_empty() -> None:
-    """Test fits_summary with no fits."""
+def test_fits_to_dataframe_empty() -> None:
+    """Test fits.to_dataframe with no fits."""
     model = Model(name="test_model")
-    summary = model.fits_summary()
+    summary = model.fits.to_dataframe()
     assert summary.empty
     assert isinstance(summary, pd.DataFrame)
 
 
-def test_fits_summary_with_fits(strandangers_model) -> None:
-    """Test fits_summary with actual fit results using the Strandangers example."""
+def test_fits_to_dataframe_with_fits(strandangers_model) -> None:
+    """Test fits.to_dataframe with actual fit results using the Strandangers example."""
     # Use the existing fixture that has working data
     [obs, ref] = strandangers_model.wells
 
     # Perform a fit to generate FitResultData
     strandangers_model.fit(obs, ref, offset="3.5D")
 
-    # Test fits_summary
-    summary = strandangers_model.fits_summary()
+    # Test fits.to_dataframe
+    summary = strandangers_model.fits.to_dataframe()
     assert len(summary) == 1
 
     # Check common columns
@@ -268,8 +268,8 @@ def test_fits_summary_with_fits(strandangers_model) -> None:
     assert row["confidence_level"] == 0.95  # Default confidence level
 
 
-def test_fits_summary_multiple_fits(strandangers_model) -> None:
-    """Test fits_summary with multiple fit results using the Strandangers example."""
+def test_fits_to_dataframe_multiple_fits(strandangers_model) -> None:
+    """Test fits.to_dataframe with multiple fits using the Strandangers example."""
     # Use the existing fixture and add another reference well
     [obs, ref] = strandangers_model.wells
 
@@ -282,8 +282,8 @@ def test_fits_summary_multiple_fits(strandangers_model) -> None:
     strandangers_model.fit(obs, ref, offset="3.5D")
     strandangers_model.fit(obs, ref2, offset="3.5D")
 
-    # Test fits_summary
-    summary = strandangers_model.fits_summary()
+    # Test fits.to_dataframe
+    summary = strandangers_model.fits.to_dataframe()
     assert len(summary) == 2
 
     # Check that both fits are represented

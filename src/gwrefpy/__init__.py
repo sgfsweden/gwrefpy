@@ -2,6 +2,7 @@ __name__ = "gwrefpy"
 __version__ = "1.0.0"
 
 from .constants import print_constants
+from .fitcollection import FitCollection
 from .methods.timeseries import analyze_offsets
 from .model import Model
 from .utils import (
@@ -14,6 +15,7 @@ from .well import Well
 
 __all__ = [
     "Model",
+    "FitCollection",
     "Well",
     "analyze_offsets",
     "set_log_level",
