@@ -17,7 +17,6 @@ from .constants import (
     tfont,
     tifont,
 )
-from .fitcollection import FitCollection
 from .fitresults import ChebyshevFitResult, FitResultData, LinRegResult, NPolyFitResult
 from .methods.timeseries import groupby_time_equivalents
 from .well import Well
@@ -44,6 +43,8 @@ class Plotter:
         self._ymax = None
         self._plot_tmin = None
         self._plot_tmax = None
+
+        self.fits = []
 
     @staticmethod
     def show_plots():
@@ -208,7 +209,7 @@ class Plotter:
 
     def plot_fits(
         self,
-        fits: FitResultData | list[FitResultData] | FitCollection | None = None,
+        fits: FitResultData | list[FitResultData] | None = None,
         title: str = "",
         xlabel: str = "Time",
         ylabel: str = "Measurements",
@@ -231,7 +232,7 @@ class Plotter:
 
         Parameters
         ----------
-        fits : FitResultData | list[FitResultData] | FitCollection | None
+        fits : FitResultData | list[FitResultData] | None
             A FitResultData instance or a list of FitResultData instances
             containing the fit results to be plotted. If None, all fits will be plotted.
         title : str
@@ -294,7 +295,7 @@ class Plotter:
         if fits is not None and not (
             isinstance(fits, FitResultData)
             or (
-                isinstance(fits, list | FitCollection)
+                isinstance(fits, list)
                 and all(isinstance(f, FitResultData) for f in fits)
             )
         ):
@@ -313,11 +314,9 @@ class Plotter:
             raise ValueError("ax parameter cannot be used with plot_separately=True")
 
         if fits is None:
-            fits = list(self.fits)
+            fits = self.fits
         elif isinstance(fits, FitResultData):
             fits = [fits]
-        else:
-            fits = list(fits)
 
         # Validate and store the plot styles
         self._validate_plot_styles(plot_style, color_style, offset_text)
@@ -426,7 +425,7 @@ class Plotter:
 
     def plot_fitmethod(
         self,
-        fits: FitResultData | list[FitResultData] | FitCollection | None = None,
+        fits: FitResultData | list[FitResultData] | None = None,
         title: str = "Fit Method Plot",
         xlabel: str = "Hydraulic Head Reference Well",
         ylabel: str = "Hydraulic Head Observation Well",
@@ -443,7 +442,7 @@ class Plotter:
 
         Parameters
         ----------
-        fits : FitResultData | list[FitResultData] | FitCollection | None
+        fits : FitResultData | list[FitResultData]
             A FitResultData instance or a list of FitResultData instances
             containing the fit results to be plotted. If None, all fits will be plotted.
         title : str
@@ -489,7 +488,7 @@ class Plotter:
         if fits is not None and not (
             isinstance(fits, FitResultData)
             or (
-                isinstance(fits, list | FitCollection)
+                isinstance(fits, list)
                 and all(isinstance(f, FitResultData) for f in fits)
             )
         ):
@@ -508,11 +507,9 @@ class Plotter:
             raise ValueError("ax parameter cannot be used with plot_separately=True")
 
         if fits is None:
-            fits = list(self.fits)
+            fits = self.fits
         elif isinstance(fits, FitResultData):
             fits = [fits]
-        else:
-            fits = list(fits)
 
         # Validate and store the plot styles
         self._validate_plot_styles(plot_style, color_style, 0)

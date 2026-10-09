@@ -419,14 +419,6 @@ def test_fit_with_lists_returns_a_detached_collection(model) -> None:
     assert len(model.fits) == 2
 
 
-def test_plot_fits_accepts_a_collection(model) -> None:
-    fit_all(model)
-
-    fig, ax = model.plot_fits(model.fits.top(by="obs"))
-
-    assert ax is not None
-
-
 # --- deprecated API ---------------------------------------------------------
 
 
