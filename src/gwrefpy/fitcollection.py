@@ -467,13 +467,15 @@ class FitCollection:
         fits = []
         for item in target:
             if isinstance(item, str):
-                fits.append(self[item])
+                fit = self[item]
             elif item in self:
-                fits.append(item)
+                fit = item
             else:
                 msg = f"Fit '{item.name}' is not in the collection."
                 logger.error(msg)
                 raise KeyError(msg)
+            if not any(f is fit for f in fits):
+                fits.append(fit)
         return self._remove_fits(fits, dry_run)
 
     def clear(self) -> None:

@@ -97,7 +97,7 @@ def test_explicit_name_collision_replaces(model) -> None:
 
 def test_filter_by_obs_and_ref_accepts_names_and_wells(model) -> None:
     fit_all(model)
-    ref_good = model.get_wells("refGood")
+    ref_good = model.wells["refGood"]
 
     result = model.fits.filter(obs="obsA", ref=ref_good)
 
@@ -508,3 +508,11 @@ def test_get_fits_still_ignores_unknown_methods(model) -> None:
         result = model.get_fits("obsA", method="bogus")
 
     assert len(result) == 2
+
+
+def test_remove_counts_a_fit_listed_twice_once(model) -> None:
+    f = fit(model, "obsA", "refMid")
+
+    removed = model.fits.remove([f, f.name])
+
+    assert names(removed) == [f.name]

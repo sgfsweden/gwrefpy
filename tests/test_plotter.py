@@ -35,7 +35,7 @@ def test_plot_wells_with_list_of_wells(timeseries):
 
 def test_plot_fits(strandangers_model) -> None:
     """Test that plot_fits works."""
-    fit = strandangers_model.best_fit(strandangers_model.obs_wells[0], offset="3.5D")
+    fit = strandangers_model.best_fit(strandangers_model.wells.obs()[0], offset="3.5D")
 
     fig, ax = strandangers_model.plot_fits(fit)
     assert isinstance(fig, Figure)

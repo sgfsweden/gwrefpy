@@ -27,7 +27,7 @@ def test_save_load_project(tmp_path, strandangers_model):
     assert len(loaded_project.wells) == len(strandangers_model.wells)
     assert str(loaded_project) == model_str
     for well in strandangers_model.wells:
-        loaded_well = loaded_project.get_wells(well.name)
+        loaded_well = loaded_project.wells[well.name]
         assert well.name == loaded_well.name
         assert well.is_reference == loaded_well.is_reference
         pd.testing.assert_series_equal(well.timeseries, loaded_well.timeseries)

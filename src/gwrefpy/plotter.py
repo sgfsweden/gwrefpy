@@ -20,6 +20,7 @@ from .constants import (
 from .fitresults import ChebyshevFitResult, FitResultData, LinRegResult, NPolyFitResult
 from .methods.timeseries import groupby_time_equivalents
 from .well import Well
+from .wellcollection import WellCollection
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ class Plotter:
 
     def plot_wells(
         self,
-        wells: Well | list[Well] | None = None,
+        wells: Well | list[Well] | WellCollection | None = None,
         title: str = "Wells Plot",
         xlabel: str = "Time",
         ylabel: str = "Measurement",
@@ -71,9 +72,9 @@ class Plotter:
 
         Parameters
         ----------
-        wells : Well | list[Well]
-            A Well instance or a list of Well instances containing the wells to be
-            plotted. If None, all wells will be plotted.
+        wells : Well | list[Well] | WellCollection
+            A Well instance, a list of Well instances or a WellCollection containing
+            the wells to be plotted. If None, all wells will be plotted.
         title : str
             The title of the plot.
         xlabel : str
@@ -116,8 +117,10 @@ class Plotter:
         ax : matplotlib.axes.Axes
             The axes object of the plot.
         """
+        # TODO: minimal fix so a WellCollection can be plotted. The plotter still
+        # needs a proper rework for WellCollection/FitCollection (plotting issue).
         if wells is not None and not (
-            isinstance(wells, Well)
+            isinstance(wells, Well | WellCollection)
             or (isinstance(wells, list) and all(isinstance(w, Well) for w in wells))
         ):
             logger.error(

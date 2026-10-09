@@ -1,6 +1,6 @@
 import logging
 import warnings
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import pandas as pd
 
@@ -10,6 +10,9 @@ from .methods.chebyshev import chebyshevfit
 from .methods.linregressfit import linregressfit
 from .methods.npolyfit import npolyfit
 from .well import Well
+
+if TYPE_CHECKING:
+    from .wellcollection import WellCollection
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +26,8 @@ def _default_fit_name(obs_well: Well, ref_well: Well, method: str, degree: int) 
 
 
 class FitBase:
+    wells: "WellCollection"
+
     def __init__(self):
         self.ref_wells = None
         self.name = None
@@ -336,18 +341,11 @@ class FitBase:
 
         target_obs_well: Well
         if isinstance(obs_well, str):
-            target_obs_well = self.get_wells(obs_well)
-            if isinstance(target_obs_well, list):
-                logger.error(
-                    "obs_well parameter must resolve to a single well, not a list."
-                )
-                raise ValueError(
-                    "obs_well parameter must resolve to a single well, not a list."
-                )
+            target_obs_well = self._get_well(obs_well)
         elif isinstance(obs_well, Well):
             target_obs_well = obs_well
         if ref_wells is None:
-            target_ref_wells = self.ref_wells
+            target_ref_wells = list(self.wells.ref())
             if len(target_ref_wells) < 1:
                 logger.error("No reference wells available in the model.")
                 raise ValueError("No reference wells available in the model.")
@@ -355,7 +353,7 @@ class FitBase:
             target_ref_wells: list[Well] = []
             for rw in ref_wells:
                 if isinstance(rw, str):
-                    target_ref_wells.append(self.get_wells(rw))  # type: ignore
+                    target_ref_wells.append(self._get_well(rw))
                 elif isinstance(rw, Well):
                     target_ref_wells.append(rw)
                 else:
@@ -444,7 +442,7 @@ class FitBase:
         )
         target_well: Well
         if isinstance(well, str):
-            target_well = self.get_wells(well)  # type: ignore
+            target_well = self._get_well(well)
         elif isinstance(well, Well):
             target_well = well
         else:
@@ -497,7 +495,7 @@ class FitBase:
         # Resolve the observation well
         target_well: Well
         if isinstance(obs_well, str):
-            target_well = self.get_wells(obs_well)
+            target_well = self._get_well(obs_well)
         elif isinstance(obs_well, Well):
             target_well = obs_well
         else:
@@ -534,8 +532,8 @@ class FitBase:
     def _resolve_wells(self, obs_well):
         raise NotImplementedError("_resolve_wells must be implemented in subclass")
 
-    def get_wells(self, obs_well):
-        raise NotImplementedError("get_wells must be implemented in subclass")
+    def _get_well(self, name):
+        raise NotImplementedError("_get_well must be implemented in subclass")
 
     def _display_result(self, result):
         raise NotImplementedError("_display_result must be implemented in subclass")

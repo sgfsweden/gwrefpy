@@ -8,5 +8,6 @@ This page contains the API reference for the gwrefpy package.
 
     model
     fitcollection
+    wellcollection
     well
     constants

@@ -12,11 +12,13 @@ from .utils import (
     set_log_level,
 )
 from .well import Well
+from .wellcollection import WellCollection
 
 __all__ = [
     "Model",
     "FitCollection",
     "Well",
+    "WellCollection",
     "analyze_offsets",
     "set_log_level",
     "enable_file_logging",
