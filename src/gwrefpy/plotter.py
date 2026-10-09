@@ -344,7 +344,7 @@ class Plotter:
                 self._set_plot_attributes(fit.obs_well)
                 self._set_plot_attributes(fit.ref_well)
                 self._plot_well(fit.obs_well, ax, fit.shift)
-                self._plot_fit(fits, fit.obs_well, ax)
+                self._plot_fit(fit, fit.obs_well, ax)
                 if plot_ref_well:
                     self._plot_well(fit.ref_well, ax)
                 if mark_outliers:
@@ -379,7 +379,7 @@ class Plotter:
                 self._set_plot_attributes(fit.obs_well)
                 self._set_plot_attributes(fit.ref_well)
                 self._plot_well(fit.obs_well, ax, fit.shift)
-                self._plot_fit(fits, fit.obs_well, ax)
+                self._plot_fit(fit, fit.obs_well, ax)
                 if plot_ref_well:
                     self._plot_well(fit.ref_well, ax)
                 if mark_outliers:
@@ -406,7 +406,7 @@ class Plotter:
                 self._set_plot_attributes(fit.obs_well)
                 self._set_plot_attributes(fit.ref_well)
                 self._plot_well(fit.obs_well, ax, fit.shift)
-                self._plot_fit(fits, fit.obs_well, ax)
+                self._plot_fit(fit, fit.obs_well, ax)
                 if plot_ref_well:
                     self._plot_well(fit.ref_well, ax)
                 if mark_outliers:
