@@ -739,10 +739,12 @@ class Plotter:
             resolved_fits = fits  # type: list[FitResultData]
 
         for fit in resolved_fits:
-            pred_const = fit.pred_const
+            pred_const = fit.get_prediction_constant()
             fit_timeseries = fit.fit_timeseries().loc[self._plot_tmin : self._plot_tmax]
             x = fit_timeseries.index
             y = fit_timeseries.to_numpy()
+            if isinstance(pred_const, pd.Series):
+                pred_const = pred_const.loc[fit_timeseries.index].to_numpy()
             ax.plot(x, y, linestyle="-", color=well.color, alpha=0.2, label=None)
             ax.fill_between(
                 x,

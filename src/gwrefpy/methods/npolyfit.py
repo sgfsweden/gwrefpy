@@ -5,10 +5,11 @@ import pandas as pd
 
 from ..fitresults import FitResultData, NPolyFitResult
 from ..methods.common import (
-    _get_gwrefs_stats,
+    _get_gwrefs_polyfit_stats,
+    _validate_fit_rank,
     _validate_input_timeseries,
     _validate_timeseries_len,
-    compute_residual_std_error,
+    compute_polyfit_residual_std_error,
 )
 from ..methods.timeseries import groupby_time_equivalents
 from ..well import Well
@@ -94,16 +95,22 @@ def npolyfit(
     coefficients, residuals, rank, singular_values, rcond = np.polyfit(
         ref_timeseries.values, obs_timeseries.values, degree, full=True
     )
+    _validate_fit_rank(rank, degree, "Polynomial Fit")
     nfit = NPolyFitResult(coefficients=coefficients)
 
     # Compute residual standard error
-    stderr = compute_residual_std_error(
-        ref_timeseries.values,
+    stderr = compute_polyfit_residual_std_error(
         obs_timeseries.values,
+        np.polyval(coefficients, ref_timeseries.values),
         n,
-        lambda x: np.polyval(coefficients, x),
+        degree,
     )
-    pred_const, t_a = _get_gwrefs_stats(p, n, stderr)
+    training_matrix = np.vander(ref_timeseries.values, degree + 1)
+    prediction_matrix = np.vander(ref_well.timeseries.values, degree + 1)
+    pred_const_values, t_a, leverage_operator = _get_gwrefs_polyfit_stats(
+        p, n, stderr, training_matrix, prediction_matrix
+    )
+    pred_const = pd.Series(pred_const_values, index=ref_well.timeseries.index)
     rmse = np.sqrt(
         np.mean(
             (obs_timeseries.values - np.polyval(coefficients, ref_timeseries.values))
@@ -127,6 +134,7 @@ def npolyfit(
         t_a=t_a,
         stderr=stderr,
         pred_const=pred_const,
+        prediction_leverage_matrix=leverage_operator,
         p=p,
         offset=offset,
         aggregation=aggregation,

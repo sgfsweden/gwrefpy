@@ -6,7 +6,11 @@ import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure, SubFigure
 
-from .methods.common import compute_residual_std_error
+from .methods.common import (
+    _validate_timeseries_len,
+    compute_polyfit_residual_std_error,
+    compute_residual_std_error,
+)
 from .methods.timeseries import groupby_time_equivalents
 from .utils.conversions import datetime_to_float
 from .well import Well
@@ -324,8 +328,11 @@ class FitResultData:
         The t-value for the given confidence level and degrees of freedom.
     stderr : float
         The standard error of the regression.
-    pred_const : float
-        The prediction constant for the confidence interval.
+    pred_const : float | pd.Series
+        The prediction constant for the confidence interval. Polynomial fits use a
+        value for each reference time-series point.
+    prediction_leverage_matrix : np.ndarray | None
+        The leverage operator derived from the training data for polynomial fits.
     p : float
         The confidence level used in the fit.
     offset: pd.DateOffset | pd.Timedelta | str
@@ -352,7 +359,7 @@ class FitResultData:
         fit_method: LinRegResult | NPolyFitResult | ChebyshevFitResult,
         t_a: float,
         stderr: float,
-        pred_const: float,
+        pred_const: float | pd.Series,
         p: float,
         offset: pd.DateOffset | pd.Timedelta | str,
         aggregation: str,
@@ -361,6 +368,7 @@ class FitResultData:
         tmax: pd.Timestamp | str | None = None,
         shift: pd.Timedelta | str | None = None,
         name: str | None = None,
+        prediction_leverage_matrix: np.ndarray | None = None,
     ):
         """
         Initialize a FitResultData object to store the results of a fit between.
@@ -373,6 +381,11 @@ class FitResultData:
         self.t_a = t_a
         self.stderr = stderr
         self.pred_const = pred_const
+        self.prediction_leverage_matrix = (
+            np.asarray(prediction_leverage_matrix, dtype=float)
+            if prediction_leverage_matrix is not None
+            else None
+        )
         self.p = p
         self.offset = offset
         self.aggregation = aggregation
@@ -472,28 +485,32 @@ class FitResultData:
             f"rmse={self.rmse:.4f}, n={self.n})"
         )
 
-    def fit_timeseries(self) -> pd.Series:
+    def fit_timeseries(self, ref_series: pd.Series | None = None) -> pd.Series:
         """
         Apply the fit method to a reference time series to get the fitted values.
 
         Parameters
         ----------
-
+        ref_series : pd.Series | None
+            Reference values to evaluate. Defaults to the reference well's current
+            time series.
 
         Returns
         -------
         pd.Series
             The fitted values based on the reference series.
         """
+        if ref_series is None:
+            ref_series = self.ref_well.timeseries
         if hasattr(self.fit_method, "fit_timeseries"):
-            return self.fit_method.fit_timeseries(self.ref_well.timeseries)
+            return self.fit_method.fit_timeseries(ref_series)
         else:
             raise NotImplementedError(
                 f"Fitting method {self.fit_method.__class__.__name__} is not "
                 f"implemented"
             )
 
-    def get_fit_timeseries(self) -> pd.Series:
+    def get_fit_timeseries(self, ref_series: pd.Series | None = None) -> pd.Series:
         """
         Get the fitted time series for the reference well.
 
@@ -503,31 +520,96 @@ class FitResultData:
             The fitted time series for the reference well.
         """
 
-        return self.fit_timeseries()
+        return self.fit_timeseries(ref_series)
 
-    def get_upper_confidence_bound(self) -> pd.Series:
+    def get_prediction_constant(
+        self, ref_series: pd.Series | None = None
+    ) -> float | pd.Series:
+        """Calculate prediction widths using the fit's original training data.
+
+        For polynomial fits, widths are calculated at each value in ``ref_series``
+        using the leverage operator saved when the fit was trained. The training
+        window is not expanded when new reference values are supplied.
+        """
+        if not isinstance(self.fit_method, NPolyFitResult | ChebyshevFitResult):
+            return self.pred_const
+
+        was_provided = ref_series is not None
+        if ref_series is None:
+            ref_series = self.ref_well.timeseries
+        if not isinstance(ref_series, pd.Series):
+            raise TypeError("ref_series must be a pandas Series.")
+
+        if self.prediction_leverage_matrix is None:
+            if (
+                isinstance(self.pred_const, pd.Series)
+                and ref_series.index.isin(self.pred_const.index).all()
+            ):
+                return self.pred_const.reindex(ref_series.index)
+            if not was_provided and not isinstance(self.pred_const, pd.Series):
+                return self.pred_const
+            raise ValueError(
+                "This fit does not contain the training leverage data required to "
+                "calculate prediction widths for new reference values. Refit the "
+                "model to enable this API."
+            )
+
+        if isinstance(self.fit_method, NPolyFitResult):
+            design_matrix = np.vander(
+                ref_series.to_numpy(), len(self.fit_method.coefficients)
+            )
+        else:
+            design_matrix = np.polynomial.chebyshev.chebvander(
+                ref_series.to_numpy(), self.fit_method.degree
+            )
+        leverage = np.einsum(
+            "ij,jk,ik->i",
+            design_matrix,
+            self.prediction_leverage_matrix,
+            design_matrix,
+        )
+        widths = self.t_a * self.stderr * np.sqrt(1 + leverage)
+        return pd.Series(widths, index=ref_series.index, name="pred_const")
+
+    def get_upper_confidence_bound(
+        self, ref_series: pd.Series | None = None
+    ) -> pd.Series:
         """
         Calculate the upper confidence bound based on the fit method and RMSE.
+
+        Parameters
+        ----------
+        ref_series : pd.Series | None
+            Reference values to evaluate. Defaults to the reference well's current
+            time series.
 
         Returns
         -------
         pd.Series
             The upper confidence bound based on the fit method and RMSE.
         """
-        fitted_values = self.fit_timeseries()
-        return fitted_values + self.pred_const
+        fitted_values = self.fit_timeseries(ref_series)
+        return fitted_values + self.get_prediction_constant(ref_series)
 
-    def get_lower_confidence_bound(self) -> pd.Series:
+    def get_lower_confidence_bound(
+        self, ref_series: pd.Series | None = None
+    ) -> pd.Series:
         """
         Calculate the lower confidence bound based on the fit method and RMSE.
+
+        Parameters
+        ----------
+        ref_series : pd.Series | None
+            Reference values to evaluate. Defaults to the reference well's current
+            time series.
 
         Returns
         -------
         pd.Series
             The lower confidence bound based on the fit method and RMSE.
         """
-        fitted_values = self.fit_timeseries()
-        return fitted_values - self.pred_const
+        fitted_values = self.fit_timeseries(ref_series)
+        return fitted_values - self.get_prediction_constant(ref_series)
 
     def fit_outliers(self) -> pd.Series:
         """
@@ -540,12 +622,13 @@ class FitResultData:
         """
         if hasattr(self.fit_method, "fit_timeseries"):
             fitted_values = self.fit_timeseries()
+            prediction_constant = self.get_prediction_constant()
             if self.shift is not None:
                 obs_timeseries = self.obs_well.shift_timeseries(self.shift)
             else:
                 obs_timeseries = self.obs_well.timeseries
             outliers = pd.Series(
-                abs(obs_timeseries - fitted_values) > self.pred_const,
+                abs(obs_timeseries - fitted_values) > prediction_constant,
                 index=obs_timeseries.index,
             )
             return outliers
@@ -611,12 +694,22 @@ class FitResultData:
             residuals = obs_timeseries - fitted_values
 
             # Compute stderr and rmse
-            stderr = compute_residual_std_error(
-                ref_timeseries,
-                obs_timeseries,
-                n,
-                lambda x: self.fit_method.fit_timeseries(x),
-            )
+            if isinstance(self.fit_method, NPolyFitResult | ChebyshevFitResult):
+                method_name = self.fit_method.__class__.__name__
+                _validate_timeseries_len(n, self.fit_method.degree, method_name)
+                stderr = compute_polyfit_residual_std_error(
+                    obs_timeseries.to_numpy(),
+                    fitted_values.to_numpy(),
+                    n,
+                    self.fit_method.degree,
+                )
+            else:
+                stderr = compute_residual_std_error(
+                    ref_timeseries,
+                    obs_timeseries,
+                    n,
+                    lambda x: self.fit_method.fit_timeseries(x),
+                )
             rmse = np.sqrt(np.mean(residuals**2))
             return stderr, rmse
         else:
@@ -750,7 +843,21 @@ class FitResultData:
             "t_a": self.t_a,
             "fit_method": str(self.fit_method.__class__.__name__),
             "stderr": self.stderr,
-            "pred_const": self.pred_const,
+            "pred_const": (
+                self.pred_const.tolist()
+                if isinstance(self.pred_const, pd.Series)
+                else self.pred_const
+            ),
+            "pred_const_index": (
+                [datetime_to_float(timestamp) for timestamp in self.pred_const.index]
+                if isinstance(self.pred_const, pd.Series)
+                else None
+            ),
+            "prediction_leverage_matrix": (
+                self.prediction_leverage_matrix.tolist()
+                if self.prediction_leverage_matrix is not None
+                else None
+            ),
             "p": self.p,
             "offset": self.offset,
             "aggregation": self.aggregation,
