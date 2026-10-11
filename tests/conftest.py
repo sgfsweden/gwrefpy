@@ -82,9 +82,14 @@ def small_example_model() -> Model:
     # Create sample time series data for testing
     dates = pd.date_range(start="2020-01-01", periods=365, freq="D")
 
-    obs_series = pd.Series(np.sin(np.linspace(0, 4 * np.pi, 365)) + (np.random.normal(0, 0.1, 365) * 2), index=dates)
-    ref_series = pd.Series(np.sin(np.linspace(0, 4 * np.pi, 365)) + np.random.normal(0, 0.1, 365), index=dates)
-
+    obs_series = pd.Series(
+        np.sin(np.linspace(0, 4 * np.pi, 365)) + (np.random.normal(0, 0.1, 365) * 2),
+        index=dates,
+    )
+    ref_series = pd.Series(
+        np.sin(np.linspace(0, 4 * np.pi, 365)) + np.random.normal(0, 0.1, 365),
+        index=dates,
+    )
 
     # Create a Model object, add wells, and fit the model
     model = Model(name="Small Example")

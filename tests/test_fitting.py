@@ -430,7 +430,7 @@ def test_polynomial_prediction_constant_uses_leverage(small_example_model, metho
         training_matrix = np.vander(training_x.values, 2)
         prediction_matrix = np.vander(ref.timeseries.values, 2)
     else:
-        training_matrix = np.polynomial.chebyshev.chebvander(training_x.values,1)
+        training_matrix = np.polynomial.chebyshev.chebvander(training_x.values, 1)
         prediction_matrix = np.polynomial.chebyshev.chebvander(ref.timeseries.values, 1)
         fitted_training_values = np.polynomial.chebyshev.chebval(
             training_x.values, result.fit_method.coefficients

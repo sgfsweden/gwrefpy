@@ -91,9 +91,10 @@ def _anchor_method(
     # Detect timestamp unit (nanoseconds or microseconds) and convert offset accordingly
     ts_unit = obs_timeseries.index.unit  # "ns" or "us"
     if ts_unit == "us":
-        offset_converted = int(offset_td.total_seconds() * 1e6)  # Convert to microseconds
+        # Convert to microseconds
+        offset_converted = int(offset_td.total_seconds() * 1e6)
     else:
-        offset_converted = int(offset_td.total_seconds() * 1e9)  # Convert to nanoseconds
+        offset_converted = int(offset_td.total_seconds() * 1e9)
 
     # (n_obs × n_ref) boolean mask of matching pairs
     diff = np.abs(obs_arr[:, None] - ref_arr[None, :])
