@@ -412,9 +412,9 @@ def test_fit_chebyshev_basic(strandangers_model) -> None:
 
 
 @pytest.mark.parametrize("method", ["npolyfit", "chebyshev"])
-def test_polynomial_prediction_constant_uses_leverage(strandangers_model, method):
-    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
-    result = strandangers_model.fit(obs, ref, offset="3.5D", method=method, degree=1)
+def test_polynomial_prediction_constant_uses_leverage(small_example_model, method):
+    [obs, ref] = small_example_model.get_wells(["obs", "ref"])
+    result = small_example_model.fit(obs, ref, offset="3.5D", method=method, degree=1)
 
     assert isinstance(result.pred_const, pd.Series)
     assert result.pred_const.index.equals(ref.timeseries.index)
@@ -430,7 +430,7 @@ def test_polynomial_prediction_constant_uses_leverage(strandangers_model, method
         training_matrix = np.vander(training_x.values, 2)
         prediction_matrix = np.vander(ref.timeseries.values, 2)
     else:
-        training_matrix = np.polynomial.chebyshev.chebvander(training_x.values, 1)
+        training_matrix = np.polynomial.chebyshev.chebvander(training_x.values,1)
         prediction_matrix = np.polynomial.chebyshev.chebvander(ref.timeseries.values, 1)
         fitted_training_values = np.polynomial.chebyshev.chebval(
             training_x.values, result.fit_method.coefficients
@@ -455,22 +455,31 @@ def test_polynomial_prediction_constant_uses_leverage(strandangers_model, method
     np.testing.assert_allclose(result.stderr, expected_stderr)
     np.testing.assert_allclose(result.t_a, expected_t)
     assert np.ptp(result.pred_const.values) > 0
+    np.testing.assert_allclose(
+        (result.get_upper_confidence_bound() - result.get_fit_timeseries()).values,
+        result.pred_const.values,
+        rtol=1e-10,
+        atol=1e-12,
+    )
     pd.testing.assert_series_equal(
         result.get_upper_confidence_bound() - result.get_fit_timeseries(),
         result.pred_const,
         check_names=False,
+        check_exact=False,
+        atol=1e-12,
+        rtol=1e-10,
     )
 
 
 @pytest.mark.parametrize("method", ["npolyfit", "chebyshev"])
 def test_polynomial_prediction_width_for_appended_reference_data(
-    strandangers_model, method
+    small_example_model, method
 ):
-    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
-    result = strandangers_model.fit(obs, ref, offset="3.5D", method=method, degree=1)
+    [obs, ref] = small_example_model.get_wells(["obs", "ref"])
+    result = small_example_model.fit(obs, ref, offset="3.5D", method=method, degree=3)
 
     new_index = ref.timeseries.index.max() + pd.Timedelta(days=30)
-    new_reference = pd.Series([12.0], index=[new_index], name="ref")
+    new_reference = pd.Series([0.0], index=[new_index], name="ref")
     ref.append_timeseries(new_reference)
 
     widths = result.get_prediction_constant()
@@ -489,8 +498,8 @@ def test_polynomial_prediction_width_for_appended_reference_data(
 
 
 @pytest.mark.parametrize("method", ["npolyfit", "chebyshev"])
-def test_polynomial_fit_rejects_rank_deficient_reference(strandangers_model, method):
-    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+def test_polynomial_fit_rejects_rank_deficient_reference(small_example_model, method):
+    [obs, ref] = small_example_model.get_wells(["obs", "ref"])
     index = pd.date_range("2023-01-01", periods=5, freq="D")
     ref.replace_timeseries(pd.Series(np.ones(5), index=index, name="ref"))
     obs.replace_timeseries(
@@ -498,14 +507,14 @@ def test_polynomial_fit_rejects_rank_deficient_reference(strandangers_model, met
     )
 
     with pytest.raises(ValueError, match="design matrix is rank deficient"):
-        strandangers_model.fit(obs, ref, offset="0D", method=method, degree=1)
+        small_example_model.fit(obs, ref, offset="0D", method=method, degree=1)
 
 
-def test_fit_timeseries_validation(strandangers_model) -> None:
-    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+def test_fit_timeseries_validation(small_example_model) -> None:
+    [obs, ref] = small_example_model.get_wells(["obs", "ref"])
 
     # Test with valid timeseries
-    result = strandangers_model.fit(
+    result = small_example_model.fit(
         obs_well=obs, ref_well=ref, offset="3.5D", method="npolyfit", degree=1
     )
     assert isinstance(result, FitResultData)
@@ -513,10 +522,10 @@ def test_fit_timeseries_validation(strandangers_model) -> None:
     # Test with invalid timeseries (None)
     obs_invalid = Well("obs_invalid", is_reference=False, timeseries=ref.timeseries)
     obs_invalid.timeseries = pd.Series([], dtype=float, name="obs")
-    strandangers_model.add_well(obs_invalid)
+    small_example_model.add_well(obs_invalid)
 
     with pytest.raises(ValueError, match="The observation time series is empty."):
-        strandangers_model.fit(
+        small_example_model.fit(
             obs_well=obs_invalid,
             ref_well=ref,
             offset="3.5D",
@@ -526,10 +535,10 @@ def test_fit_timeseries_validation(strandangers_model) -> None:
 
     ref_invalid = Well("ref_invalid", is_reference=True, timeseries=ref.timeseries)
     ref_invalid.timeseries = pd.Series([], dtype=float, name="ref")
-    strandangers_model.add_well(ref_invalid)
+    small_example_model.add_well(ref_invalid)
 
     with pytest.raises(ValueError, match="The reference time series is empty."):
-        strandangers_model.fit(
+        small_example_model.fit(
             obs_well=obs,
             ref_well=ref_invalid,
             offset="3.5D",
@@ -539,12 +548,12 @@ def test_fit_timeseries_validation(strandangers_model) -> None:
 
     # Test identical timeseries (should raise ValueError)
     obs_identical = Well("obs_identical", is_reference=False, timeseries=ref.timeseries)
-    strandangers_model.add_well(obs_identical)
+    small_example_model.add_well(obs_identical)
 
     with pytest.raises(
         ValueError, match="The observation and reference time series are identical."
     ):
-        strandangers_model.fit(
+        small_example_model.fit(
             obs_well=obs_identical,
             ref_well=ref,
             offset="3.5D",

@@ -73,3 +73,23 @@ def strandangers_model(strandangers_example) -> Model:
     model.add_well(ref_well)
 
     return model
+
+
+@pytest.fixture()
+def small_example_model() -> Model:
+    """Fixture for creating a small example model."""
+
+    # Create sample time series data for testing
+    dates = pd.date_range(start="2020-01-01", periods=365, freq="D")
+
+    obs_series = pd.Series(np.sin(np.linspace(0, 4 * np.pi, 365)) + (np.random.normal(0, 0.1, 365) * 2), index=dates)
+    ref_series = pd.Series(np.sin(np.linspace(0, 4 * np.pi, 365)) + np.random.normal(0, 0.1, 365), index=dates)
+
+
+    # Create a Model object, add wells, and fit the model
+    model = Model(name="Small Example")
+    ref = Well(name="ref", timeseries=ref_series, is_reference=True)
+    obs = Well(name="obs", timeseries=obs_series, is_reference=False)
+    model.add_well([ref, obs])
+
+    return model

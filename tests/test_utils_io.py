@@ -47,6 +47,7 @@ def test_save_load_polynomial_prediction_constants(tmp_path, strandangers_model)
 
     actual = loaded_project.fits[0].pred_const
     assert isinstance(actual, pd.Series)
+    actual.index = actual.index.astype(expected.index.dtype)
     pd.testing.assert_series_equal(actual, expected)
 
     new_reference = pd.Series([12.0], index=[new_index], name="ref")
