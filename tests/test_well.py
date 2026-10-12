@@ -1,6 +1,7 @@
 import datetime
 
 import pandas as pd
+import pytest
 
 from gwrefpy.utils.conversions import datetime_to_float
 from gwrefpy.well import Well
@@ -119,19 +120,17 @@ def test_add_timeseries_non_datetime_index():
 
     # Test with integer index
     series_int_index = pd.Series([1.0, 2.0, 3.0], index=[0, 1, 2])
-    try:
+    with pytest.raises(
+        TypeError, match="Timeseries index must be pandas\\.DatetimeIndex"
+    ):
         well.add_timeseries(series_int_index)
-    except TypeError as e:
-        assert "Timeseries index must be pandas.DatetimeIndex" in str(e)
-        assert "got <class 'pandas.core.indexes.base.Index'>" in str(e)
 
     # Test with string index
     series_str_index = pd.Series([1.0, 2.0, 3.0], index=["a", "b", "c"])
-    try:
+    with pytest.raises(
+        TypeError, match="Timeseries index must be pandas\\.DatetimeIndex"
+    ):
         well.add_timeseries(series_str_index)
-    except TypeError as e:
-        assert "Timeseries index must be pandas.DatetimeIndex" in str(e)
-        assert "got <class 'pandas.core.indexes.base.Index'>" in str(e)
 
 
 def test_add_timeseries_non_float_values():
@@ -141,27 +140,18 @@ def test_add_timeseries_non_float_values():
 
     # Test with integer values
     series_int_values = pd.Series([1, 2, 3], index=date_index)
-    try:
+    with pytest.raises(TypeError, match="Timeseries values must be float dtype"):
         well.add_timeseries(series_int_values)
-    except TypeError as e:
-        assert "Timeseries values must be float dtype" in str(e)
-        assert "got int64" in str(e)
 
     # Test with string values
     series_str_values = pd.Series(["1.0", "2.0", "3.0"], index=date_index)
-    try:
+    with pytest.raises(TypeError, match="Timeseries values must be float dtype"):
         well.add_timeseries(series_str_values)
-    except TypeError as e:
-        assert "Timeseries values must be float dtype" in str(e)
-        assert "got object" in str(e)
 
     # Test with boolean values
     series_bool_values = pd.Series([True, False, True], index=date_index)
-    try:
+    with pytest.raises(TypeError, match="Timeseries values must be float dtype"):
         well.add_timeseries(series_bool_values)
-    except TypeError as e:
-        assert "Timeseries values must be float dtype" in str(e)
-        assert "got bool" in str(e)
 
 
 def test_add_timeseries_valid_data():

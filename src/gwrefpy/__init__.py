@@ -1,5 +1,5 @@
 __name__ = "gwrefpy"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 from .constants import print_constants
 from .fitcollection import FitCollection
