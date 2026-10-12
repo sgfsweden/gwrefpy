@@ -1,4 +1,7 @@
+from abc import ABC, abstractmethod
+
 import numpy as np
+import pandas as pd
 import scipy as sp
 
 
@@ -107,3 +110,70 @@ def _validate_input_timeseries(obs_timeseries, ref_timeseries):
         raise ValueError("The reference time series is empty.")
     if obs_timeseries.equals(ref_timeseries):
         raise ValueError("The observation and reference time series are identical.")
+
+
+class FitMethodBase(ABC):
+    """
+    Abstract base class for fit methods.
+    """
+
+    @abstractmethod
+    def __str__(self):
+        """
+        Returns a string representation of the fit method.
+        """
+        pass
+
+    @abstractmethod
+    def __repr__(self):
+        """
+        Returns a string representation of the fit method.
+        """
+        pass
+
+    @abstractmethod
+    def fit_str(self):
+        """
+        Returns a string representation of the fit results.
+        """
+        pass
+
+    @abstractmethod
+    def html_fit_str(self):
+        """
+        Returns an HTML representation of the fit results.
+        """
+        pass
+
+    @abstractmethod
+    def fit_timeseries(self, timeseries: pd.Series) -> pd.Series:
+        """
+        Apply the fit to a time series and return the fitted values.
+        """
+        pass
+
+    @abstractmethod
+    def fit(self, ref_timeseries: pd.Series, obs_timeseries: pd.Series) -> None:
+        """
+        Fit the model to the data.
+        """
+        pass
+
+    @abstractmethod
+    def get_prediction_constant(
+        self, ref_series: pd.Series | None = None
+    ) -> float | pd.Series:
+        """Calculate prediction widths using the fit's original training data."""
+        pass
+
+    @abstractmethod
+    def to_dict(self) -> dict:
+        """
+        Convert the fit method-specific attributes to a dictionary.
+
+        Returns
+        -------
+        dict
+            A dictionary representation of the fit method-specific attributes.
+        """
+        pass

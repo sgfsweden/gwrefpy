@@ -7,7 +7,7 @@ import pandas as pd
 from .fitresults import (
     ChebyshevFitResult,
     FitResultData,
-    LinRegResult,
+    Linear,
     NPolyFitResult,
 )
 from .well import Well
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # Maps the method names used in ``Model.fit(method=...)`` to their result classes
 METHODS = {
-    "linearregression": LinRegResult,
+    "linearregression": Linear,
     "npolyfit": NPolyFitResult,
     "chebyshev": ChebyshevFitResult,
 }
@@ -335,7 +335,7 @@ class FitCollection:
             }
 
             # Method-specific columns with prefixes
-            if isinstance(fit.fit_method, LinRegResult):
+            if isinstance(fit.fit_method, Linear):
                 row.update(
                     {
                         "linreg_slope": fit.fit_method.slope,

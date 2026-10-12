@@ -4,11 +4,14 @@ from typing import Literal
 
 import pandas as pd
 
+from gwrefpy.methods.common import _validate_input_timeseries
+
 from .fitcollection import METHODS, FitCollection
 from .fitresults import FitResultData
 from .methods.chebyshev import chebyshevfit
-from .methods.linregressfit import linregressfit
+from .methods.linregressfit import Linear
 from .methods.npolyfit import npolyfit
+from .methods.timeseries import groupby_time_equivalents
 from .well import Well
 
 logger = logging.getLogger(__name__)
@@ -196,6 +199,7 @@ class FitBase:
         shift: pd.Timedelta | str | None = None,
         name: str | None = None,
         aggregation: Literal["mean", "median", "min", "max"] = "mean",
+        te_method: Literal["anchor", "consecutive"] = "anchor",
         **kwargs,
     ) -> FitResultData:
         # Check that the ref_well is a reference well
@@ -212,11 +216,46 @@ class FitBase:
         if name is None:
             name = _default_fit_name(obs_well, ref_well, method, degree)
 
+        # Validate timeseries input
+        _validate_input_timeseries(obs_well.timeseries, ref_well.timeseries)
+
+        if shift is not None:
+            obs_timeseries = obs_well.shift_timeseries(shift)
+        else:
+            obs_timeseries = obs_well.timeseries
+
+        ref_timeseries, obs_timeseries, n = groupby_time_equivalents(
+            obs_timeseries.loc[tmin:tmax],
+            ref_well.timeseries.loc[tmin:tmax],
+            offset,
+            aggregation,
+            te_method,
+        )
+        if tmin is None:
+            logger.info("tmin is None, setting to min common time of both wells")
+            tmin = obs_timeseries.index[0]
+        if tmax is None:
+            logger.infor("tmax is None, setting to max common time of both wells")
+            tmax = obs_timeseries.index[-1]
+
         fit = None
         if method == "linearregression":
             logger.debug("Using linear regression method for fitting.")
-            fit = linregressfit(
-                obs_well, ref_well, offset, tmin, tmax, shift, name, p, aggregation
+            fit_method = Linear()
+            fit_method.fit(ref_timeseries, obs_timeseries)
+            fit = FitResultData(
+                obs_well=obs_well,
+                ref_well=ref_well,
+                n=len(obs_timeseries),
+                fit_method=fit_method,
+                p=p,
+                offset=offset,
+                aggregation=aggregation,
+                te_method=te_method,
+                tmin=tmin,
+                tmax=tmax,
+                shift=shift,
+                name=name,
             )
         elif method == "npolyfit":
             logger.debug("Using Nth degree polynomial fit method for fitting.")
@@ -251,7 +290,9 @@ class FitBase:
             raise NotImplementedError(f"Fitting method '{method}' is not implemented.")
 
         self.fits._add_or_replace(fit)
-        logger.debug(f"Fit completed for model '{self.name}' with RMSE {fit.rmse}.")
+        logger.debug(
+            f"Fit completed for model '{self.name}' with RMSE {fit.fit_method.rmse}."
+        )
         return fit
 
     def best_fit(
