@@ -19,7 +19,7 @@ def _get_gwrefs_stats(p, n, stderr):
     return pc, ta
 
 
-def _get_gwrefs_polyfit_stats(p, n, stderr, training_matrix, prediction_matrix):
+def _get_gwrefs_polyfit_stats(p, n, training_matrix):
     degrees_freedom = n - training_matrix.shape[1]
     ta = _t_inv((1 - p) / 2, degrees_freedom)
 
@@ -30,11 +30,7 @@ def _get_gwrefs_polyfit_stats(p, n, stderr, training_matrix, prediction_matrix):
     leverage_operator = (scaled_training_pinv @ scaled_training_pinv.T) / np.outer(
         column_scales, column_scales
     )
-    leverage = np.einsum(
-        "ij,jk,ik->i", prediction_matrix, leverage_operator, prediction_matrix
-    )
-    pred_const = ta * stderr * np.sqrt(1 + leverage)
-    return pred_const, ta, leverage_operator
+    return ta, leverage_operator
 
 
 def compute_polyfit_residual_std_error(y, y_pred, n, degree):

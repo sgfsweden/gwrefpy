@@ -4,88 +4,9 @@ import numpy as np
 import pandas as pd
 
 from .methods.linregressfit import Linear
+from .methods.npolyfit import NPolyFit
 from .utils.conversions import datetime_to_float
 from .well import Well
-
-
-class NPolyFitResult:
-    """
-    This class contains the results of a n-degree polynomial fit.
-
-    Parameters
-    ----------
-    coefficients : np.ndarray[float]
-        The coefficients of the polynomial.
-    """
-
-    def __init__(self, coefficients: np.array):
-        self.coefficients = coefficients
-        self.degree = len(coefficients) - 1
-
-    def __str__(self):
-        return f"NPolyFitResult(degree={self.degree}, coefficients={self.coefficients})"
-
-    def __repr__(self):
-        return f"NPolyFitResult(degree={self.degree}, coefficients={self.coefficients})"
-
-    def fit_str(self):
-        fit_lines = [
-            f"{'Degree':<15} {self.degree:<12d} Degree of Polynomial Fit",
-            *[
-                f"{'Coefficient ' + str(i):<15} {coef:<12.4f} Polynomial Coefficient"
-                for i, coef in enumerate(self.coefficients)
-            ],
-        ]
-        return fit_lines
-
-    def html_fit_str(self):
-        return f"""
-                <tr>
-                    <td>Degree</td>
-                    <td>{self.degree}</td>
-                    <td>Degree of Polynomial Fit</td>
-                </tr>
-                {
-            "".join(
-                [
-                    f"<tr><td>Coefficient {i}</td>"
-                    f"<td>{coef:.4f}</td>"
-                    f"<td>Polynomial Coefficient</td>"
-                    f"</tr>"
-                    for i, coef in enumerate(self.coefficients)
-                ]
-            )
-        }
-                """
-
-    def fit_timeseries(self, timeseries: pd.Series) -> pd.Series:
-        """
-        Apply the polynomial fit to a given series.
-
-        Parameters
-        ----------
-        timeseries : pd.Series
-            The input series to apply the fit to.
-
-        Returns
-        -------
-        pd.Series
-            The fitted values based on the input series.
-        """
-        return timeseries.apply(lambda x: np.polyval(self.coefficients, x))
-
-    def to_dict(self) -> dict:
-        """
-        Convert the NPolyFitResult object to a dictionary.
-
-        Returns
-        -------
-        dict
-            A dictionary representation of the NPolyFitResult object.
-        """
-        return {
-            "coefficients": self.coefficients.tolist(),
-        }
 
 
 class ChebyshevFitResult:
@@ -194,7 +115,7 @@ class FitResultData:
         The root mean square error of the fit.
     n : int
         The number of data points used in the fit.
-    fit_method : Linear | NPolyFitResult
+    fit_method : Linear | NPolyFit | ChebyshevFitResult
         The method used for fitting (e.g., linreg).
     t_a : float
         The t-value for the given confidence level and degrees of freedom.
@@ -227,7 +148,7 @@ class FitResultData:
         obs_well: Well,
         ref_well: Well,
         n: int,
-        fit_method: Linear | NPolyFitResult | ChebyshevFitResult,
+        fit_method: Linear | NPolyFit | ChebyshevFitResult,
         p: float,
         offset: pd.DateOffset | pd.Timedelta | str,
         aggregation: str,
@@ -389,7 +310,9 @@ class FitResultData:
         using the leverage operator saved when the fit was trained. The training
         window is not expanded when new reference values are supplied.
         """
-        if not isinstance(self.fit_method, NPolyFitResult | ChebyshevFitResult):
+        if ref_series is None:
+            ref_series = self.ref_well.timeseries
+        if not isinstance(self.fit_method, ChebyshevFitResult):
             return self.fit_method.get_prediction_constant(ref_series)
 
         was_provided = ref_series is not None
@@ -412,7 +335,7 @@ class FitResultData:
                 "model to enable this API."
             )
 
-        if isinstance(self.fit_method, NPolyFitResult):
+        if isinstance(self.fit_method, NPolyFit):
             design_matrix = np.vander(
                 ref_series.to_numpy(), len(self.fit_method.coefficients)
             )
@@ -566,7 +489,7 @@ class FitResultData:
 
 def _unpack_dict_fit_method(
     data: dict,
-) -> Linear | NPolyFitResult | ChebyshevFitResult:
+) -> Linear | NPolyFit | ChebyshevFitResult:
     """
     Unpack a dictionary representation of a fit method into a Linear object.
 
@@ -577,7 +500,7 @@ def _unpack_dict_fit_method(
 
     Returns
     -------
-    Linear | NPolyFitResult | ChebyshevFitResult
+    Linear | NPolyFit | ChebyshevFitResult
         The unpacked fitting method object.
     """
     fit_method_name = data.get("fit_method", None)
@@ -590,9 +513,9 @@ def _unpack_dict_fit_method(
             pvalue=linreg_data.get("pvalue", 0.0),
             stderr=linreg_data.get("stderr", 0.0),
         )
-    elif fit_method_name == "NPolyFitResult":
-        npoly_data = data.get("NPolyFitResult", {})
-        return NPolyFitResult(
+    elif fit_method_name == "NPolyFit":
+        npoly_data = data.get("NPolyFit", {})
+        return NPolyFit(
             coefficients=np.array(npoly_data.get("coefficients", [])),
         )
     elif fit_method_name == "ChebyshevFitResult":

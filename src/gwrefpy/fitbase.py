@@ -10,7 +10,7 @@ from .fitcollection import METHODS, FitCollection
 from .fitresults import FitResultData
 from .methods.chebyshev import chebyshevfit
 from .methods.linregressfit import Linear
-from .methods.npolyfit import npolyfit
+from .methods.npolyfit import NPolyFit
 from .methods.timeseries import groupby_time_equivalents
 from .well import Well
 
@@ -235,7 +235,7 @@ class FitBase:
             logger.info("tmin is None, setting to min common time of both wells")
             tmin = obs_timeseries.index[0]
         if tmax is None:
-            logger.infor("tmax is None, setting to max common time of both wells")
+            logger.info("tmax is None, setting to max common time of both wells")
             tmax = obs_timeseries.index[-1]
 
         fit = None
@@ -259,17 +259,21 @@ class FitBase:
             )
         elif method == "npolyfit":
             logger.debug("Using Nth degree polynomial fit method for fitting.")
-            fit = npolyfit(
-                obs_well,
-                ref_well,
-                offset,
-                degree,
-                tmin,
-                tmax,
-                shift,
-                name,
-                p,
-                aggregation,
+            fit_method = NPolyFit(degree=degree)
+            fit_method.fit(ref_timeseries, obs_timeseries, p=p)
+            fit = FitResultData(
+                obs_well=obs_well,
+                ref_well=ref_well,
+                n=len(obs_timeseries),
+                fit_method=fit_method,
+                p=p,
+                offset=offset,
+                aggregation=aggregation,
+                te_method=te_method,
+                tmin=tmin,
+                tmax=tmax,
+                shift=shift,
+                name=name,
             )
         elif method == "chebyshev":
             logger.debug("Using Chebyshev polynomial fit method for fitting.")

@@ -8,7 +8,7 @@ from .fitresults import (
     ChebyshevFitResult,
     FitResultData,
     Linear,
-    NPolyFitResult,
+    NPolyFit,
 )
 from .well import Well
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 # Maps the method names used in ``Model.fit(method=...)`` to their result classes
 METHODS = {
     "linearregression": Linear,
-    "npolyfit": NPolyFitResult,
+    "npolyfit": NPolyFit,
     "chebyshev": ChebyshevFitResult,
 }
 
