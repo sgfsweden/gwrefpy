@@ -275,9 +275,7 @@ class FitBase:
         self,
         obs_well: str | Well,
         ref_wells: list[str | Well] | None = None,
-        method: Literal[
-            "linearregression", "npolyfit", "chebyshev"
-        ] = "linearregression",
+        method: type[FitMethodBase] | None = None,
         skip_raise_error: bool = False,
         **kwargs,
     ) -> FitResultData:
@@ -293,9 +291,8 @@ class FitBase:
         ref_wells : Well or list of Well or None, optional
             The reference wells to test. If None, all reference wells in the
             model will be used (default is None).
-        method : Literal["linearregression", "npolyfit", "chebyshev"]
-            Method with which to perform regression. Currently only supports
-            linear regression.
+        method : type[FitMethodBase] | None, optional
+            Method with which to perform regression.
         skip_raise_error: bool, optional
             If True, will skip wells that raise exceptions during fitting and continue.
             If False, will raise the exception and stop execution (default is False).
@@ -316,9 +313,7 @@ class FitBase:
         self,
         obs_well: str | Well,
         ref_wells: list[str | Well] | None = None,
-        method: Literal[
-            "linearregression", "npolyfit", "chebyshev"
-        ] = "linearregression",
+        method: type[FitMethodBase] | None = None,
         skip_raise_error: bool = False,
         **kwargs,
     ) -> FitResultData:
@@ -332,9 +327,8 @@ class FitBase:
         ref_wells : Well or list of Well or None, optional
             The reference wells to test. If None, all reference wells in the
             model will be used (default is None).
-        method : Literal["linearregression", "npolyfit", "chebyshev"]
-            Method with which to perform regression. Currently only supports
-            linear regression.
+        method : type[FitMethodBase] | None, optional
+            Method with which to perform regression.
         skip_raise_error: bool, optional
             If True, will skip wells that raise exceptions during fitting and continue.
             If False, will raise the exception and stop execution (default is False).
@@ -428,7 +422,7 @@ class FitBase:
                 f"with the provided reference wells."
             )
 
-        return min(local_fits, key=lambda x: x.rmse)
+        return min(local_fits, key=lambda x: x.fit_method.rmse)
 
     def get_fits(
         self, well: Well | str, method: str | None = None
