@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../../../_static/documentation_options.js?v=292eb321"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -985,6 +985,19 @@
         <span class="c1"># Unpack fits</span>
         <span class="n">fits_list</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fits&quot;</span><span class="p">,</span> <span class="p">[])</span>
         <span class="k">for</span> <span class="n">fit_data</span> <span class="ow">in</span> <span class="n">fits_list</span><span class="p">:</span>
+            <span class="n">pred_const</span> <span class="o">=</span> <span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pred_const&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pred_const</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">pred_const_index</span> <span class="o">=</span> <span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pred_const_index&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">pred_const_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">pred_const_index</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="n">float_to_datetime</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span> <span class="k">for</span> <span class="n">timestamp</span> <span class="ow">in</span> <span class="n">pred_const_index</span>
+                    <span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ref_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wells</span><span class="p">[</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">well_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">fit_data</span><span class="p">[</span><span class="s2">&quot;ref_well&quot;</span><span class="p">])</span>
+                    <span class="p">]</span><span class="o">.</span><span class="n">timeseries</span><span class="o">.</span><span class="n">index</span>
+                    <span class="n">pred_const_index</span> <span class="o">=</span> <span class="n">ref_index</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">pred_const</span><span class="p">)]</span>
+                <span class="n">pred_const</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pred_const</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">pred_const_index</span><span class="p">)</span>
             <span class="n">fit</span> <span class="o">=</span> <span class="n">FitResultData</span><span class="p">(</span>
                 <span class="n">ref_well</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wells</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">well_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">fit_data</span><span class="p">[</span><span class="s2">&quot;ref_well&quot;</span><span class="p">])],</span>
                 <span class="n">obs_well</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wells</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">well_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">fit_data</span><span class="p">[</span><span class="s2">&quot;obs_well&quot;</span><span class="p">])],</span>
@@ -993,7 +1006,10 @@
                 <span class="n">fit_method</span><span class="o">=</span><span class="n">_unpack_dict_fit_method</span><span class="p">(</span><span class="n">fit_data</span><span class="p">),</span>
                 <span class="n">t_a</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;t_a&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                 <span class="n">stderr</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stderr&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-                <span class="n">pred_const</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pred_const&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">pred_const</span><span class="o">=</span><span class="n">pred_const</span><span class="p">,</span>
+                <span class="n">prediction_leverage_matrix</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s2">&quot;prediction_leverage_matrix&quot;</span><span class="p">,</span> <span class="kc">None</span>
+                <span class="p">),</span>
                 <span class="n">p</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;p&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                 <span class="n">offset</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;offset&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
                 <span class="n">aggregation</span><span class="o">=</span><span class="n">fit_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;aggregation&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">),</span>

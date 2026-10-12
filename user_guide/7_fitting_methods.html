@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../_static/documentation_options.js?v=292eb321"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -443,6 +443,64 @@
 \[T_1(x) = x\]</div>
 <div class="math notranslate nohighlight">
 \[T_{n+1}(x) = 2xT_n(x) - T_{n-1}(x)\]</div>
+<section id="prediction-confidence-widths">
+<h2>Prediction Confidence Widths<a class="headerlink" href="#prediction-confidence-widths" title="Link to this heading">#</a></h2>
+<p>Each fitting method calculates a prediction width, the half-width of its prediction interval. Given a fitted value <span class="math notranslate nohighlight">\(\hat{y}\)</span> and width <span class="math notranslate nohighlight">\(w\)</span>, the interval is</p>
+<div class="math notranslate nohighlight">
+\[
+[\hat{y} - w,\; \hat{y} + w].
+\]</div>
+<p>Here, <span class="math notranslate nohighlight">\(p\)</span> is the requested confidence level and <span class="math notranslate nohighlight">\(n\)</span> is the number of paired observations after time-equivalent grouping and the selected calibration window (<code class="docutils literal notranslate"><span class="pre">tmin</span></code> and <code class="docutils literal notranslate"><span class="pre">tmax</span></code>). The t critical value is written as <span class="math notranslate nohighlight">\(t_{(1+p)/2,\,\nu}\)</span>, where <span class="math notranslate nohighlight">\(\nu\)</span> is the degrees of freedom used by the method.</p>
+<section id="id1">
+<h3>Linear Regression<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<p>For linear regression, residuals are <span class="math notranslate nohighlight">\(r_i = y_i - \hat{y}_i\)</span>, and the implementation calculates the residual standard error as</p>
+<div class="math notranslate nohighlight">
+\[
+s_{\mathrm{lin}} = \sqrt{\frac{1}{n-2}\left(\sum_{i=1}^{n}r_i^2 - \frac{\left[\sum_{i=1}^{n}r_i(x_i-\bar{x})\right]^2}{\sum_{i=1}^{n}(x_i-\bar{x})^2}\right)}.
+\]</div>
+<p>It then uses a single width for every reference value:</p>
+<div class="math notranslate nohighlight">
+\[
+w_{\mathrm{lin}} = t_{(1+p)/2,\,n-1}\,s_{\mathrm{lin}}\sqrt{1+\frac{1}{n}}.
+\]</div>
+<p>Thus, this implementation’s linear prediction width is constant across the reference series. The residual standard error uses <span class="math notranslate nohighlight">\(n-2\)</span> in its calculation, while the t critical value uses <span class="math notranslate nohighlight">\(n-1\)</span> degrees of freedom.</p>
+</section>
+<section id="nth-order-polynomial-fit">
+<h3>Nth-Order Polynomial Fit<a class="headerlink" href="#nth-order-polynomial-fit" title="Link to this heading">#</a></h3>
+<p>For a degree-<span class="math notranslate nohighlight">\(d\)</span> polynomial, the basis vector at reference value <span class="math notranslate nohighlight">\(x\)</span> is</p>
+<div class="math notranslate nohighlight">
+\[
+\boldsymbol{\phi}(x) = [x^d,\,x^{d-1},\,\ldots,\,x,\,1]^\mathsf{T}.
+\]</div>
+<p>Let <span class="math notranslate nohighlight">\(X\)</span> be the design matrix whose rows are the basis vectors for the grouped training reference values. The residual standard error and degrees of freedom are</p>
+<div class="math notranslate nohighlight">
+\[
+s = \sqrt{\frac{\sum_{i=1}^{n}(y_i-\hat{y}_i)^2}{n-d-1}},
+\qquad \nu = n-d-1.
+\]</div>
+<p>For a new reference value <span class="math notranslate nohighlight">\(x_*\)</span>, its leverage and prediction width are</p>
+<div class="math notranslate nohighlight">
+\[
+h(x_*) = \boldsymbol{\phi}(x_*)^\mathsf{T}(X^\mathsf{T}X)^{-1}\boldsymbol{\phi}(x_*),
+\qquad
+w(x_*) = t_{(1+p)/2,\,\nu}\,s\sqrt{1+h(x_*)}.
+\]</div>
+<p>The leverage term makes the interval wider for values that are farther from the training reference values in the polynomial design. The implementation scales the design-matrix columns when calculating the inverse-equivalent operator for numerical stability, and rejects rank-deficient designs.</p>
+</section>
+<section id="chebyshev-polynomial-fit">
+<h3>Chebyshev Polynomial Fit<a class="headerlink" href="#chebyshev-polynomial-fit" title="Link to this heading">#</a></h3>
+<p>The Chebyshev method uses the same residual standard error, degrees of freedom, leverage, and width equations as the Nth-order polynomial method. Its basis vector is instead</p>
+<div class="math notranslate nohighlight">
+\[
+\boldsymbol{\phi}(x) = [T_0(x),\,T_1(x),\,\ldots,\,T_d(x)]^\mathsf{T},
+\]</div>
+<p>where <span class="math notranslate nohighlight">\(T_k(x)\)</span> is the Chebyshev polynomial of degree <span class="math notranslate nohighlight">\(k\)</span>. This basis is used to build <span class="math notranslate nohighlight">\(X\)</span> and evaluate leverage at each prediction value.</p>
+</section>
+<section id="evaluating-new-reference-values">
+<h3>Evaluating New Reference Values<a class="headerlink" href="#evaluating-new-reference-values" title="Link to this heading">#</a></h3>
+<p>The polynomial and Chebyshev fits save the leverage operator calculated from their original grouped training data. <code class="docutils literal notranslate"><span class="pre">FitResultData.get_prediction_constant(ref_series)</span></code> uses that saved operator to calculate widths for supplied reference values, including appended values, without adding them to the training window or refitting. The upper and lower bounds are the fitted values plus or minus those widths, respectively.</p>
+</section>
+</section>
 </section>
 
 
@@ -495,7 +553,16 @@
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Fitting Methods</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#linear-regression">Linear Regression</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#nth-order-polynomial-fitting">Nth Order Polynomial Fitting</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#chebyshev-polynomial-fitting">Chebyshev Polynomial Fitting</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#chebyshev-polynomial-fitting">Chebyshev Polynomial Fitting</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prediction-confidence-widths">Prediction Confidence Widths</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Linear Regression</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#nth-order-polynomial-fit">Nth-Order Polynomial Fit</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chebyshev-polynomial-fit">Chebyshev Polynomial Fit</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluating-new-reference-values">Evaluating New Reference Values</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
   </nav></div>
