@@ -17,7 +17,7 @@ from .constants import (
     tfont,
     tifont,
 )
-from .fitresults import ChebyshevFitResult, FitResultData, NPolyFit
+from .fitresults import Chebyshev, FitResultData, NPolyFit
 from .methods.linregressfit import Linear
 from .methods.timeseries import groupby_time_equivalents
 from .well import Well
@@ -799,7 +799,7 @@ class Plotter:
                 marker=None,
                 label=f"RMSE = {fit.fit_method.rmse:.4f}\ny = {equation}",
             )
-        elif isinstance(fm, ChebyshevFitResult):
+        elif isinstance(fm, Chebyshev):
             coeffs = fm.coefficients
             x = fit.ref_well.timeseries.values
             x_plot = np.linspace(np.min(x), np.max(x), 100)
@@ -821,7 +821,7 @@ class Plotter:
                 color="white",
                 linestyle=None,
                 marker=None,
-                label=f"RMSE = {fit.rmse:.4f}\ny = {equation}",
+                label=f"RMSE = {fit.fit_method.rmse:.4f}\ny = {equation}",
             )
         else:
             logger.error("Fit method not recognized for plotting.")

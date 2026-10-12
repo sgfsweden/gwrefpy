@@ -32,10 +32,10 @@ class NPolyFit(FitMethodBase):
         self.rmse = None
 
     def __str__(self):
-        return f"NPolyFitResult(degree={self.degree}, coefficients={self.coefficients})"
+        return f"NPoly(degree={self.degree}, coefficients={self.coefficients})"
 
     def __repr__(self):
-        return f"NPolyFitResult(degree={self.degree}, coefficients={self.coefficients})"
+        return f"NPoly(degree={self.degree}, coefficients={self.coefficients})"
 
     def fit_str(self):
         fit_lines = [

@@ -5,7 +5,7 @@ from typing import overload
 import pandas as pd
 
 from .fitresults import (
-    ChebyshevFitResult,
+    Chebyshev,
     FitResultData,
     Linear,
     NPolyFit,
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 METHODS = {
     "linearregression": Linear,
     "npolyfit": NPolyFit,
-    "chebyshev": ChebyshevFitResult,
+    "chebyshev": Chebyshev,
 }
 
 # Maps the keys accepted by ``by`` to the attribute of a fit they group on

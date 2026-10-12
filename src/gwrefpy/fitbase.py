@@ -8,7 +8,7 @@ from gwrefpy.methods.common import _validate_input_timeseries
 
 from .fitcollection import METHODS, FitCollection
 from .fitresults import FitResultData
-from .methods.chebyshev import chebyshevfit
+from .methods.chebyshev import Chebyshev
 from .methods.linregressfit import Linear
 from .methods.npolyfit import NPolyFit
 from .methods.timeseries import groupby_time_equivalents
@@ -242,56 +242,27 @@ class FitBase:
         if method == "linearregression":
             logger.debug("Using linear regression method for fitting.")
             fit_method = Linear()
-            fit_method.fit(ref_timeseries, obs_timeseries)
-            fit = FitResultData(
-                obs_well=obs_well,
-                ref_well=ref_well,
-                n=len(obs_timeseries),
-                fit_method=fit_method,
-                p=p,
-                offset=offset,
-                aggregation=aggregation,
-                te_method=te_method,
-                tmin=tmin,
-                tmax=tmax,
-                shift=shift,
-                name=name,
-            )
         elif method == "npolyfit":
             logger.debug("Using Nth degree polynomial fit method for fitting.")
             fit_method = NPolyFit(degree=degree)
-            fit_method.fit(ref_timeseries, obs_timeseries, p=p)
-            fit = FitResultData(
-                obs_well=obs_well,
-                ref_well=ref_well,
-                n=len(obs_timeseries),
-                fit_method=fit_method,
-                p=p,
-                offset=offset,
-                aggregation=aggregation,
-                te_method=te_method,
-                tmin=tmin,
-                tmax=tmax,
-                shift=shift,
-                name=name,
-            )
         elif method == "chebyshev":
             logger.debug("Using Chebyshev polynomial fit method for fitting.")
-            fit = chebyshevfit(
-                obs_well,
-                ref_well,
-                offset,
-                degree,
-                tmin,
-                tmax,
-                shift,
-                name,
-                p,
-                aggregation,
-            )
-        if fit is None:
-            logger.error(f"Fitting method '{method}' is not implemented.")
-            raise NotImplementedError(f"Fitting method '{method}' is not implemented.")
+            fit_method = Chebyshev(degree=degree)
+        fit_method.fit(ref_timeseries, obs_timeseries, p=p)
+        fit = FitResultData(
+            obs_well=obs_well,
+            ref_well=ref_well,
+            n=len(obs_timeseries),
+            fit_method=fit_method,
+            p=p,
+            offset=offset,
+            aggregation=aggregation,
+            te_method=te_method,
+            tmin=tmin,
+            tmax=tmax,
+            shift=shift,
+            name=name,
+        )
 
         self.fits._add_or_replace(fit)
         logger.debug(
