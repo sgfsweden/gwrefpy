@@ -392,7 +392,7 @@ def test_fit_chebyshev_basic(strandangers_model) -> None:
 
 @pytest.mark.parametrize("method", ["npolyfit", "chebyshev"])
 def test_polynomial_prediction_constant_uses_leverage(small_example_model, method):
-    [obs, ref] = small_example_model.get_wells(["obs", "ref"])
+    obs, ref = small_example_model.wells["obs"], small_example_model.wells["ref"]
     result = small_example_model.fit(obs, ref, offset="3.5D", method=method, degree=1)
 
     assert isinstance(result.pred_const, pd.Series)
@@ -454,7 +454,7 @@ def test_polynomial_prediction_constant_uses_leverage(small_example_model, metho
 def test_polynomial_prediction_width_for_appended_reference_data(
     small_example_model, method
 ):
-    [obs, ref] = small_example_model.get_wells(["obs", "ref"])
+    obs, ref = small_example_model.wells["obs"], small_example_model.wells["ref"]
     result = small_example_model.fit(obs, ref, offset="3.5D", method=method, degree=3)
 
     new_index = ref.timeseries.index.max() + pd.Timedelta(days=30)
@@ -478,7 +478,7 @@ def test_polynomial_prediction_width_for_appended_reference_data(
 
 @pytest.mark.parametrize("method", ["npolyfit", "chebyshev"])
 def test_polynomial_fit_rejects_rank_deficient_reference(small_example_model, method):
-    [obs, ref] = small_example_model.get_wells(["obs", "ref"])
+    obs, ref = small_example_model.wells["obs"], small_example_model.wells["ref"]
     index = pd.date_range("2023-01-01", periods=5, freq="D")
     ref.replace_timeseries(pd.Series(np.ones(5), index=index, name="ref"))
     obs.replace_timeseries(

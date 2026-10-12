@@ -36,7 +36,7 @@ def test_save_load_project(tmp_path, strandangers_model):
 def test_save_load_polynomial_prediction_constants(tmp_path, strandangers_model):
     strandangers_model.fit("obs", "ref", offset="3.5D", method="npolyfit", degree=1)
     expected = strandangers_model.fits[0].pred_const
-    ref = strandangers_model.get_wells("ref")
+    ref = strandangers_model.wells["ref"]
     new_index = ref.timeseries.index.max() + pd.Timedelta(days=30)
     ref.append_timeseries(pd.Series([12.0], index=[new_index], name="ref"))
 

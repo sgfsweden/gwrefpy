@@ -491,9 +491,7 @@ class Model(FitBase, Plotter):
                         float_to_datetime(timestamp) for timestamp in pred_const_index
                     ]
                 else:
-                    ref_index = self.wells[
-                        self.well_names.index(fit_data["ref_well"])
-                    ].timeseries.index
+                    ref_index = self.wells[fit_data["ref_well"]].timeseries.index
                     pred_const_index = ref_index[: len(pred_const)]
                 pred_const = pd.Series(pred_const, index=pred_const_index)
             fit = FitResultData(
