@@ -3,6 +3,9 @@ __version__ = "1.0.1"
 
 from .constants import print_constants
 from .fitcollection import FitCollection
+from .methods.chebyshev import Chebyshev
+from .methods.linregressfit import Linear
+from .methods.npolyfit import NPoly
 from .methods.timeseries import analyze_offsets
 from .model import Model
 from .utils import (
@@ -23,4 +26,7 @@ __all__ = [
     "print_constants",
     "datetime_to_float",
     "float_to_datetime",
+    "Linear",
+    "NPoly",
+    "Chebyshev",
 ]

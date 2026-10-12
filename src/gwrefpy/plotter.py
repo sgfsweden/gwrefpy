@@ -17,7 +17,7 @@ from .constants import (
     tfont,
     tifont,
 )
-from .fitresults import Chebyshev, FitResultData, NPolyFit
+from .fitresults import Chebyshev, FitResultData, NPoly
 from .methods.linregressfit import Linear
 from .methods.timeseries import groupby_time_equivalents
 from .well import Well
@@ -777,7 +777,7 @@ class Plotter:
                 f"R$^2$ = {fm.rvalue**2:.4f}\n"
                 f"y = {slope:.4f}x + {intercept:.4f}",
             )
-        elif isinstance(fm, NPolyFit):
+        elif isinstance(fm, NPoly):
             coeffs = fm.coefficients
             x = fit.ref_well.timeseries.values
             x = np.linspace(np.min(x), np.max(x), 100)

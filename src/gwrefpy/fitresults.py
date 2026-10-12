@@ -5,7 +5,7 @@ import pandas as pd
 
 from .methods.chebyshev import Chebyshev
 from .methods.linregressfit import Linear
-from .methods.npolyfit import NPolyFit
+from .methods.npolyfit import NPoly
 from .utils.conversions import datetime_to_float
 from .well import Well
 
@@ -25,7 +25,7 @@ class FitResultData:
         The root mean square error of the fit.
     n : int
         The number of data points used in the fit.
-    fit_method : Linear | NPolyFit | Chebyshev
+    fit_method : Linear | NPoly | Chebyshev
         The method used for fitting (e.g., linreg).
     t_a : float
         The t-value for the given confidence level and degrees of freedom.
@@ -58,7 +58,7 @@ class FitResultData:
         obs_well: Well,
         ref_well: Well,
         n: int,
-        fit_method: Linear | NPolyFit | Chebyshev,
+        fit_method: Linear | NPoly | Chebyshev,
         p: float,
         offset: pd.DateOffset | pd.Timedelta | str,
         aggregation: str,
@@ -361,7 +361,7 @@ class FitResultData:
 
 def _unpack_dict_fit_method(
     data: dict,
-) -> Linear | NPolyFit | Chebyshev:
+) -> Linear | NPoly | Chebyshev:
     """
     Unpack a dictionary representation of a fit method into a Linear object.
 
@@ -372,7 +372,7 @@ def _unpack_dict_fit_method(
 
     Returns
     -------
-    Linear | NPolyFit | Chebyshev
+    Linear | NPoly | Chebyshev
         The unpacked fitting method object.
     """
     fit_method_name = data.get("fit_method", None)
@@ -385,9 +385,9 @@ def _unpack_dict_fit_method(
             pvalue=linreg_data.get("pvalue", 0.0),
             stderr=linreg_data.get("stderr", 0.0),
         )
-    elif fit_method_name == "NPolyFit":
-        npoly_data = data.get("NPolyFit", {})
-        return NPolyFit(
+    elif fit_method_name == "NPoly":
+        npoly_data = data.get("NPoly", {})
+        return NPoly(
             coefficients=np.array(npoly_data.get("coefficients", [])),
         )
     elif fit_method_name == "Chebyshev":

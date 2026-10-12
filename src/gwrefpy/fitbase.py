@@ -4,24 +4,28 @@ from typing import Literal
 
 import pandas as pd
 
-from gwrefpy.methods.common import _validate_input_timeseries
-
 from .fitcollection import METHODS, FitCollection
 from .fitresults import FitResultData
 from .methods.chebyshev import Chebyshev
+from .methods.common import FitMethodBase, _validate_input_timeseries
 from .methods.linregressfit import Linear
-from .methods.npolyfit import NPolyFit
+from .methods.npolyfit import NPoly
 from .methods.timeseries import groupby_time_equivalents
 from .well import Well
 
 logger = logging.getLogger(__name__)
 
 
-def _default_fit_name(obs_well: Well, ref_well: Well, method: str, degree: int) -> str:
-    """Readable default fit name, e.g. ``"obs~ref:npolyfit4"``."""
-    label = method
-    if method in ("npolyfit", "chebyshev"):
-        label += str(degree)
+def _default_fit_name(obs_well: Well, ref_well: Well, method: FitMethodBase) -> str:
+    """Readable default fit name, e.g. ``"obs~ref:NPoly(4)"``."""
+    if isinstance(method, NPoly):
+        label = f"NPoly({method.degree})"
+    elif isinstance(method, Chebyshev):
+        label = f"Chebyshev({method.degree})"
+    elif isinstance(method, Linear):
+        label = "Linear"
+    else:
+        label = method.__class__.__name__.lower()
     return f"{obs_well.name}~{ref_well.name}:{label}"
 
 
@@ -38,9 +42,7 @@ class FitBase:
         offset: pd.DateOffset | pd.Timedelta | str,
         aggregation: Literal["mean", "median", "min", "max"] = "mean",
         p: float = 0.95,
-        method: Literal[
-            "linearregression", "npolyfit", "chebyshev"
-        ] = "linearregression",
+        method: FitMethodBase | None = None,
         tmin: pd.Timestamp | str | None = None,
         tmax: pd.Timestamp | str | None = None,
         shift: pd.Timedelta | str | None = None,
@@ -69,9 +71,10 @@ class FitBase:
             equivalents (default is "mean").
         p : float, optional
             The confidence level for the fit (default is 0.95).
-        method : Literal["linearregression", "npolyfit", "chebyshev"]
+        method : FitMethodBase | None
             Method with which to perform regression. Currently supports
-            linear regression, N-th degree polynomial fit, and Chebyshev polynomial fit.
+            Linear() linear regression, NPoly() N-th degree polynomial fit, and
+            Chebyshev() Chebyshev polynomial fit.
         tmin: pd.Timestamp | str | None = None
             Minimum time for calibration period.
         tmax: pd.Timestamp | str | None = None
@@ -191,9 +194,7 @@ class FitBase:
         ref_well: Well,
         offset: pd.DateOffset | pd.Timedelta | str,
         p: float = 0.95,
-        method: Literal[
-            "linearregression", "npolyfit", "chebyshev"
-        ] = "linearregression",
+        method: FitMethodBase | None = None,
         tmin: pd.Timestamp | str | None = None,
         tmax: pd.Timestamp | str | None = None,
         shift: pd.Timedelta | str | None = None,
@@ -212,9 +213,19 @@ class FitBase:
             logger.error(f"The well '{obs_well.name}' is not an observation well.")
             raise ValueError(f"The well '{obs_well.name}' is not an observation well.")
 
-        degree = kwargs.get("degree", 4)
+        # Check method type
+        if method is None:
+            method = Linear()
+        if not isinstance(method, FitMethodBase):
+            error_msg = (
+                f"Invalid method type: {type(method)}. "
+                "Must be an instance of FitMethodBase."
+            )
+            logger.error(error_msg)
+            raise TypeError(error_msg)
+
         if name is None:
-            name = _default_fit_name(obs_well, ref_well, method, degree)
+            name = _default_fit_name(obs_well, ref_well, method)
 
         # Validate timeseries input
         _validate_input_timeseries(obs_well.timeseries, ref_well.timeseries)
@@ -238,22 +249,12 @@ class FitBase:
             logger.info("tmax is None, setting to max common time of both wells")
             tmax = obs_timeseries.index[-1]
 
-        fit = None
-        if method == "linearregression":
-            logger.debug("Using linear regression method for fitting.")
-            fit_method = Linear()
-        elif method == "npolyfit":
-            logger.debug("Using Nth degree polynomial fit method for fitting.")
-            fit_method = NPolyFit(degree=degree)
-        elif method == "chebyshev":
-            logger.debug("Using Chebyshev polynomial fit method for fitting.")
-            fit_method = Chebyshev(degree=degree)
-        fit_method.fit(ref_timeseries, obs_timeseries, p=p)
+        method.fit(ref_timeseries, obs_timeseries, p=p)
         fit = FitResultData(
             obs_well=obs_well,
             ref_well=ref_well,
             n=len(obs_timeseries),
-            fit_method=fit_method,
+            fit_method=method,
             p=p,
             offset=offset,
             aggregation=aggregation,

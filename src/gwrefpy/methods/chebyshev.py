@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class Chebyshev(FitMethodBase):
-    def __init__(self, degree: int):
+    def __init__(self, degree: int = 4):
         super().__init__()
         self.coefficients = None
         self.degree = degree

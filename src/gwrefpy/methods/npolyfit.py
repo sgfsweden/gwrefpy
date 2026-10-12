@@ -14,13 +14,13 @@ from ..methods.common import (
 logger = logging.getLogger(__name__)
 
 
-class NPolyFit(FitMethodBase):
+class NPoly(FitMethodBase):
     """
     A mixin class that provides Nth degree polynomial fitting functionality to a
     base fit method class.
     """
 
-    def __init__(self, degree: int):
+    def __init__(self, degree: int = 4):
         super().__init__()
         self.coefficients = None
         self.degree = degree
