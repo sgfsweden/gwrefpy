@@ -32,4 +32,4 @@ def float_to_datetime(float_time: float) -> pd.Timestamp:
     pd.Timestamp
         The corresponding datetime object.
     """
-    return pd.to_datetime(float_time, unit="s")
+    return pd.to_datetime(float_time, unit="s").as_unit("us")
