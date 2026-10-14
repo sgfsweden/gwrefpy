@@ -95,10 +95,10 @@ class FitResultData:
             separator,
             f"{'Statistic':<15} {'Value':<12} {'Description'}",
             "-" * 50,
-            f"{'RMSE':<15} {self.fit_method.rmse:<12.4f} Root Mean Square Error",
+            f"{'RMSE':<15} {self.rmse:<12.4f} Root Mean Square Error",
             *fit_lines,
             f"{'N':<15} {self.n:<12d} Number of Data Points",
-            f"{'Std Error':<15} {self.fit_method.stderr:<12.4f} Standard Error",
+            f"{'Std Error':<15} {self.stderr:<12.4f} Standard Error",
             f"{'Confidence':<15} {self.p * 100:<12.1f}% Confidence Level",
             "",
             f"Calibration Period: {self.tmin} to {self.tmax}",
@@ -129,7 +129,7 @@ class FitResultData:
                             <tbody>
                                 <tr>
                                     <td>RMSE</td>
-                                    <td>{self.fit_method.rmse:.4f}</td>
+                                    <td>{self.rmse:.4f}</td>
                                     <td>Root Mean Square Error</td>
                                 </tr>
                                 {"".join(fit_lines)}
@@ -140,7 +140,7 @@ class FitResultData:
                                 </tr>
                                 <tr>
                                     <td>Std Error</td>
-                                    <td>{self.fit_method.stderr:.4f}</td>
+                                    <td>{self.stderr:.4f}</td>
                                     <td>Standard Error</td>
                                 </tr>
                                 <tr>
