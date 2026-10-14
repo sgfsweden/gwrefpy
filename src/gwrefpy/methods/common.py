@@ -1,4 +1,7 @@
+from abc import ABC, abstractmethod
+
 import numpy as np
+import pandas as pd
 import scipy as sp
 
 
@@ -16,7 +19,7 @@ def _get_gwrefs_stats(p, n, stderr):
     return pc, ta
 
 
-def _get_gwrefs_polyfit_stats(p, n, stderr, training_matrix, prediction_matrix):
+def _get_gwrefs_polyfit_stats(p, n, training_matrix):
     degrees_freedom = n - training_matrix.shape[1]
     ta = _t_inv((1 - p) / 2, degrees_freedom)
 
@@ -27,11 +30,7 @@ def _get_gwrefs_polyfit_stats(p, n, stderr, training_matrix, prediction_matrix):
     leverage_operator = (scaled_training_pinv @ scaled_training_pinv.T) / np.outer(
         column_scales, column_scales
     )
-    leverage = np.einsum(
-        "ij,jk,ik->i", prediction_matrix, leverage_operator, prediction_matrix
-    )
-    pred_const = ta * stderr * np.sqrt(1 + leverage)
-    return pred_const, ta, leverage_operator
+    return ta, leverage_operator
 
 
 def compute_polyfit_residual_std_error(y, y_pred, n, degree):
@@ -107,3 +106,70 @@ def _validate_input_timeseries(obs_timeseries, ref_timeseries):
         raise ValueError("The reference time series is empty.")
     if obs_timeseries.equals(ref_timeseries):
         raise ValueError("The observation and reference time series are identical.")
+
+
+class FitMethodBase(ABC):
+    """
+    Abstract base class for fit methods.
+    """
+
+    @abstractmethod
+    def __str__(self):
+        """
+        Returns a string representation of the fit method.
+        """
+        pass
+
+    @abstractmethod
+    def __repr__(self):
+        """
+        Returns a string representation of the fit method.
+        """
+        pass
+
+    @abstractmethod
+    def fit_str(self):
+        """
+        Returns a string representation of the fit results.
+        """
+        pass
+
+    @abstractmethod
+    def html_fit_str(self):
+        """
+        Returns an HTML representation of the fit results.
+        """
+        pass
+
+    @abstractmethod
+    def fit_timeseries(self, timeseries: pd.Series) -> pd.Series:
+        """
+        Apply the fit to a time series and return the fitted values.
+        """
+        pass
+
+    @abstractmethod
+    def fit(self, obs_timeseries: pd.Series, ref_timeseries: pd.Series) -> None:
+        """
+        Fit the model to the data.
+        """
+        pass
+
+    @abstractmethod
+    def get_prediction_constant(
+        self, ref_series: pd.Series | None = None
+    ) -> float | pd.Series:
+        """Calculate prediction widths using the fit's original training data."""
+        pass
+
+    @abstractmethod
+    def to_dict(self) -> dict:
+        """
+        Convert the fit method-specific attributes to a dictionary.
+
+        Returns
+        -------
+        dict
+            A dictionary representation of the fit method-specific attributes.
+        """
+        pass

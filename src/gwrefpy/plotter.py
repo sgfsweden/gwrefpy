@@ -17,7 +17,8 @@ from .constants import (
     tfont,
     tifont,
 )
-from .fitresults import ChebyshevFitResult, FitResultData, LinRegResult, NPolyFitResult
+from .fitresults import Chebyshev, FitResultData, NPoly
+from .methods.linregressfit import Linear
 from .methods.timeseries import groupby_time_equivalents
 from .well import Well
 from .wellcollection import WellCollection
@@ -762,7 +763,7 @@ class Plotter:
     def _plot_fitmethod(self, fit, ax):
         """Plot the fit method for a single fit."""
         fm = fit.fit_method
-        if isinstance(fm, LinRegResult):
+        if isinstance(fm, Linear):
             slope = fm.slope
             intercept = fm.intercept
             x = fit.ref_well.timeseries.values
@@ -775,11 +776,11 @@ class Plotter:
                 color="white",
                 linestyle=None,
                 marker=None,
-                label=f"RMSE = {fit.rmse:.4f}\n"
+                label=f"RMSE = {fm.rmse:.4f}\n"
                 f"R$^2$ = {fm.rvalue**2:.4f}\n"
                 f"y = {slope:.4f}x + {intercept:.4f}",
             )
-        elif isinstance(fm, NPolyFitResult):
+        elif isinstance(fm, NPoly):
             coeffs = fm.coefficients
             x = fit.ref_well.timeseries.values
             x = np.linspace(np.min(x), np.max(x), 100)
@@ -799,9 +800,9 @@ class Plotter:
                 color="white",
                 linestyle=None,
                 marker=None,
-                label=f"RMSE = {fit.rmse:.4f}\ny = {equation}",
+                label=f"RMSE = {fit.fit_method.rmse:.4f}\ny = {equation}",
             )
-        elif isinstance(fm, ChebyshevFitResult):
+        elif isinstance(fm, Chebyshev):
             coeffs = fm.coefficients
             x = fit.ref_well.timeseries.values
             x_plot = np.linspace(np.min(x), np.max(x), 100)
@@ -823,7 +824,7 @@ class Plotter:
                 color="white",
                 linestyle=None,
                 marker=None,
-                label=f"RMSE = {fit.rmse:.4f}\ny = {equation}",
+                label=f"RMSE = {fit.fit_method.rmse:.4f}\ny = {equation}",
             )
         else:
             logger.error("Fit method not recognized for plotting.")

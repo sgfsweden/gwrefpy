@@ -6,9 +6,11 @@ import pandas as pd
 
 from .fitcollection import METHODS, FitCollection
 from .fitresults import FitResultData
-from .methods.chebyshev import chebyshevfit
-from .methods.linregressfit import linregressfit
-from .methods.npolyfit import npolyfit
+from .methods.chebyshev import Chebyshev
+from .methods.common import FitMethodBase, _validate_input_timeseries
+from .methods.linregressfit import Linear
+from .methods.npolyfit import NPoly
+from .methods.timeseries import groupby_time_equivalents
 from .well import Well
 
 if TYPE_CHECKING:
@@ -17,11 +19,16 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _default_fit_name(obs_well: Well, ref_well: Well, method: str, degree: int) -> str:
-    """Readable default fit name, e.g. ``"obs~ref:npolyfit4"``."""
-    label = method
-    if method in ("npolyfit", "chebyshev"):
-        label += str(degree)
+def _default_fit_name(obs_well: Well, ref_well: Well, method: FitMethodBase) -> str:
+    """Readable default fit name, e.g. ``"obs~ref:NPoly(4)"``."""
+    if isinstance(method, NPoly):
+        label = f"NPoly({method.degree})"
+    elif isinstance(method, Chebyshev):
+        label = f"Chebyshev({method.degree})"
+    elif isinstance(method, Linear):
+        label = "Linear"
+    else:
+        label = method.__class__.__name__.lower()
     return f"{obs_well.name}~{ref_well.name}:{label}"
 
 
@@ -40,9 +47,7 @@ class FitBase:
         offset: pd.DateOffset | pd.Timedelta | str,
         aggregation: Literal["mean", "median", "min", "max"] = "mean",
         p: float = 0.95,
-        method: Literal[
-            "linearregression", "npolyfit", "chebyshev"
-        ] = "linearregression",
+        method: FitMethodBase | None = None,
         tmin: pd.Timestamp | str | None = None,
         tmax: pd.Timestamp | str | None = None,
         shift: pd.Timedelta | str | None = None,
@@ -71,9 +76,10 @@ class FitBase:
             equivalents (default is "mean").
         p : float, optional
             The confidence level for the fit (default is 0.95).
-        method : Literal["linearregression", "npolyfit", "chebyshev"]
+        method : FitMethodBase | None
             Method with which to perform regression. Currently supports
-            linear regression, N-th degree polynomial fit, and Chebyshev polynomial fit.
+            Linear() linear regression, NPoly() N-th degree polynomial fit, and
+            Chebyshev() Chebyshev polynomial fit.
         tmin: pd.Timestamp | str | None = None
             Minimum time for calibration period.
         tmax: pd.Timestamp | str | None = None
@@ -193,14 +199,13 @@ class FitBase:
         ref_well: Well,
         offset: pd.DateOffset | pd.Timedelta | str,
         p: float = 0.95,
-        method: Literal[
-            "linearregression", "npolyfit", "chebyshev"
-        ] = "linearregression",
+        method: FitMethodBase | None = None,
         tmin: pd.Timestamp | str | None = None,
         tmax: pd.Timestamp | str | None = None,
         shift: pd.Timedelta | str | None = None,
         name: str | None = None,
         aggregation: Literal["mean", "median", "min", "max"] = "mean",
+        te_method: Literal["anchor", "consecutive"] = "anchor",
         **kwargs,
     ) -> FitResultData:
         # Check that the ref_well is a reference well
@@ -213,59 +218,69 @@ class FitBase:
             logger.error(f"The well '{obs_well.name}' is not an observation well.")
             raise ValueError(f"The well '{obs_well.name}' is not an observation well.")
 
-        degree = kwargs.get("degree", 4)
-        if name is None:
-            name = _default_fit_name(obs_well, ref_well, method, degree)
+        # Check method type
+        if method is None:
+            method = Linear()
+        if not isinstance(method, FitMethodBase):
+            error_msg = (
+                f"Invalid method type: {type(method)}. "
+                "Must be an instance of FitMethodBase."
+            )
+            logger.error(error_msg)
+            raise TypeError(error_msg)
 
-        fit = None
-        if method == "linearregression":
-            logger.debug("Using linear regression method for fitting.")
-            fit = linregressfit(
-                obs_well, ref_well, offset, tmin, tmax, shift, name, p, aggregation
-            )
-        elif method == "npolyfit":
-            logger.debug("Using Nth degree polynomial fit method for fitting.")
-            fit = npolyfit(
-                obs_well,
-                ref_well,
-                offset,
-                degree,
-                tmin,
-                tmax,
-                shift,
-                name,
-                p,
-                aggregation,
-            )
-        elif method == "chebyshev":
-            logger.debug("Using Chebyshev polynomial fit method for fitting.")
-            fit = chebyshevfit(
-                obs_well,
-                ref_well,
-                offset,
-                degree,
-                tmin,
-                tmax,
-                shift,
-                name,
-                p,
-                aggregation,
-            )
-        if fit is None:
-            logger.error(f"Fitting method '{method}' is not implemented.")
-            raise NotImplementedError(f"Fitting method '{method}' is not implemented.")
+        if name is None:
+            name = _default_fit_name(obs_well, ref_well, method)
+
+        # Validate timeseries input
+        _validate_input_timeseries(obs_well.timeseries, ref_well.timeseries)
+
+        if shift is not None:
+            obs_timeseries = obs_well.shift_timeseries(shift)
+        else:
+            obs_timeseries = obs_well.timeseries
+
+        ref_timeseries, obs_timeseries, n = groupby_time_equivalents(
+            obs_timeseries.loc[tmin:tmax],
+            ref_well.timeseries.loc[tmin:tmax],
+            offset,
+            aggregation,
+            te_method,
+        )
+        if tmin is None:
+            logger.info("tmin is None, setting to min common time of both wells")
+            tmin = obs_timeseries.index[0]
+        if tmax is None:
+            logger.info("tmax is None, setting to max common time of both wells")
+            tmax = obs_timeseries.index[-1]
+
+        method.fit(obs_timeseries, ref_timeseries, p=p)
+        fit = FitResultData(
+            obs_well=obs_well,
+            ref_well=ref_well,
+            n=len(obs_timeseries),
+            fit_method=method,
+            p=p,
+            offset=offset,
+            aggregation=aggregation,
+            te_method=te_method,
+            tmin=tmin,
+            tmax=tmax,
+            shift=shift,
+            name=name,
+        )
 
         self.fits._add_or_replace(fit)
-        logger.debug(f"Fit completed for model '{self.name}' with RMSE {fit.rmse}.")
+        logger.debug(
+            f"Fit completed for model '{self.name}' with RMSE {fit.fit_method.rmse}."
+        )
         return fit
 
     def best_fit(
         self,
         obs_well: str | Well,
         ref_wells: list[str | Well] | None = None,
-        method: Literal[
-            "linearregression", "npolyfit", "chebyshev"
-        ] = "linearregression",
+        method: type[FitMethodBase] | None = None,
         skip_raise_error: bool = False,
         **kwargs,
     ) -> FitResultData:
@@ -281,9 +296,8 @@ class FitBase:
         ref_wells : Well or list of Well or None, optional
             The reference wells to test. If None, all reference wells in the
             model will be used (default is None).
-        method : Literal["linearregression", "npolyfit", "chebyshev"]
-            Method with which to perform regression. Currently only supports
-            linear regression.
+        method : type[FitMethodBase] | None, optional
+            Method with which to perform regression.
         skip_raise_error: bool, optional
             If True, will skip wells that raise exceptions during fitting and continue.
             If False, will raise the exception and stop execution (default is False).
@@ -304,9 +318,7 @@ class FitBase:
         self,
         obs_well: str | Well,
         ref_wells: list[str | Well] | None = None,
-        method: Literal[
-            "linearregression", "npolyfit", "chebyshev"
-        ] = "linearregression",
+        method: type[FitMethodBase] | None = None,
         skip_raise_error: bool = False,
         **kwargs,
     ) -> FitResultData:
@@ -320,9 +332,8 @@ class FitBase:
         ref_wells : Well or list of Well or None, optional
             The reference wells to test. If None, all reference wells in the
             model will be used (default is None).
-        method : Literal["linearregression", "npolyfit", "chebyshev"]
-            Method with which to perform regression. Currently only supports
-            linear regression.
+        method : type[FitMethodBase] | None, optional
+            Method with which to perform regression.
         skip_raise_error: bool, optional
             If True, will skip wells that raise exceptions during fitting and continue.
             If False, will raise the exception and stop execution (default is False).
@@ -409,7 +420,7 @@ class FitBase:
                 f"with the provided reference wells."
             )
 
-        return min(local_fits, key=lambda x: x.rmse)
+        return min(local_fits, key=lambda x: x.fit_method.rmse)
 
     def get_fits(
         self, well: Well | str, method: str | None = None

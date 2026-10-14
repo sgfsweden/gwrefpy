@@ -3,145 +3,179 @@ import logging
 import numpy as np
 import pandas as pd
 
-from ..fitresults import FitResultData, NPolyFitResult
 from ..methods.common import (
+    FitMethodBase,
     _get_gwrefs_polyfit_stats,
     _validate_fit_rank,
-    _validate_input_timeseries,
     _validate_timeseries_len,
     compute_polyfit_residual_std_error,
 )
-from ..methods.timeseries import groupby_time_equivalents
-from ..well import Well
 
 logger = logging.getLogger(__name__)
 
 
-def npolyfit(
-    obs_well: Well,
-    ref_well: Well,
-    offset: pd.DateOffset | pd.Timedelta | str,
-    degree: int,
-    tmin: pd.Timestamp | str | None = None,
-    tmax: pd.Timestamp | str | None = None,
-    shift: pd.Timedelta | str | None = None,
-    name: str | None = None,
-    p=0.95,
-    aggregation="mean",
-    te_method="anchor",
-) -> FitResultData:
+class NPoly(FitMethodBase):
     """
-    Perform Nth degree polynomial fit between reference and observation well time
-    series.
-
-    Parameters
-    ----------
-    obs_well : Well
-        The observation well object containing the time series data.
-    ref_well : Well
-        The reference well object containing the time series data.
-    offset: pd.DateOffset | pd.Timedelta | str
-        The offset to apply when grouping the time series into time equivalents.
-    degree : int
-        The degree of the polynomial fit.
-    tmin: pd.Timestamp | str | None = None
-        The minimum timestamp for the calibration period.
-    tmax: pd.Timestamp | str | None = None
-        The maximum timestamp for the calibration period.
-    shift : pd.Timedelta | str | None, optional
-        An optional time shift to apply to the observation well time series before
-        fitting.
-    name: str | None = None
-        An optional name for the fit result.
-    p : float, optional
-        The confidence level for the prediction interval (default is 0.95).
-    aggregation : str, optional
-        The aggregation method to use when grouping data points within time
-        equivalents (default is "mean"). Can be "mean", "median", "min", or "max".
-    te_method : str, optional
-        The time equivalent grouping method (default is "anchor"). Can be "anchor"
-        or "consecutive".
-
-    Returns
-    -------
-    fit_result : FitResultData
-        A `FitResultData` object containing the results of the polynomial fit.
-
-    References
-    ----------
-    .. [1] numpy.polyfit documentation:
-       https://numpy.org/doc/stable/reference/generated/numpy.polyfit.html
+    A mixin class that provides Nth degree polynomial fitting functionality to a
+    base fit method class.
     """
 
-    # Validate timeseries input
-    _validate_input_timeseries(obs_well.timeseries, ref_well.timeseries)
+    def __init__(self, degree: int = 4):
+        super().__init__()
+        self.coefficients = None
+        self.degree = degree
+        self.rvalue = None
+        self.rank = None
+        self.stderr = None
+        self.leverage_operator = None
+        self.t_a = None
+        self.rmse = None
 
-    if shift is not None:
-        obs_timeseries = obs_well.shift_timeseries(shift)
-    else:
-        obs_timeseries = obs_well.timeseries
+    def __str__(self):
+        return f"NPoly(degree={self.degree}, coefficients={self.coefficients})"
 
-    ref_timeseries, obs_timeseries, n = groupby_time_equivalents(
-        obs_timeseries.loc[tmin:tmax],
-        ref_well.timeseries.loc[tmin:tmax],
-        offset,
-        aggregation,
-        te_method,
-    )
+    def __repr__(self):
+        return f"NPoly(degree={self.degree}, coefficients={self.coefficients})"
 
-    _validate_timeseries_len(n, degree, "Polynomial Fit")
+    def fit_str(self):
+        fit_lines = [
+            f"{'Degree':<15} {self.degree:<12d} Degree of Polynomial Fit",
+            *[
+                f"{'Coefficient ' + str(i):<15} {coef:<12.4f} Polynomial Coefficient"
+                for i, coef in enumerate(self.coefficients)
+            ],
+        ]
+        return fit_lines
 
-    # Perform Nth degree polynomial fit
-    coefficients, residuals, rank, singular_values, rcond = np.polyfit(
-        ref_timeseries.values, obs_timeseries.values, degree, full=True
-    )
-    _validate_fit_rank(rank, degree, "Polynomial Fit")
-    nfit = NPolyFitResult(coefficients=coefficients)
+    def html_fit_str(self):
+        return f"""
+                <tr>
+                    <td>Degree</td>
+                    <td>{self.degree}</td>
+                    <td>Degree of Polynomial Fit</td>
+                </tr>
+                {
+            "".join(
+                [
+                    f"<tr><td>Coefficient {i}</td>"
+                    f"<td>{coef:.4f}</td>"
+                    f"<td>Polynomial Coefficient</td>"
+                    f"</tr>"
+                    for i, coef in enumerate(self.coefficients)
+                ]
+            )
+        }
+                """
 
-    # Compute residual standard error
-    stderr = compute_polyfit_residual_std_error(
-        obs_timeseries.values,
-        np.polyval(coefficients, ref_timeseries.values),
-        n,
-        degree,
-    )
-    training_matrix = np.vander(ref_timeseries.values, degree + 1)
-    prediction_matrix = np.vander(ref_well.timeseries.values, degree + 1)
-    pred_const_values, t_a, leverage_operator = _get_gwrefs_polyfit_stats(
-        p, n, stderr, training_matrix, prediction_matrix
-    )
-    pred_const = pd.Series(pred_const_values, index=ref_well.timeseries.index)
-    rmse = np.sqrt(
-        np.mean(
-            (obs_timeseries.values - np.polyval(coefficients, ref_timeseries.values))
-            ** 2
+    def fit_timeseries(self, timeseries: pd.Series) -> pd.Series:
+        """
+        Apply the polynomial fit to a given series.
+
+        Parameters
+        ----------
+        timeseries : pd.Series
+            The input series to apply the fit to.
+
+        Returns
+        -------
+        pd.Series
+            The fitted values based on the input series.
+        """
+        return timeseries.apply(lambda x: np.polyval(self.coefficients, x))
+
+    def to_dict(self) -> dict:
+        """
+        Convert the NPolyFitResult object to a dictionary.
+
+        Returns
+        -------
+        dict
+            A dictionary representation of the NPolyFitResult object.
+        """
+        return {
+            "coefficients": self.coefficients.tolist(),
+        }
+
+    def fit(
+        self,
+        obs_timeseries: pd.Series,
+        ref_timeseries: pd.Series,
+        p=0.95,
+    ):
+        """
+        Perform Nth degree polynomial fit between reference and observation well time
+        series.
+
+        Parameters
+        ----------
+        obs_timeseries : pd.Series
+            The observation time series data.
+        ref_timeseries : pd.Series
+            The reference time series data.
+        p : float, optional
+            The confidence level for the prediction interval (default is 0.95).
+
+        Returns
+        -------
+        None
+            The method updates the instance attributes with the fit results.
+
+        References
+        ----------
+        .. [1] numpy.polyfit documentation:
+        https://numpy.org/doc/stable/reference/generated/numpy.polyfit.html
+        """
+
+        # Validate timeseries input
+        n = len(obs_timeseries)
+        _validate_timeseries_len(n, self.degree, "Polynomial Fit")
+
+        # Perform Nth degree polynomial fit
+        coefficients, residuals, rank, singular_values, rcond = np.polyfit(
+            ref_timeseries.values, obs_timeseries.values, self.degree, full=True
         )
-    )
+        _validate_fit_rank(rank, self.degree, "Polynomial Fit")
 
-    # Create and return a FitResultData object with the regression results
-    if tmin is None:
-        logger.warning("tmin is None, setting to min common time of both wells")
-        tmin = max(obs_well.timeseries.index.min(), ref_well.timeseries.index.min())
-    if tmax is None:
-        logger.warning("tmax is None, setting to max common time of both wells")
-        tmax = min(obs_well.timeseries.index.max(), ref_well.timeseries.index.max())
-    fit_result = FitResultData(
-        obs_well=obs_well,
-        ref_well=ref_well,
-        rmse=rmse,
-        n=n,
-        fit_method=nfit,
-        t_a=t_a,
-        stderr=stderr,
-        pred_const=pred_const,
-        prediction_leverage_matrix=leverage_operator,
-        p=p,
-        offset=offset,
-        aggregation=aggregation,
-        te_method=te_method,
-        tmin=tmin,
-        tmax=tmax,
-        shift=shift,
-        name=name,
-    )
-    return fit_result
+        # Compute residual standard error
+        stderr = compute_polyfit_residual_std_error(
+            obs_timeseries.values,
+            np.polyval(coefficients, ref_timeseries.values),
+            n,
+            self.degree,
+        )
+        training_matrix = np.vander(ref_timeseries.values, self.degree + 1)
+        t_a, leverage_operator = _get_gwrefs_polyfit_stats(p, n, training_matrix)
+        rmse = np.sqrt(
+            np.mean(
+                (
+                    obs_timeseries.values
+                    - np.polyval(coefficients, ref_timeseries.values)
+                )
+                ** 2
+            )
+        )
+        ss_total = np.sum((obs_timeseries.values - np.mean(obs_timeseries.values)) ** 2)
+        r_squared = 1 - (residuals / ss_total)
+
+        # Store the results in the instance attributes
+        self.coefficients = coefficients
+        self.rvalue = r_squared
+        self.rank = rank
+        self.stderr = stderr
+        self.leverage_operator = leverage_operator
+        self.t_a = t_a
+        self.rmse = rmse
+
+    def get_prediction_constant(self, ref_series: pd.Series) -> float | pd.Series:
+        """Calculate prediction widths using the fit's original training data."""
+
+        design_matrix = np.vander(ref_series.to_numpy(), len(self.coefficients))
+
+        leverage = np.einsum(
+            "ij,jk,ik->i",
+            design_matrix,
+            self.leverage_operator,
+            design_matrix,
+        )
+        widths = self.t_a * self.stderr * np.sqrt(1 + leverage)
+        return pd.Series(widths, index=ref_series.index, name="pred_const")
