@@ -169,6 +169,22 @@ class FitResultData:
             f"rmse={self.fit_method.rmse:.4f}, n={self.n})"
         )
 
+    @property
+    def rmse(self):
+        return self.fit_method.rmse
+
+    @property
+    def rvalue(self):
+        return self.fit_method.rvalue
+
+    @property
+    def stderr(self):
+        return self.fit_method.stderr
+
+    @property
+    def t_a(self):
+        return self.fit_method.t_a
+
     def fit_timeseries(self, ref_series: pd.Series | None = None) -> pd.Series:
         """
         Apply the fit method to a reference time series to get the fitted values.
