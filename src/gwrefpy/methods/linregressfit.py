@@ -33,21 +33,15 @@ class Linear(FitMethodBase):
         Perform linear regression fit between reference and observation well
         time series.
     """
+    _scalar_keys = ("slope", "intercept", "rvalue", "pvalue", "stderr", "pred_const", "t_a", "rmse")
+    _array_keys = ()
 
     def __init__(self):
         super().__init__()
         self.slope = None
         self.intercept = None
-        self.rvalue = None
         self.pvalue = None
-        self.stderr = None
-
-        # Prediction interval constants
         self.pred_const = None
-        self.t_a = None
-
-        # Root Mean Square Error
-        self.rmse = None
 
     def __str__(self):
         return (
@@ -102,22 +96,6 @@ class Linear(FitMethodBase):
             </tr>
             """
 
-    def to_dict(self) -> dict:
-        """
-        Convert the Linear object to a dictionary.
-
-        Returns
-        -------
-        dict
-            A dictionary representation of the Linear object.
-        """
-        return {
-            "slope": self.slope,
-            "intercept": self.intercept,
-            "rvalue": self.rvalue,
-            "pvalue": self.pvalue,
-            "stderr": self.stderr,
-        }
 
     def fit(
         self,

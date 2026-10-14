@@ -112,6 +112,15 @@ class FitMethodBase(ABC):
     """
     Abstract base class for fit methods.
     """
+    _scalar_keys = ()
+    _array_keys = ()
+
+    def __init__(self):
+        # Common attributes
+        self.rvalue = None
+        self.stderr = None
+        self.t_a = None
+        self.rmse = None
 
     @abstractmethod
     def __str__(self):
@@ -162,14 +171,31 @@ class FitMethodBase(ABC):
         """Calculate prediction widths using the fit's original training data."""
         pass
 
-    @abstractmethod
+
     def to_dict(self) -> dict:
         """
-        Convert the fit method-specific attributes to a dictionary.
-
-        Returns
-        -------
-        dict
-            A dictionary representation of the fit method-specific attributes.
+        Conver the class to a dictonary based on keys.
         """
-        pass
+        result = {key: getattr(self, key) for key in self._scalar_keys}
+        
+        for key in self._array_keys:
+            value = getattr(self, key)
+            result[key] = value.tolist() if value is not None else None
+            
+        return result
+
+    @classmethod
+    def from_dict(cls, data: dict):
+        """Create a new instance from a dictonary and keys"""
+        # create an instance
+        instance = cls.__new__(cls) 
+
+        for key in cls._scalar_keys:
+            setattr(instance, key, data.get(key))
+
+        for key in cls._array_keys:
+            value = data.get(key)
+            setattr(instance, key, np.array(value) if value is not None else None)
+
+        return instance
+

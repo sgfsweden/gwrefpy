@@ -15,16 +15,14 @@ logger = logging.getLogger(__name__)
 
 
 class Chebyshev(FitMethodBase):
+    _scalar_keys = ("degree", "rvalue", "rank", "stderr", "t_a", "rmse")
+    _array_keys = ("coefficients", "leverage_operator")
     def __init__(self, degree: int = 4):
         super().__init__()
         self.coefficients = None
         self.degree = degree
-        self.rvalue = None
         self.rank = None
-        self.stderr = None
         self.leverage_operator = None
-        self.t_a = None
-        self.rmse = None
 
     def __str__(self):
         return f"Chebyshev(degree={self.degree}, coefficients={self.coefficients})"
@@ -83,18 +81,6 @@ class Chebyshev(FitMethodBase):
             )
         )
 
-    def to_dict(self) -> dict:
-        """
-        Convert the ChebyshevFitResult object to a dictionary.
-
-        Returns
-        -------
-        dict
-            A dictionary representation of the ChebyshevFitResult object.
-        """
-        return {
-            "coefficients": self.coefficients.tolist(),
-        }
 
     def fit(
         self,

@@ -469,22 +469,12 @@ def _unpack_dict_fit_method(
     fit_method_name = data.get("fit_method", None)
     if fit_method_name == "Linear":
         linreg_data = data.get("Linear", {})
-        return Linear(
-            slope=linreg_data.get("slope", 0.0),
-            intercept=linreg_data.get("intercept", 0.0),
-            rvalue=linreg_data.get("rvalue", 0.0),
-            pvalue=linreg_data.get("pvalue", 0.0),
-            stderr=linreg_data.get("stderr", 0.0),
-        )
+        return Linear.from_dict(linreg_data)
     elif fit_method_name == "NPoly":
         npoly_data = data.get("NPoly", {})
-        return NPoly(
-            coefficients=np.array(npoly_data.get("coefficients", [])),
-        )
+        return NPoly.from_dict(npoly_data)
     elif fit_method_name == "Chebyshev":
         chebyshev_data = data.get("Chebyshev", {})
-        return Chebyshev(
-            coefficients=np.array(chebyshev_data.get("coefficients", [])),
-        )
+        return Chebyshev.from_dict(chebyshev_data)
     else:
         raise ValueError(f"Unsupported fit method: {fit_method_name}")
