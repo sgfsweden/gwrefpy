@@ -175,7 +175,7 @@ class Linear(FitMethodBase):
         self.intercept = res.intercept
         self.rvalue = res.rvalue
         self.pvalue = res.pvalue
-        self.stderr = res.stderr
+        self.stderr = stderr
         self.pred_const = pred_const
         self.t_a = t_a
         self.rmse = rmse
