@@ -149,7 +149,7 @@ class FitMethodBase(ABC):
         pass
 
     @abstractmethod
-    def fit(self, ref_timeseries: pd.Series, obs_timeseries: pd.Series) -> None:
+    def fit(self, obs_timeseries: pd.Series, ref_timeseries: pd.Series) -> None:
         """
         Fit the model to the data.
         """

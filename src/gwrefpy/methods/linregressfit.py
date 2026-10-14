@@ -121,8 +121,8 @@ class Linear(FitMethodBase):
 
     def fit(
         self,
-        ref_timeseries: pd.Series,
         obs_timeseries: pd.Series,
+        ref_timeseries: pd.Series,
         p: float = 0.95,
     ):
         """

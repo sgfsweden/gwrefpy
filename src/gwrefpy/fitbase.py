@@ -249,7 +249,7 @@ class FitBase:
             logger.info("tmax is None, setting to max common time of both wells")
             tmax = obs_timeseries.index[-1]
 
-        method.fit(ref_timeseries, obs_timeseries, p=p)
+        method.fit(obs_timeseries, ref_timeseries, p=p)
         fit = FitResultData(
             obs_well=obs_well,
             ref_well=ref_well,
