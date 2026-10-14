@@ -27,21 +27,10 @@ class FitResultData:
         The reference well object containing the time series data.
     obs_well : Well
         The observation well object containing the time series data.
-    rmse : float
-        The root mean square error of the fit.
     n : int
         The number of data points used in the fit.
     fit_method : Linear | NPoly | Chebyshev
         The method used for fitting (e.g., linreg).
-    t_a : float
-        The t-value for the given confidence level and degrees of freedom.
-    stderr : float
-        The standard error of the regression.
-    pred_const : float | pd.Series
-        The prediction constant for the confidence interval. Polynomial fits use a
-        value for each reference time-series point.
-    prediction_leverage_matrix : np.ndarray | None
-        The leverage operator derived from the training data for polynomial fits.
     p : float
         The confidence level used in the fit.
     offset: pd.DateOffset | pd.Timedelta | str
@@ -106,10 +95,10 @@ class FitResultData:
             separator,
             f"{'Statistic':<15} {'Value':<12} {'Description'}",
             "-" * 50,
-            f"{'RMSE':<15} {self.rmse:<12.4f} Root Mean Square Error",
+            f"{'RMSE':<15} {self.fit_method.rmse:<12.4f} Root Mean Square Error",
             *fit_lines,
             f"{'N':<15} {self.n:<12d} Number of Data Points",
-            f"{'Std Error':<15} {self.stderr:<12.4f} Standard Error",
+            f"{'Std Error':<15} {self.fit_method.stderr:<12.4f} Standard Error",
             f"{'Confidence':<15} {self.p * 100:<12.1f}% Confidence Level",
             "",
             f"Calibration Period: {self.tmin} to {self.tmax}",
@@ -140,7 +129,7 @@ class FitResultData:
                             <tbody>
                                 <tr>
                                     <td>RMSE</td>
-                                    <td>{self.rmse:.4f}</td>
+                                    <td>{self.fit_method.rmse:.4f}</td>
                                     <td>Root Mean Square Error</td>
                                 </tr>
                                 {"".join(fit_lines)}
@@ -151,7 +140,7 @@ class FitResultData:
                                 </tr>
                                 <tr>
                                     <td>Std Error</td>
-                                    <td>{self.stderr:.4f}</td>
+                                    <td>{self.fit_method.stderr:.4f}</td>
                                     <td>Standard Error</td>
                                 </tr>
                                 <tr>
@@ -177,7 +166,7 @@ class FitResultData:
         return (
             f"FitResultData(ref_well='{self.ref_well.name}', "
             f"obs_well='{self.obs_well.name}', "
-            f"rmse={self.rmse:.4f}, n={self.n})"
+            f"rmse={self.fit_method.rmse:.4f}, n={self.n})"
         )
 
     def fit_timeseries(self, ref_series: pd.Series | None = None) -> pd.Series:
