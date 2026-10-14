@@ -153,11 +153,11 @@ class Linear(FitMethodBase):
         _validate_timeseries_len(n, 1, "Linear Regression")
 
         # Fit the linear regression model using scipy.stats.linregress
-        res = sp.stats.linregress(ref_timeseries, obs_timeseries)
+        res = sp.stats.linregress(obs_timeseries, ref_timeseries)
 
         # Compute the residual standard error
         stderr = compute_residual_std_error(
-            ref_timeseries, obs_timeseries, n, lambda x: res.slope * x + res.intercept
+            obs_timeseries, ref_timeseries, n, lambda x: res.slope * x + res.intercept
         )
 
         # Compute prediction interval constants
