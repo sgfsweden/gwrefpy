@@ -157,7 +157,7 @@ def test_remove_also_removes_the_fits_of_the_well(model, caplog) -> None:
 
     model.wells.remove("refA")
 
-    assert [f.name for f in model.fits] == ["obsB~refB:linearregression"]
+    assert [f.name for f in model.fits] == ["obsB~refB:Linear"]
     assert "Removed 2 fit(s)" in caplog.text
 
 
@@ -200,7 +200,7 @@ def test_model_loads_after_removing_a_fitted_well(model, tmp_path) -> None:
     loaded = Model(name=str(tmp_path / "project.gwref"))
 
     assert loaded.wells.names() == ["obsA", "obsB", "refB"]
-    assert [f.name for f in loaded.fits] == ["obsB~refB:linearregression"]
+    assert [f.name for f in loaded.fits] == ["obsB~refB:Linear"]
 
 
 # --- to_dataframe and repr --------------------------------------------------
@@ -227,15 +227,15 @@ def test_to_dataframe_has_a_row_per_well_in_collection_order(model) -> None:
 def test_to_dataframe_includes_fit_columns(model) -> None:
     good = fit(model, "obsA", "refA")
     other = fit(model, "obsA", "refB")
-    best, worse = sorted([good, other], key=lambda f: f.rmse)
+    best, worse = sorted([good, other], key=lambda f: f.fit_method.rmse)
 
     df = model.wells.to_dataframe().set_index("name")
 
     assert df.loc["obsA", "best_fit_ref_well"] == best.ref_well.name
-    assert df.loc["obsA", "best_rmse"] == best.rmse
+    assert df.loc["obsA", "best_rmse"] == best.fit_method.rmse
     assert pd.isna(df.loc["obsB", "best_fit_ref_well"])
     assert df.loc["refA", "num_fits"] == 1
-    assert df.loc["refA", "avg_rmse"] == good.rmse
+    assert df.loc["refA", "avg_rmse"] == good.fit_method.rmse
     assert df.loc["refB", "num_fits"] == 1
     assert pd.isna(df.loc["obsA", "num_fits"])
 

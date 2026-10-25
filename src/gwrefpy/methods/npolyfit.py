@@ -19,8 +19,9 @@ class NPoly(FitMethodBase):
     A mixin class that provides Nth degree polynomial fitting functionality to a
     base fit method class.
     """
-    _scalar_keys = ("degree", "rvalue", "rank", "stderr", "t_a", "rmse")
-    _array_keys = ("coefficients", "leverage_operator")
+
+    _scalar_keys = ("degree", "rank", "stderr", "t_a", "rmse")
+    _array_keys = ("coefficients", "rvalue", "leverage_operator")
 
     def __init__(self, degree: int = 4):
         super().__init__()
@@ -80,7 +81,6 @@ class NPoly(FitMethodBase):
             The fitted values based on the input series.
         """
         return timeseries.apply(lambda x: np.polyval(self.coefficients, x))
-
 
     def fit(
         self,

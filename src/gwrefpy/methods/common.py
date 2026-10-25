@@ -108,10 +108,20 @@ def _validate_input_timeseries(obs_timeseries, ref_timeseries):
         raise ValueError("The observation and reference time series are identical.")
 
 
+def _to_builtin(value):
+    """Convert numpy scalars and arrays to plain Python values for JSON."""
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, np.generic):
+        return value.item()
+    return value
+
+
 class FitMethodBase(ABC):
     """
     Abstract base class for fit methods.
     """
+
     _scalar_keys = ()
     _array_keys = ()
 
@@ -158,7 +168,9 @@ class FitMethodBase(ABC):
         pass
 
     @abstractmethod
-    def fit(self, obs_timeseries: pd.Series, ref_timeseries: pd.Series) -> None:
+    def fit(
+        self, obs_timeseries: pd.Series, ref_timeseries: pd.Series, p: float = 0.95
+    ) -> None:
         """
         Fit the model to the data.
         """
@@ -171,31 +183,41 @@ class FitMethodBase(ABC):
         """Calculate prediction widths using the fit's original training data."""
         pass
 
-
     def to_dict(self) -> dict:
         """
-        Conver the class to a dictonary based on keys.
+        Convert the fitted method to a dictionary, based on its keys.
+
+        Returns
+        -------
+        dict
+            A JSON-serialisable dictionary of the fitted attributes.
         """
-        result = {key: getattr(self, key) for key in self._scalar_keys}
-        
+        result = {key: _to_builtin(getattr(self, key)) for key in self._scalar_keys}
         for key in self._array_keys:
             value = getattr(self, key)
-            result[key] = value.tolist() if value is not None else None
-            
+            result[key] = np.asarray(value).tolist() if value is not None else None
         return result
 
     @classmethod
     def from_dict(cls, data: dict):
-        """Create a new instance from a dictonary and keys"""
-        # create an instance
-        instance = cls.__new__(cls) 
+        """
+        Create a fitted method object from its dictionary representation.
 
+        Parameters
+        ----------
+        data : dict
+            A dictionary as returned by :meth:`to_dict`.
+
+        Returns
+        -------
+        FitMethodBase
+            The fitted method object.
+        """
+        instance = cls()
         for key in cls._scalar_keys:
             setattr(instance, key, data.get(key))
-
         for key in cls._array_keys:
             value = data.get(key)
-            setattr(instance, key, np.array(value) if value is not None else None)
-
+            array = np.asarray(value, dtype=float) if value is not None else None
+            setattr(instance, key, array)
         return instance
-

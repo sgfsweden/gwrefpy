@@ -269,13 +269,13 @@ class WellCollection:
             fits = self._model.fits._select(ref=well) if self._model else None
             row["num_fits"] = len(fits) if fits is not None else None
             row["avg_rmse"] = (
-                sum(fit.rmse for fit in fits) / len(fits) if fits else None
+                sum(fit.fit_method.rmse for fit in fits) / len(fits) if fits else None
             )
         else:
             fits = self._model.fits._select(obs=well) if self._model else None
             best = fits.best() if fits else None
             row["best_fit_ref_well"] = best.ref_well.name if best else None
-            row["best_rmse"] = best.rmse if best else None
+            row["best_rmse"] = best.fit_method.rmse if best else None
         return row
 
     def names(self) -> list[str]:

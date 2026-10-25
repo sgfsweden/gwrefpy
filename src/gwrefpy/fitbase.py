@@ -1,10 +1,11 @@
+import copy
 import logging
 import warnings
 from typing import TYPE_CHECKING, Literal
 
 import pandas as pd
 
-from .fitcollection import METHODS, FitCollection
+from .fitcollection import FitCollection
 from .fitresults import FitResultData
 from .methods.chebyshev import Chebyshev
 from .methods.common import FitMethodBase, _validate_input_timeseries
@@ -17,6 +18,13 @@ if TYPE_CHECKING:
     from .wellcollection import WellCollection
 
 logger = logging.getLogger(__name__)
+
+# Maps the method names accepted by the deprecated get_fits() to the current ones
+LEGACY_METHOD_NAMES = {
+    "linearregression": "linear",
+    "npolyfit": "npoly",
+    "chebyshev": "chebyshev",
+}
 
 
 def _default_fit_name(obs_well: Well, ref_well: Well, method: FitMethodBase) -> str:
@@ -90,14 +98,13 @@ class FitBase:
         name : str | list[str] | None, optional
             An optional name or list of names for the fit result(s). If lists of
             wells are provided, names must be a list matching in length. If None,
-            default names like ``"obs~ref:linearregression"`` are assigned. A fit
-            replaces any existing fit with the same name.
+            default names like ``"obs~ref:Linear"`` or ``"obs~ref:NPoly(4)"`` are
+            assigned. A fit replaces any existing fit with the same name.
         report: bool, optional
             Whether to print fit results summary (default is True).
         **kwargs
-            Additional keyword arguments to pass to the fitting method.
-            For example, you can use `degree` (default is 4) when using the `npolyfit`
-            or `chebyshev` methods.
+            Additional keyword arguments, e.g. ``te_method`` ("anchor" or
+            "consecutive") for grouping the time equivalents.
 
         Returns
         -------
@@ -228,6 +235,8 @@ class FitBase:
             )
             logger.error(error_msg)
             raise TypeError(error_msg)
+        # Fitting stores the results on the method, so each fit gets its own copy
+        method = copy.deepcopy(method)
 
         if name is None:
             name = _default_fit_name(obs_well, ref_well, method)
@@ -280,7 +289,7 @@ class FitBase:
         self,
         obs_well: str | Well,
         ref_wells: list[str | Well] | None = None,
-        method: type[FitMethodBase] | None = None,
+        method: FitMethodBase | None = None,
         skip_raise_error: bool = False,
         **kwargs,
     ) -> FitResultData:
@@ -296,8 +305,9 @@ class FitBase:
         ref_wells : Well or list of Well or None, optional
             The reference wells to test. If None, all reference wells in the
             model will be used (default is None).
-        method : type[FitMethodBase] | None, optional
-            Method with which to perform regression.
+        method : FitMethodBase | None, optional
+            Method with which to perform regression, e.g. ``NPoly(degree=2)``
+            (default is ``Linear()``).
         skip_raise_error: bool, optional
             If True, will skip wells that raise exceptions during fitting and continue.
             If False, will raise the exception and stop execution (default is False).
@@ -318,7 +328,7 @@ class FitBase:
         self,
         obs_well: str | Well,
         ref_wells: list[str | Well] | None = None,
-        method: type[FitMethodBase] | None = None,
+        method: FitMethodBase | None = None,
         skip_raise_error: bool = False,
         **kwargs,
     ) -> FitResultData:
@@ -332,8 +342,9 @@ class FitBase:
         ref_wells : Well or list of Well or None, optional
             The reference wells to test. If None, all reference wells in the
             model will be used (default is None).
-        method : type[FitMethodBase] | None, optional
-            Method with which to perform regression.
+        method : FitMethodBase | None, optional
+            Method with which to perform regression, e.g. ``NPoly(degree=2)``
+            (default is ``Linear()``).
         skip_raise_error: bool, optional
             If True, will skip wells that raise exceptions during fitting and continue.
             If False, will raise the exception and stop execution (default is False).
@@ -387,7 +398,7 @@ class FitBase:
                     local_fits.append(fit)
                     logger.debug(
                         f"Fit result for observation well '{target_obs_well.name}' and"
-                        f"reference well '{ref_well.name}': RMSE={fit.rmse}"
+                        f"reference well '{ref_well.name}': RMSE={fit.fit_method.rmse}"
                     )
                 except Exception as e:
                     logger.error(
@@ -405,7 +416,7 @@ class FitBase:
                 local_fits.append(fit)
                 logger.debug(
                     f"Fit result for observation well '{target_obs_well.name}' and"
-                    f"reference well '{ref_well.name}': RMSE={fit.rmse}"
+                    f"reference well '{ref_well.name}': RMSE={fit.fit_method.rmse}"
                 )
 
         if not local_fits:
@@ -461,8 +472,7 @@ class FitBase:
             raise TypeError("Parameter 'well' must be a Well instance or a string.")
 
         # Unknown methods were ignored before the deprecation; keep doing so
-        if method not in METHODS:
-            method = None
+        method = LEGACY_METHOD_NAMES.get(method) if method is not None else None
         fit_list = list(
             self.fits._select(lambda fit: fit.has_well(target_well), method=method)
         )

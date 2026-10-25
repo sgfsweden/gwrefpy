@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from gwrefpy import Model, Well
+from gwrefpy import Chebyshev, Linear, Model, NPoly, Well
 
 
 @pytest.fixture()
@@ -61,14 +61,14 @@ def names(collection) -> list[str]:
 
 
 def test_default_name_is_readable(model) -> None:
-    assert fit(model, "obsA", "refMid").name == "obsA~refMid:linearregression"
+    assert fit(model, "obsA", "refMid").name == "obsA~refMid:Linear"
     assert (
-        fit(model, "obsA", "refMid", method="npolyfit", degree=2).name
-        == "obsA~refMid:npolyfit2"
+        fit(model, "obsA", "refMid", method=NPoly(degree=1)).name
+        == "obsA~refMid:NPoly(1)"
     )
     assert (
-        fit(model, "obsA", "refMid", method="chebyshev", degree=1).name
-        == "obsA~refMid:chebyshev1"
+        fit(model, "obsA", "refMid", method=Chebyshev(degree=1)).name
+        == "obsA~refMid:Chebyshev(1)"
     )
 
 
@@ -78,8 +78,8 @@ def test_refit_with_same_name_replaces_in_place(model) -> None:
     refit = fit(model, "obsA", "refMid", offset="5D")
 
     assert names(model.fits) == [
-        "obsA~refMid:linearregression",
-        "obsA~refGood:linearregression",
+        "obsA~refMid:Linear",
+        "obsA~refGood:Linear",
     ]
     assert model.fits[0] is refit
 
@@ -101,7 +101,7 @@ def test_filter_by_obs_and_ref_accepts_names_and_wells(model) -> None:
 
     result = model.fits.filter(obs="obsA", ref=ref_good)
 
-    assert names(result) == ["obsA~refGood:linearregression"]
+    assert names(result) == ["obsA~refGood:Linear"]
 
 
 def test_filter_lists_match_any_value(model) -> None:
@@ -110,39 +110,39 @@ def test_filter_lists_match_any_value(model) -> None:
     result = model.fits.filter(obs="obsB", ref=["refGood", "refBad"])
 
     assert names(result) == [
-        "obsB~refGood:linearregression",
-        "obsB~refBad:linearregression",
+        "obsB~refGood:Linear",
+        "obsB~refBad:Linear",
     ]
 
 
 def test_filter_by_method(model) -> None:
     fit(model, "obsA", "refMid")
-    fit(model, "obsA", "refMid", method="npolyfit", degree=2)
-    fit(model, "obsA", "refMid", method="chebyshev", degree=1)
+    fit(model, "obsA", "refMid", method=NPoly(degree=1))
+    fit(model, "obsA", "refMid", method=Chebyshev(degree=1))
 
-    assert names(model.fits.filter(method="npolyfit")) == ["obsA~refMid:npolyfit2"]
-    assert names(model.fits.filter(method=["linearregression", "chebyshev"])) == [
-        "obsA~refMid:linearregression",
-        "obsA~refMid:chebyshev1",
+    assert names(model.fits.filter(method="npoly")) == ["obsA~refMid:NPoly(1)"]
+    assert names(model.fits.filter(method=["linear", Chebyshev])) == [
+        "obsA~refMid:Linear",
+        "obsA~refMid:Chebyshev(1)",
     ]
 
 
 def test_filter_by_name_and_predicate(model) -> None:
     fit_all(model)
 
-    by_name = model.fits.filter(name="obsA~refMid:linearregression")
+    by_name = model.fits.filter(name="obsA~refMid:Linear")
     by_predicate = model.fits.filter(lambda f: f.ref_well.name == "refBad")
 
-    assert names(by_name) == ["obsA~refMid:linearregression"]
+    assert names(by_name) == ["obsA~refMid:Linear"]
     assert names(by_predicate) == [
-        "obsA~refBad:linearregression",
-        "obsB~refBad:linearregression",
+        "obsA~refBad:Linear",
+        "obsB~refBad:Linear",
     ]
 
 
 def test_filter_unknown_method_raises(model) -> None:
     with pytest.raises(ValueError, match="Unknown method"):
-        model.fits.filter(method="linreg")
+        model.fits.filter(method="linearregression")
 
 
 def test_filter_without_matches_warns_and_is_empty(model, caplog) -> None:
@@ -162,7 +162,7 @@ def test_get_returns_the_single_match(model) -> None:
 
     result = model.fits.get(obs="obsB", ref="refMid")
 
-    assert result.name == "obsB~refMid:linearregression"
+    assert result.name == "obsB~refMid:Linear"
 
 
 def test_get_raises_unless_exactly_one_match(model) -> None:
@@ -177,8 +177,8 @@ def test_get_raises_unless_exactly_one_match(model) -> None:
 def test_best_returns_lowest_rmse_fit(model) -> None:
     fit_all(model)
 
-    assert model.fits.best().name == "obsA~refGood:linearregression"
-    assert model.fits.filter(obs="obsB").best().name == "obsB~refBad:linearregression"
+    assert model.fits.best().name == "obsA~refGood:Linear"
+    assert model.fits.filter(obs="obsB").best().name == "obsB~refBad:Linear"
 
 
 def test_best_of_empty_collection_raises(model) -> None:
@@ -192,8 +192,8 @@ def test_top_without_by_ranks_the_whole_collection(model) -> None:
     result = model.fits.filter(obs="obsA").top(n=2)
 
     assert names(result) == [
-        "obsA~refGood:linearregression",
-        "obsA~refMid:linearregression",
+        "obsA~refGood:Linear",
+        "obsA~refMid:Linear",
     ]
 
 
@@ -201,28 +201,28 @@ def test_top_by_obs_gives_best_per_obs_well(model) -> None:
     fit_all(model)
 
     assert names(model.fits.top(by="obs")) == [
-        "obsA~refGood:linearregression",
-        "obsB~refBad:linearregression",
+        "obsA~refGood:Linear",
+        "obsB~refBad:Linear",
     ]
     assert names(model.fits.top(n=2, by="obs")) == [
-        "obsA~refGood:linearregression",
-        "obsA~refMid:linearregression",
-        "obsB~refBad:linearregression",
-        "obsB~refGood:linearregression",
+        "obsA~refGood:Linear",
+        "obsA~refMid:Linear",
+        "obsB~refBad:Linear",
+        "obsB~refGood:Linear",
     ]
 
 
 def test_top_by_several_keys(model) -> None:
     fit(model, "obsA", "refMid")
     fit(model, "obsA", "refBad")
-    fit(model, "obsA", "refMid", method="npolyfit", degree=1)
-    fit(model, "obsA", "refGood", method="npolyfit", degree=1)
+    fit(model, "obsA", "refMid", method=NPoly(degree=1))
+    fit(model, "obsA", "refGood", method=NPoly(degree=1))
 
     result = model.fits.top(by=("obs", "method"))
 
     assert names(result) == [
-        "obsA~refMid:linearregression",
-        "obsA~refGood:npolyfit1",
+        "obsA~refMid:Linear",
+        "obsA~refGood:NPoly(1)",
     ]
 
 
@@ -244,30 +244,30 @@ def test_top_rejects_unknown_group_key(model) -> None:
 
 def test_remove_by_fit_name_or_collection(model) -> None:
     fit_all(model)
-    a_good = model.fits["obsA~refGood:linearregression"]
+    a_good = model.fits["obsA~refGood:Linear"]
 
     model.fits.remove(a_good)
-    model.fits.remove("obsA~refMid:linearregression")
+    model.fits.remove("obsA~refMid:Linear")
     model.fits.remove(model.fits.filter(obs="obsB", ref=["refGood", "refMid"]))
 
     assert names(model.fits) == [
-        "obsA~refBad:linearregression",
-        "obsB~refBad:linearregression",
+        "obsA~refBad:Linear",
+        "obsB~refBad:Linear",
     ]
 
 
 def test_remove_by_filter_returns_removed_fits(model) -> None:
     fit_all(model)
-    fit(model, "obsA", "refMid", method="npolyfit", degree=1)
+    fit(model, "obsA", "refMid", method=NPoly(degree=1))
 
-    removed = model.fits.remove(obs="obsA", method="linearregression")
+    removed = model.fits.remove(obs="obsA", method=Linear)
 
     assert names(removed) == [
-        "obsA~refGood:linearregression",
-        "obsA~refMid:linearregression",
-        "obsA~refBad:linearregression",
+        "obsA~refGood:Linear",
+        "obsA~refMid:Linear",
+        "obsA~refBad:Linear",
     ]
-    assert names(model.fits.filter(obs="obsA")) == ["obsA~refMid:npolyfit1"]
+    assert names(model.fits.filter(obs="obsA")) == ["obsA~refMid:NPoly(1)"]
     assert len(model.fits) == 4
 
 
@@ -277,8 +277,8 @@ def test_remove_dry_run_changes_nothing(model) -> None:
     would_remove = model.fits.remove(ref="refBad", dry_run=True)
 
     assert names(would_remove) == [
-        "obsA~refBad:linearregression",
-        "obsB~refBad:linearregression",
+        "obsA~refBad:Linear",
+        "obsB~refBad:Linear",
     ]
     assert len(model.fits) == 6
 
@@ -289,7 +289,7 @@ def test_remove_rejects_ambiguous_or_empty_calls(model) -> None:
     with pytest.raises(TypeError):
         model.fits.remove()
     with pytest.raises(TypeError):
-        model.fits.remove("obsA~refMid:linearregression", obs="obsA")
+        model.fits.remove("obsA~refMid:Linear", obs="obsA")
     assert len(model.fits) == 6
 
 
@@ -328,14 +328,14 @@ def test_keep_best_keeps_n_best_per_group_in_original_order(model) -> None:
     removed = model.fits.keep_best(2, by="obs")
 
     assert names(model.fits) == [
-        "obsA~refGood:linearregression",
-        "obsA~refMid:linearregression",
-        "obsB~refGood:linearregression",
-        "obsB~refBad:linearregression",
+        "obsA~refGood:Linear",
+        "obsA~refMid:Linear",
+        "obsB~refGood:Linear",
+        "obsB~refBad:Linear",
     ]
     assert names(removed) == [
-        "obsA~refBad:linearregression",
-        "obsB~refMid:linearregression",
+        "obsA~refBad:Linear",
+        "obsB~refMid:Linear",
     ]
 
 
@@ -387,7 +387,7 @@ def test_to_dataframe_matches_fits_summary_columns(model) -> None:
     assert len(df) == 3
     assert df["ref_well_name"].tolist() == ["refGood", "refMid", "refBad"]
     assert set(df["obs_well_name"]) == {"obsA"}
-    assert set(df["method"]) == {"LinRegResult"}
+    assert set(df["method"]) == {"Linear"}
     assert {"rmse", "n_points", "time_offset", "linreg_slope"} <= set(df.columns)
 
 
@@ -411,8 +411,8 @@ def test_fit_with_lists_returns_a_detached_collection(model) -> None:
     )
 
     assert names(result) == [
-        "obsA~refGood:linearregression",
-        "obsB~refMid:linearregression",
+        "obsA~refGood:Linear",
+        "obsB~refMid:Linear",
     ]
     with pytest.raises(TypeError, match="detached"):
         result.clear()
@@ -434,7 +434,7 @@ def test_get_fits_is_deprecated_but_keeps_its_shape(model) -> None:
         none = model.get_fits("obsB")
 
     assert isinstance(many, list) and len(many) == 2
-    assert one.name == "obsA~refGood:linearregression"
+    assert one.name == "obsA~refGood:Linear"
     assert none is None
 
 
@@ -453,7 +453,7 @@ def test_remove_fits_by_n_is_deprecated(model) -> None:
     with pytest.deprecated_call():
         model.remove_fits_by_n("obsA", 1)
 
-    assert names(model.fits.filter(obs="obsA")) == ["obsA~refGood:linearregression"]
+    assert names(model.fits.filter(obs="obsA")) == ["obsA~refGood:Linear"]
     assert len(model.fits) == 4
 
 
@@ -467,6 +467,46 @@ def test_save_and_load_keeps_fits_and_names(model, tmp_path) -> None:
     loaded = Model(name=str(tmp_path / "project.gwref"))
 
     assert names(loaded.fits) == names(model.fits)
+
+
+@pytest.mark.parametrize(
+    "method", [Linear(), NPoly(degree=1), Chebyshev(degree=1)], ids=repr
+)
+def test_save_and_load_keeps_fit_statistics(model, tmp_path, method) -> None:
+    original = fit(model, "obsA", "refMid", method=method)
+    model.save_project(str(tmp_path / "project"))
+
+    loaded = Model(name=str(tmp_path / "project.gwref")).fits[0]
+
+    assert type(loaded.fit_method) is type(method)
+    for stat in ("rmse", "stderr", "t_a"):
+        assert getattr(loaded.fit_method, stat) == pytest.approx(
+            getattr(original.fit_method, stat)
+        )
+    pd.testing.assert_series_equal(
+        loaded.get_upper_confidence_bound(), original.get_upper_confidence_bound()
+    )
+
+
+def test_loads_fits_saved_before_fit_methods_became_classes() -> None:
+    loaded = Model(name="large_example.gwref")
+
+    fit = loaded.fits[0]
+    assert isinstance(fit.fit_method, Linear)
+    assert fit.fit_method.rmse is not None
+    assert fit.fit_method.stderr is not None
+    assert fit.fit_method.slope_stderr is not None
+    assert fit.get_upper_confidence_bound().notna().all()
+
+
+def test_fits_do_not_share_the_method_instance(model) -> None:
+    method = NPoly(degree=1)
+    a = fit(model, "obsA", "refMid", method=method)
+    b = fit(model, "obsA", "refBad", method=method)
+
+    assert a.fit_method is not b.fit_method
+    assert a.fit_method.rmse != b.fit_method.rmse
+    assert method.coefficients is None
 
 
 def test_loading_duplicate_names_suffixes_instead_of_replacing(

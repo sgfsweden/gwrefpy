@@ -1,7 +1,10 @@
 import uuid
+from typing import cast
 
 import numpy as np
 import pandas as pd
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure, SubFigure
 
 from .methods.chebyshev import Chebyshev
 from .methods.common import (
@@ -252,6 +255,8 @@ class FitResultData:
         pd.Series
             The upper confidence bound based on the fit method and RMSE.
         """
+        if ref_series is None:
+            ref_series = self.ref_well.timeseries
         fitted_values = self.fit_method.fit_timeseries(ref_series)
         return fitted_values + self.fit_method.get_prediction_constant(ref_series)
 
@@ -272,6 +277,8 @@ class FitResultData:
         pd.Series
             The lower confidence bound based on the fit method and RMSE.
         """
+        if ref_series is None:
+            ref_series = self.ref_well.timeseries
         fitted_values = self.fit_method.fit_timeseries(ref_series)
         return fitted_values - self.fit_method.get_prediction_constant(ref_series)
 
@@ -401,6 +408,97 @@ class FitResultData:
         """
         return self.ref_well == well or self.obs_well == well
 
+    def plot(
+        self,
+        title: str = "",
+        xlabel: str = "Time",
+        ylabel: str = "Measurements",
+        mark_outliers: bool = True,
+        show_initiation_period: bool = False,
+        plot_ref_well: bool = False,
+        plot_style: str | None = None,
+        color_style: str | None = None,
+        save_path: str | None = None,
+        num: int = 6,
+        ax: Axes | None = None,
+        offset_text: dict[str, float] | None = None,
+        tmin: str | pd.Timestamp | None = None,
+        tmax: str | pd.Timestamp | None = None,
+        **kwargs,
+    ) -> tuple[Figure | SubFigure, Axes]:
+        """
+        Plot this fit result.
+
+        This is a convenience method that delegates to Plotter.plot_fits().
+        See Plotter.plot_fits() for full parameter documentation.
+
+        Parameters
+        ----------
+        title : str
+            The title of the plot.
+        xlabel : str
+            The label for the x-axis.
+        ylabel : str
+            The label for the y-axis.
+        mark_outliers : bool
+            If True, outliers will be marked on the plot.
+        show_initiation_period : bool
+            If True, the initiation period will be shaded.
+        plot_ref_well : bool
+            If True, the reference well data will be plotted.
+        plot_style : str | None
+            Style of the plot ("fancy", "scientific", or None).
+        color_style : str | None
+            Color style ("color", "monochrome", or None).
+        save_path : str | None
+            If provided, the plot will be saved to this path.
+        num : int
+            Number of ticks on the x-axis.
+        ax : matplotlib.axes.Axes | None
+            Optional existing Axes to plot on.
+        offset_text : dict[str, float] | None
+            Vertical offset for text labels.
+        tmin : str | pd.Timestamp | None
+            Minimum time for the plot. If provided, the time series will be sliced
+            to only show data from this time onwards. Can be a string like "2021-01-01"
+            or a pd.Timestamp. Default is None (no minimum time limit).
+        tmax : str | pd.Timestamp | None
+            Maximum time for the plot. If provided, the time series will be sliced
+            to only show data up to this time. Can be a string like "2021-01-01"
+            or a pd.Timestamp. Default is None (no maximum time limit).
+        **kwargs : dict
+            Additional matplotlib kwargs (e.g., figsize, dpi).
+
+        Returns
+        -------
+        tuple[Figure | SubFigure, Axes]
+            The figure and axes objects.
+        """
+        from .plotter import _FitPlotter
+
+        plotter = _FitPlotter(self)
+        # plot_separately=False ensures return type is tuple[Figure | SubFigure, Axes]
+        result = plotter.plot_fits(
+            fits=self,
+            title=title,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            mark_outliers=mark_outliers,
+            show_initiation_period=show_initiation_period,
+            plot_ref_well=plot_ref_well,
+            plot_style=plot_style,
+            color_style=color_style,
+            save_path=save_path,
+            num=num,
+            plot_separately=False,
+            ax=ax,
+            offset_text=offset_text,
+            tmin=tmin,
+            tmax=tmax,
+            **kwargs,
+        )
+        return cast(tuple[Figure | SubFigure, Axes], result)
+
     def _to_dict(self) -> dict:
         """
         Convert the FitResultData object to a dictionary.
@@ -410,56 +508,45 @@ class FitResultData:
         dict
             A dictionary representation of the FitResultData object.
         """
-        dict_representation = {
+        return {
             "ref_well": self.ref_well.name,
             "obs_well": self.obs_well.name,
-            "rmse": self.rmse,
             "n": self.n,
-            "t_a": self.t_a,
-            "fit_method": str(self.fit_method.__class__.__name__),
-            "stderr": self.stderr,
-            "pred_const": (
-                self.pred_const.tolist()
-                if isinstance(self.pred_const, pd.Series)
-                else self.pred_const
-            ),
-            "pred_const_index": (
-                [datetime_to_float(timestamp) for timestamp in self.pred_const.index]
-                if isinstance(self.pred_const, pd.Series)
-                else None
-            ),
-            "prediction_leverage_matrix": (
-                self.prediction_leverage_matrix.tolist()
-                if self.prediction_leverage_matrix is not None
-                else None
-            ),
+            "fit_method": self.fit_method.__class__.__name__,
+            self.fit_method.__class__.__name__: self.fit_method.to_dict(),
             "p": self.p,
             "offset": self.offset,
             "aggregation": self.aggregation,
             "te_method": self.te_method,
             "tmin": datetime_to_float(self.tmin),
             "tmax": datetime_to_float(self.tmax),
+            "shift": str(self.shift) if self.shift is not None else None,
             "name": self.name,
         }
 
-        if hasattr(self.fit_method, "_to_dict"):
-            dict_representation[self.fit_method.__class__.__name__] = (
-                self.fit_method._to_dict()
-            )
 
-        return dict_representation
+# Fit method classes by the name they are saved under
+FIT_METHOD_CLASSES = {cls.__name__: cls for cls in (Linear, NPoly, Chebyshev)}
+
+# Fit method names used by files saved before fit methods became classes
+LEGACY_FIT_METHOD_NAMES = {
+    "LinRegResult": "Linear",
+    "NPolyFitResult": "NPoly",
+    "ChebyshevFitResult": "Chebyshev",
+}
 
 
 def _unpack_dict_fit_method(
     data: dict,
 ) -> Linear | NPoly | Chebyshev:
     """
-    Unpack a dictionary representation of a fit method into a Linear object.
+    Unpack the dictionary representation of a fit into its fitted method object.
 
     Parameters
     ----------
     data : dict
-        A dictionary containing the fit method data.
+        A dictionary representation of a fit, as returned by
+        ``FitResultData._to_dict``.
 
     Returns
     -------
@@ -467,14 +554,22 @@ def _unpack_dict_fit_method(
         The unpacked fitting method object.
     """
     fit_method_name = data.get("fit_method", None)
-    if fit_method_name == "Linear":
-        linreg_data = data.get("Linear", {})
-        return Linear.from_dict(linreg_data)
-    elif fit_method_name == "NPoly":
-        npoly_data = data.get("NPoly", {})
-        return NPoly.from_dict(npoly_data)
-    elif fit_method_name == "Chebyshev":
-        chebyshev_data = data.get("Chebyshev", {})
-        return Chebyshev.from_dict(chebyshev_data)
-    else:
+    method_data = dict(data.get(fit_method_name, {}))
+
+    if fit_method_name in LEGACY_FIT_METHOD_NAMES:
+        # Older files kept the fit statistics on the fit rather than the method
+        if fit_method_name == "LinRegResult":
+            method_data["slope_stderr"] = method_data.pop("stderr", None)
+            method_data["pred_const"] = data.get("pred_const")
+        else:
+            method_data["leverage_operator"] = data.get("prediction_leverage_matrix")
+            coefficients = method_data.get("coefficients")
+            if coefficients is not None:
+                method_data["degree"] = len(coefficients) - 1
+        for key in ("stderr", "t_a", "rmse"):
+            method_data[key] = data.get(key)
+        fit_method_name = LEGACY_FIT_METHOD_NAMES[fit_method_name]
+
+    if fit_method_name not in FIT_METHOD_CLASSES:
         raise ValueError(f"Unsupported fit method: {fit_method_name}")
+    return FIT_METHOD_CLASSES[fit_method_name].from_dict(method_data)

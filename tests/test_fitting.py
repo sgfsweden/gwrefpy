@@ -3,8 +3,8 @@ import pandas as pd
 import pytest
 import scipy as sp
 
-from gwrefpy import FitCollection, Well
-from gwrefpy.fitresults import FitResultData, NPolyFitResult
+from gwrefpy import Chebyshev, FitCollection, NPoly, Well
+from gwrefpy.fitresults import FitResultData
 from gwrefpy.methods.timeseries import groupby_time_equivalents
 
 
@@ -36,7 +36,7 @@ def test_strandangers_model_best_fit_by_names(strandangers_model) -> None:
     model_fits = strandangers_model.fits.filter(obs="obs")
     assert len(model_fits) == 2
 
-    assert best_fit == min(model_fits, key=lambda x: x.rmse)
+    assert best_fit == min(model_fits, key=lambda x: x.fit_method.rmse)
 
 
 def test_strandangers_model_best_fit_by_objects(strandangers_model) -> None:
@@ -98,8 +98,8 @@ def test_strandangers_model_fit_multiple_wells(strandangers_model) -> None:
     results2 = strandangers_model.fit([obs, obs2], [ref, ref2], offset="3.5D")
 
     # verify that the names are auto-generated from the wells and method
-    assert results2[0].name == "obs~ref:linearregression"
-    assert results2[1].name == "obs2~ref2:linearregression"
+    assert results2[0].name == "obs~ref:Linear"
+    assert results2[1].name == "obs2~ref2:Linear"
 
 
 def test_strandangers_model_fit_mismatched_lists(strandangers_model) -> None:
@@ -246,7 +246,7 @@ def test_fit_result_get_upper_confidence_bound(strandangers_model) -> None:
 
     # Verify the upper bound is fitted values + pred_const
     fitted_series = fit_result.get_fit_timeseries()
-    expected_upper = fitted_series + fit_result.pred_const
+    expected_upper = fitted_series + fit_result.fit_method.pred_const
     assert upper_bound.equals(expected_upper)
 
 
@@ -265,7 +265,7 @@ def test_fit_result_get_lower_confidence_bound(strandangers_model) -> None:
 
     # Verify the lower bound is fitted values - pred_const
     fitted_series = fit_result.get_fit_timeseries()
-    expected_lower = fitted_series - fit_result.pred_const
+    expected_lower = fitted_series - fit_result.fit_method.pred_const
     assert lower_bound.equals(expected_lower)
 
 
@@ -287,7 +287,7 @@ def test_fit_result_confidence_bounds_relationship(strandangers_model) -> None:
 
     # Verify the width of the confidence interval is 2 * pred_const
     interval_width = upper_bound - lower_bound
-    expected_width = 2 * fit_result.pred_const
+    expected_width = 2 * fit_result.fit_method.pred_const
     assert (
         abs(interval_width - expected_width) < 1e-10
     ).all()  # Allow for small floating point errors
@@ -304,22 +304,22 @@ def test_fit_result_test_fit(strandangers_model) -> None:
     stderr, rmse = fit_result.test_fit(ref.timeseries, offset="4D")
 
     # Verify the test, allow for small floating point errors
-    assert abs(fit_result.rmse - rmse) < 1e-10
-    assert abs(fit_result.stderr - stderr) < 1e-10
+    assert abs(fit_result.fit_method.rmse - rmse) < 1e-10
+    assert abs(fit_result.fit_method.stderr - stderr) < 1e-10
     result = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="npolyfit", degree=1
+        obs_well="obs", ref_well="ref", offset="3.5D", method=NPoly(degree=1)
     )
 
     # Get the statistical test result
     stderr_nploy, rmse_npoly = result.test_fit(ref.timeseries, offset="3.5D")
 
     # Verify the test, allow for small floating point errors
-    assert abs(result.rmse - rmse_npoly) < 1e-10
-    assert abs(result.stderr - stderr_nploy) < 1e-10
+    assert abs(result.fit_method.rmse - rmse_npoly) < 1e-10
+    assert abs(result.fit_method.stderr - stderr_nploy) < 1e-10
 
     # Test chebyshev method
     result_chebyshev = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="chebyshev", degree=1
+        obs_well="obs", ref_well="ref", offset="3.5D", method=Chebyshev(degree=1)
     )
 
     # Get the statistical test result
@@ -328,8 +328,8 @@ def test_fit_result_test_fit(strandangers_model) -> None:
     )
 
     # Verify the test, allow for small floating point errors
-    assert abs(result_chebyshev.rmse - rmse_chebyshev) < 1e-10
-    assert abs(result_chebyshev.stderr - stderr_chebyshev) < 1e-10
+    assert abs(result_chebyshev.fit_method.rmse - rmse_chebyshev) < 1e-10
+    assert abs(result_chebyshev.fit_method.stderr - stderr_chebyshev) < 1e-10
 
 
 def test_fit_with_aggregation_parameter(strandangers_model):
@@ -375,28 +375,28 @@ def test_fit_with_aggregation_parameter(strandangers_model):
 
 def test_fit_npolyfit_basic(strandangers_model) -> None:
     result = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="npolyfit", degree=1
+        obs_well="obs", ref_well="ref", offset="3.5D", method=NPoly(degree=1)
     )
-    assert isinstance(result.fit_method, NPolyFitResult)
+    assert isinstance(result.fit_method, NPoly)
     assert result.n == 3
     assert result.fit_method.degree == 1
 
 
 def test_fit_chebyshev_basic(strandangers_model) -> None:
     result = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="chebyshev", degree=1
+        obs_well="obs", ref_well="ref", offset="3.5D", method=Chebyshev(degree=1)
     )
     assert result.n == 3
     assert result.fit_method.degree == 1
 
 
-@pytest.mark.parametrize("method", ["npolyfit", "chebyshev"])
+@pytest.mark.parametrize("method", [NPoly, Chebyshev])
 def test_polynomial_prediction_constant_uses_leverage(small_example_model, method):
     obs, ref = small_example_model.wells["obs"], small_example_model.wells["ref"]
-    result = small_example_model.fit(obs, ref, offset="3.5D", method=method, degree=1)
+    result = small_example_model.fit(obs, ref, offset="3.5D", method=method(degree=1))
 
-    assert isinstance(result.pred_const, pd.Series)
-    assert result.pred_const.index.equals(ref.timeseries.index)
+    assert isinstance(result.get_prediction_constant(), pd.Series)
+    assert result.get_prediction_constant().index.equals(ref.timeseries.index)
 
     training_x, training_y, n = groupby_time_equivalents(
         obs.timeseries,
@@ -405,7 +405,7 @@ def test_polynomial_prediction_constant_uses_leverage(small_example_model, metho
         aggregation="mean",
         method="anchor",
     )
-    if method == "npolyfit":
+    if method is NPoly:
         training_matrix = np.vander(training_x.values, 2)
         prediction_matrix = np.vander(ref.timeseries.values, 2)
     else:
@@ -415,7 +415,7 @@ def test_polynomial_prediction_constant_uses_leverage(small_example_model, metho
             training_x.values, result.fit_method.coefficients
         )
 
-    if method == "npolyfit":
+    if method is NPoly:
         fitted_training_values = np.polyval(
             result.fit_method.coefficients, training_x.values
         )
@@ -424,25 +424,25 @@ def test_polynomial_prediction_constant_uses_leverage(small_example_model, metho
     leverage = np.einsum(
         "ij,jk,ik->i", prediction_matrix, covariance, prediction_matrix
     )
-    expected = result.t_a * result.stderr * np.sqrt(1 + leverage)
+    expected = result.fit_method.t_a * result.fit_method.stderr * np.sqrt(1 + leverage)
     expected_stderr = np.sqrt(
         np.sum((training_y.values - fitted_training_values) ** 2) / (n - 2)
     )
     expected_t = -sp.stats.t.ppf((1 - result.p) / 2, n - 2)
 
-    np.testing.assert_allclose(result.pred_const.values, expected)
-    np.testing.assert_allclose(result.stderr, expected_stderr)
-    np.testing.assert_allclose(result.t_a, expected_t)
-    assert np.ptp(result.pred_const.values) > 0
+    np.testing.assert_allclose(result.get_prediction_constant().values, expected)
+    np.testing.assert_allclose(result.fit_method.stderr, expected_stderr)
+    np.testing.assert_allclose(result.fit_method.t_a, expected_t)
+    assert np.ptp(result.get_prediction_constant().values) > 0
     np.testing.assert_allclose(
         (result.get_upper_confidence_bound() - result.get_fit_timeseries()).values,
-        result.pred_const.values,
+        result.get_prediction_constant().values,
         rtol=1e-10,
         atol=1e-12,
     )
     pd.testing.assert_series_equal(
         result.get_upper_confidence_bound() - result.get_fit_timeseries(),
-        result.pred_const,
+        result.get_prediction_constant(),
         check_names=False,
         check_exact=False,
         atol=1e-12,
@@ -450,12 +450,12 @@ def test_polynomial_prediction_constant_uses_leverage(small_example_model, metho
     )
 
 
-@pytest.mark.parametrize("method", ["npolyfit", "chebyshev"])
+@pytest.mark.parametrize("method", [NPoly, Chebyshev])
 def test_polynomial_prediction_width_for_appended_reference_data(
     small_example_model, method
 ):
     obs, ref = small_example_model.wells["obs"], small_example_model.wells["ref"]
-    result = small_example_model.fit(obs, ref, offset="3.5D", method=method, degree=3)
+    result = small_example_model.fit(obs, ref, offset="3.5D", method=method(degree=3))
 
     new_index = ref.timeseries.index.max() + pd.Timedelta(days=30)
     new_reference = pd.Series([0.0], index=[new_index], name="ref")
@@ -476,7 +476,7 @@ def test_polynomial_prediction_width_for_appended_reference_data(
     )
 
 
-@pytest.mark.parametrize("method", ["npolyfit", "chebyshev"])
+@pytest.mark.parametrize("method", [NPoly, Chebyshev])
 def test_polynomial_fit_rejects_rank_deficient_reference(small_example_model, method):
     obs, ref = small_example_model.wells["obs"], small_example_model.wells["ref"]
     index = pd.date_range("2023-01-01", periods=5, freq="D")
@@ -486,7 +486,7 @@ def test_polynomial_fit_rejects_rank_deficient_reference(small_example_model, me
     )
 
     with pytest.raises(ValueError, match="design matrix is rank deficient"):
-        small_example_model.fit(obs, ref, offset="0D", method=method, degree=1)
+        small_example_model.fit(obs, ref, offset="0D", method=method(degree=1))
 
 
 def test_fit_timeseries_validation(small_example_model) -> None:
@@ -494,7 +494,7 @@ def test_fit_timeseries_validation(small_example_model) -> None:
 
     # Test with valid timeseries
     result = small_example_model.fit(
-        obs_well=obs, ref_well=ref, offset="3.5D", method="npolyfit", degree=1
+        obs_well=obs, ref_well=ref, offset="3.5D", method=NPoly(degree=1)
     )
     assert isinstance(result, FitResultData)
 
@@ -508,8 +508,7 @@ def test_fit_timeseries_validation(small_example_model) -> None:
             obs_well=obs_invalid,
             ref_well=ref,
             offset="3.5D",
-            method="npolyfit",
-            degree=2,
+            method=NPoly(degree=2),
         )
 
     ref_invalid = Well("ref_invalid", is_reference=True, timeseries=ref.timeseries)
@@ -521,8 +520,7 @@ def test_fit_timeseries_validation(small_example_model) -> None:
             obs_well=obs,
             ref_well=ref_invalid,
             offset="3.5D",
-            method="npolyfit",
-            degree=2,
+            method=NPoly(degree=2),
         )
 
     # Test identical timeseries (should raise ValueError)
@@ -536,8 +534,7 @@ def test_fit_timeseries_validation(small_example_model) -> None:
             obs_well=obs_identical,
             ref_well=ref,
             offset="3.5D",
-            method="npolyfit",
-            degree=2,
+            method=NPoly(degree=2),
         )
 
 

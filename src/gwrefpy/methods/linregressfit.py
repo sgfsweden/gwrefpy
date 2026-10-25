@@ -33,7 +33,18 @@ class Linear(FitMethodBase):
         Perform linear regression fit between reference and observation well
         time series.
     """
-    _scalar_keys = ("slope", "intercept", "rvalue", "pvalue", "stderr", "pred_const", "t_a", "rmse")
+
+    _scalar_keys = (
+        "slope",
+        "intercept",
+        "rvalue",
+        "pvalue",
+        "slope_stderr",
+        "stderr",
+        "pred_const",
+        "t_a",
+        "rmse",
+    )
     _array_keys = ()
 
     def __init__(self):
@@ -41,9 +52,13 @@ class Linear(FitMethodBase):
         self.slope = None
         self.intercept = None
         self.pvalue = None
+        # Standard error of the slope; ``stderr`` is the residual standard error
+        self.slope_stderr = None
         self.pred_const = None
 
     def __str__(self):
+        if self.slope is None:
+            return "Linear()"
         return (
             f"Linear(slope={self.slope:.4f}, intercept={self.intercept:.4f}, "
             f"rvalue={self.rvalue:.4f}, pvalue={self.pvalue:.4f}, "
@@ -51,11 +66,7 @@ class Linear(FitMethodBase):
         )
 
     def __repr__(self):
-        return (
-            f"Linear(slope={self.slope:.4f}, intercept={self.intercept:.4f}, "
-            f"rvalue={self.rvalue:.4f}, pvalue={self.pvalue:.4f}, "
-            f"stderr={self.stderr:.4f})"
-        )
+        return str(self)
 
     def fit_str(self):
         fit_lines = [
@@ -96,7 +107,6 @@ class Linear(FitMethodBase):
             </tr>
             """
 
-
     def fit(
         self,
         obs_timeseries: pd.Series,
@@ -131,11 +141,11 @@ class Linear(FitMethodBase):
         _validate_timeseries_len(n, 1, "Linear Regression")
 
         # Fit the linear regression model using scipy.stats.linregress
-        res = sp.stats.linregress(obs_timeseries, ref_timeseries)
+        res = sp.stats.linregress(ref_timeseries, obs_timeseries)
 
         # Compute the residual standard error
         stderr = compute_residual_std_error(
-            obs_timeseries, ref_timeseries, n, lambda x: res.slope * x + res.intercept
+            ref_timeseries, obs_timeseries, n, lambda x: res.slope * x + res.intercept
         )
 
         # Compute prediction interval constants
@@ -153,6 +163,7 @@ class Linear(FitMethodBase):
         self.intercept = res.intercept
         self.rvalue = res.rvalue
         self.pvalue = res.pvalue
+        self.slope_stderr = res.stderr
         self.stderr = stderr
         self.pred_const = pred_const
         self.t_a = t_a

@@ -244,7 +244,7 @@ def test_fits_to_dataframe_with_fits(strandangers_model) -> None:
     row = summary.iloc[0]
     assert row["ref_well_name"] == "ref"
     assert row["obs_well_name"] == "obs"
-    assert row["method"] == "LinRegResult"
+    assert row["method"] == "Linear"
     assert "rmse" in row
     assert "n_points" in row
     assert "stderr" in row
@@ -255,7 +255,7 @@ def test_fits_to_dataframe_with_fits(strandangers_model) -> None:
     assert "t_a" in row
     assert "pred_const" in row
 
-    # Check LinRegResult-specific columns with prefix
+    # Check Linear-specific columns with prefix
     assert "linreg_slope" in row
     assert "linreg_intercept" in row
     assert "linreg_rvalue" in row
@@ -294,8 +294,8 @@ def test_fits_to_dataframe_multiple_fits(strandangers_model) -> None:
     # All obs_well_name should be the same
     assert all(name == "obs" for name in summary["obs_well_name"])
 
-    # All methods should be LinRegResult for now
-    assert all(method == "LinRegResult" for method in summary["method"])
+    # All methods should be Linear for now
+    assert all(method == "Linear" for method in summary["method"])
 
     # Check that both have the expected number of points and offset
     assert all(row == 3 for row in summary["n_points"])  # From fixture data

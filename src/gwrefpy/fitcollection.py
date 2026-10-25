@@ -4,20 +4,19 @@ from typing import overload
 
 import pandas as pd
 
-from .fitresults import (
-    Chebyshev,
-    FitResultData,
-    Linear,
-    NPoly,
-)
+from .fitresults import FitResultData
+from .methods.chebyshev import Chebyshev
+from .methods.common import FitMethodBase
+from .methods.linregressfit import Linear
+from .methods.npolyfit import NPoly
 from .well import Well
 
 logger = logging.getLogger(__name__)
 
-# Maps the method names used in ``Model.fit(method=...)`` to their result classes
-METHODS = {
-    "linearregression": Linear,
-    "npolyfit": NPoly,
+# Maps the method names accepted by ``filter(method=...)`` to their classes
+METHODS: dict[str, type[FitMethodBase]] = {
+    "linear": Linear,
+    "npoly": NPoly,
     "chebyshev": Chebyshev,
 }
 
@@ -30,11 +29,12 @@ GROUP_KEYS: dict[str, Callable[[FitResultData], str]] = {
 
 GroupBy = str | tuple[str, ...] | None
 WellSelector = Well | str | Iterable[Well | str] | None
-MethodSelector = str | Iterable[str] | None
+MethodName = str | type[FitMethodBase]
+MethodSelector = MethodName | Iterable[MethodName] | None
 
 
 def _method_name(fit: FitResultData) -> str:
-    """The ``Model.fit(method=...)`` name of the method used for a fit."""
+    """The ``filter(method=...)`` name of the method used for a fit."""
     for name, cls in METHODS.items():
         if isinstance(fit.fit_method, cls):
             return name
@@ -54,7 +54,9 @@ def _as_methods(value: MethodSelector) -> set[str] | None:
     """Normalise a method selector to a set of method names (None means any)."""
     if value is None:
         return None
-    methods = {value} if isinstance(value, str) else set(value)
+    values: list[MethodName] = [value] if isinstance(value, str | type) else list(value)
+    names = {cls: name for name, cls in METHODS.items()}
+    methods = {names.get(v, v.__name__) if isinstance(v, type) else v for v in values}
     unknown = methods - METHODS.keys()
     if unknown:
         msg = f"Unknown method(s) {sorted(unknown)}. Valid methods are {list(METHODS)}."
@@ -168,13 +170,14 @@ class FitCollection:
         ----------
         predicate : Callable[[FitResultData], bool] | None
             Optional function returning True for the fits to keep, for criteria not
-            covered by the keywords, e.g. ``lambda f: f.rmse < 0.05``.
+            covered by the keywords, e.g. ``lambda f: f.fit_method.rmse < 0.05``.
         obs : Well | str | list[Well | str] | None
             The observation well(s).
         ref : Well | str | list[Well | str] | None
             The reference well(s).
-        method : str | list[str] | None
-            The fitting method(s): "linearregression", "npolyfit" or "chebyshev".
+        method : str | type[FitMethodBase] | list[str | type[FitMethodBase]] | None
+            The fitting method(s), as a name ("linear", "npoly" or "chebyshev") or
+            a class (``Linear``, ``NPoly`` or ``Chebyshev``).
         name : str | list[str] | None
             The fit name(s).
 
@@ -267,7 +270,7 @@ class FitCollection:
         if not self._fits:
             logger.error("Cannot get the best fit of an empty collection.")
             raise ValueError("Cannot get the best fit of an empty collection.")
-        return min(self._fits, key=lambda fit: fit.rmse)
+        return min(self._fits, key=lambda fit: fit.fit_method.rmse)
 
     def top(self, n: int = 1, by: GroupBy = None) -> "FitCollection":
         """
@@ -299,7 +302,7 @@ class FitCollection:
         return FitCollection(
             fit
             for group in groups.values()
-            for fit in sorted(group, key=lambda f: f.rmse)[:n]
+            for fit in sorted(group, key=lambda f: f.fit_method.rmse)[:n]
         )
 
     def to_dataframe(self) -> pd.DataFrame:
@@ -310,8 +313,10 @@ class FitCollection:
         -------
         pd.DataFrame
             DataFrame with common columns (ref_well_name, obs_well_name, method,
-            rmse, etc.) and method-specific columns with appropriate prefixes
-            (e.g., linreg_slope, linreg_intercept)
+            rmse, etc.) and method-specific columns: prefixed columns for linear
+            fits (e.g., linreg_slope, linreg_intercept) and the degree for
+            polynomial fits. pred_const is empty for polynomial fits, whose
+            prediction width varies; use ``fit.get_prediction_constant()``.
         """
         if not self._fits:
             return pd.DataFrame()
@@ -323,15 +328,16 @@ class FitCollection:
                 "ref_well_name": fit.ref_well.name,
                 "obs_well_name": fit.obs_well.name,
                 "method": fit.fit_method.__class__.__name__,
-                "rmse": fit.rmse,
+                "rmse": fit.fit_method.rmse,
                 "n_points": fit.n,
-                "stderr": fit.stderr,
+                "stderr": fit.fit_method.stderr,
                 "confidence_level": fit.p,
                 "calibration_start": fit.tmin,
                 "calibration_end": fit.tmax,
                 "time_offset": str(fit.offset),
-                "t_a": fit.t_a,
-                "pred_const": fit.pred_const,
+                "t_a": fit.fit_method.t_a,
+                # Polynomial fits have a prediction width per reference value
+                "pred_const": getattr(fit.fit_method, "pred_const", None),
             }
 
             # Method-specific columns with prefixes
@@ -342,10 +348,11 @@ class FitCollection:
                         "linreg_intercept": fit.fit_method.intercept,
                         "linreg_rvalue": fit.fit_method.rvalue,
                         "linreg_pvalue": fit.fit_method.pvalue,
-                        "linreg_stderr": fit.fit_method.stderr,
+                        "linreg_stderr": fit.fit_method.slope_stderr,
                     }
                 )
-            # Future fitting methods would be added here as elif branches
+            elif isinstance(fit.fit_method, NPoly | Chebyshev):
+                row["degree"] = fit.fit_method.degree
 
             data.append(row)
 
@@ -425,8 +432,8 @@ class FitCollection:
             Remove the fits of these observation well(s).
         ref : Well | str | list[Well | str] | None
             Remove the fits of these reference well(s).
-        method : str | list[str] | None
-            Remove the fits made with these method(s).
+        method : str | type[FitMethodBase] | list[str | type[FitMethodBase]] | None
+            Remove the fits made with these method(s), see :meth:`filter`.
         dry_run : bool
             If True, nothing is removed; the fits that would be removed are
             returned.

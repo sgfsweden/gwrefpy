@@ -15,8 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 class Chebyshev(FitMethodBase):
-    _scalar_keys = ("degree", "rvalue", "rank", "stderr", "t_a", "rmse")
-    _array_keys = ("coefficients", "leverage_operator")
+    _scalar_keys = ("degree", "rank", "stderr", "t_a", "rmse")
+    _array_keys = ("coefficients", "rvalue", "leverage_operator")
+
     def __init__(self, degree: int = 4):
         super().__init__()
         self.coefficients = None
@@ -80,7 +81,6 @@ class Chebyshev(FitMethodBase):
                 x, self.coefficients, tensor=False
             )
         )
-
 
     def fit(
         self,
