@@ -2,6 +2,10 @@ __name__ = "gwrefpy"
 __version__ = "1.0.1"
 
 from .constants import print_constants
+from .fitcollection import FitCollection
+from .methods.chebyshev import Chebyshev
+from .methods.linregressfit import Linear
+from .methods.npolyfit import NPoly
 from .methods.timeseries import analyze_offsets
 from .model import Model
 from .utils import (
@@ -11,14 +15,20 @@ from .utils import (
     set_log_level,
 )
 from .well import Well
+from .wellcollection import WellCollection
 
 __all__ = [
     "Model",
+    "FitCollection",
     "Well",
+    "WellCollection",
     "analyze_offsets",
     "set_log_level",
     "enable_file_logging",
     "print_constants",
     "datetime_to_float",
     "float_to_datetime",
+    "Linear",
+    "NPoly",
+    "Chebyshev",
 ]

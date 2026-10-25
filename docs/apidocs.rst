@@ -7,5 +7,7 @@ This page contains the API reference for the gwrefpy package.
     :maxdepth: 1
 
     model
+    fitcollection
+    wellcollection
     well
     constants

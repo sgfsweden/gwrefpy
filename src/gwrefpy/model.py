@@ -1,16 +1,28 @@
 import logging
+import warnings
 
 import pandas as pd
 
 from . import __version__
 from .fitbase import FitBase
-from .fitresults import FitResultData, LinRegResult, _unpack_dict_fit_method
+from .fitcollection import FitCollection
+from .fitresults import FitResultData, _unpack_dict_fit_method
 from .io.io import load, save
 from .plotter import Plotter
 from .utils.conversions import float_to_datetime
 from .well import Well
+from .wellcollection import WellCollection
 
 logger = logging.getLogger(__name__)
+
+
+def _deprecated(old: str, new: str) -> None:
+    """Warn that the model API ``old`` is deprecated in favour of ``new``."""
+    warnings.warn(
+        f"{old} is deprecated and will be removed in 2.0. Use {new} instead.",
+        DeprecationWarning,
+        stacklevel=3,
+    )
 
 
 class Model(FitBase, Plotter):
@@ -30,10 +42,10 @@ class Model(FitBase, Plotter):
         self.name = name
 
         # Well attributes
-        self.wells: list[Well] = []
+        self.wells: WellCollection = WellCollection._root(self)
 
         # Fit attributes
-        self.fits: list[FitResultData] = []
+        self.fits: FitCollection = FitCollection._root()
 
         # Check if the name ends with the .gwref extension
         ext = name.split(".")[-1].lower()
@@ -49,8 +61,8 @@ class Model(FitBase, Plotter):
 
     def __str__(self):
         """String representation of the Model object."""
-        obs_count = len(self.obs_wells)
-        ref_count = len(self.ref_wells)
+        obs_count = len(self.wells.obs())
+        ref_count = len(self.wells.ref())
         fits_count = len(self.fits)
 
         lines = [
@@ -77,7 +89,7 @@ class Model(FitBase, Plotter):
             for fit in self.fits[-3:]:  # Show last 3 fits
                 lines.append(
                     f"  • {fit.obs_well.name} ~ {fit.ref_well.name}: "
-                    f"RMSE={fit.rmse:.4f}"
+                    f"RMSE={fit.fit_method.rmse:.4f}"
                 )
             if len(self.fits) > 3:
                 lines.append(f"  ... and {len(self.fits) - 3} more")
@@ -94,12 +106,43 @@ class Model(FitBase, Plotter):
 
     @property
     def obs_wells(self) -> list[Well]:
-        """List of observation wells in the model."""
-        return [well for well in self.wells if not well.is_reference]
+        """
+        List of observation wells in the model.
+
+        .. deprecated:: 1.1.0
+            Use ``model.wells.obs()`` instead.
+        """
+        _deprecated("obs_wells", "model.wells.obs()")
+        return list(self.wells.obs())
+
+    @property
+    def ref_wells(self) -> list[Well]:
+        """
+        List of reference wells in the model.
+
+        .. deprecated:: 1.1.0
+            Use ``model.wells.ref()`` instead.
+        """
+        _deprecated("ref_wells", "model.wells.ref()")
+        return list(self.wells.ref())
+
+    @property
+    def well_names(self) -> list[str]:
+        """
+        List of all well names in the model.
+
+        .. deprecated:: 1.1.0
+            Use ``model.wells.names()`` instead.
+        """
+        _deprecated("well_names", "model.wells.names()")
+        return self.wells.names()
 
     def obs_wells_summary(self) -> pd.DataFrame:
         """
         Get a summary DataFrame of observation wells in the model.
+
+        .. deprecated:: 1.1.0
+            Use ``model.wells.obs().to_dataframe()`` instead.
 
         Returns
         -------
@@ -108,63 +151,15 @@ class Model(FitBase, Plotter):
             mean_level, latest_value, latest_date, latitude, longitude, elevation,
             best_fit_ref_well, best_rmse
         """
-        obs_wells = self.obs_wells
-        if not obs_wells:
-            return pd.DataFrame()
-
-        data = []
-        for well in obs_wells:
-            row = {
-                "name": well.name,
-                "well_type": "observation",
-                "data_points": len(well.timeseries)
-                if well.timeseries is not None
-                else 0,
-                "start_date": well.timeseries.index.min()
-                if well.timeseries is not None and len(well.timeseries) > 0
-                else None,
-                "end_date": well.timeseries.index.max()
-                if well.timeseries is not None and len(well.timeseries) > 0
-                else None,
-                "mean_level": well.timeseries.mean()
-                if well.timeseries is not None and len(well.timeseries) > 0
-                else None,
-                "latest_value": well.timeseries.iloc[-1]
-                if well.timeseries is not None and len(well.timeseries) > 0
-                else None,
-                "latest_date": well.timeseries.index[-1]
-                if well.timeseries is not None and len(well.timeseries) > 0
-                else None,
-                "latitude": well.latitude,
-                "longitude": well.longitude,
-                "elevation": well.elevation,
-            }
-
-            # Find best fit for this observation well
-            fits = self.get_fits(well)
-            if fits:
-                if isinstance(fits, list):
-                    best_fit = min(fits, key=lambda x: x.rmse)
-                else:
-                    best_fit = fits
-                row["best_fit_ref_well"] = best_fit.ref_well.name
-                row["best_rmse"] = best_fit.rmse
-            else:
-                row["best_fit_ref_well"] = None
-                row["best_rmse"] = None
-
-            data.append(row)
-
-        return pd.DataFrame(data)
-
-    @property
-    def ref_wells(self) -> list[Well]:
-        """List of reference wells in the model."""
-        return [well for well in self.wells if well.is_reference]
+        _deprecated("obs_wells_summary()", "model.wells.obs().to_dataframe()")
+        return self.wells.obs().to_dataframe()
 
     def ref_wells_summary(self) -> pd.DataFrame:
         """
         Get a summary DataFrame of reference wells in the model.
+
+        .. deprecated:: 1.1.0
+            Use ``model.wells.ref().to_dataframe()`` instead.
 
         Returns
         -------
@@ -173,91 +168,38 @@ class Model(FitBase, Plotter):
             mean_level, latest_value, latest_date, latitude, longitude, elevation,
             num_fits, avg_rmse
         """
-        ref_wells = self.ref_wells
-        if not ref_wells:
-            return pd.DataFrame()
-
-        data = []
-        for well in ref_wells:
-            row = {
-                "name": well.name,
-                "well_type": "reference",
-                "data_points": (
-                    len(well.timeseries) if well.timeseries is not None else 0
-                ),
-                "start_date": (
-                    well.timeseries.index.min()
-                    if well.timeseries is not None and len(well.timeseries) > 0
-                    else None
-                ),
-                "end_date": (
-                    well.timeseries.index.max()
-                    if well.timeseries is not None and len(well.timeseries) > 0
-                    else None
-                ),
-                "mean_level": (
-                    well.timeseries.mean()
-                    if well.timeseries is not None and len(well.timeseries) > 0
-                    else None
-                ),
-                "latest_value": (
-                    well.timeseries.iloc[-1]
-                    if well.timeseries is not None and len(well.timeseries) > 0
-                    else None
-                ),
-                "latest_date": (
-                    well.timeseries.index[-1]
-                    if well.timeseries is not None and len(well.timeseries) > 0
-                    else None
-                ),
-                "latitude": well.latitude,
-                "longitude": well.longitude,
-                "elevation": well.elevation,
-            }
-
-            # Find all fits using this reference well
-            fits = self.get_fits(well)
-            if fits:
-                if isinstance(fits, list):
-                    row["num_fits"] = len(fits)
-                    row["avg_rmse"] = sum(fit.rmse for fit in fits) / len(fits)
-                else:
-                    row["num_fits"] = 1
-                    row["avg_rmse"] = fits.rmse
-            else:
-                row["num_fits"] = 0
-                row["avg_rmse"] = None
-
-            data.append(row)
-
-        return pd.DataFrame(data)
+        _deprecated("ref_wells_summary()", "model.wells.ref().to_dataframe()")
+        return self.wells.ref().to_dataframe()
 
     def wells_summary(self) -> pd.DataFrame:
         """
         Get a combined summary DataFrame of all wells in the model.
 
+        .. deprecated:: 1.1.0
+            Use ``model.wells.to_dataframe()`` instead, which keeps the wells in
+            model order.
+
         Returns
         -------
         pd.DataFrame
-            Combined DataFrame with both observation and reference wells,
-            including all columns from both summary types
+            Combined DataFrame with the observation wells first, then the
+            reference wells, including all columns from both summary types
         """
-        obs_df = self.obs_wells_summary()
-        ref_df = self.ref_wells_summary()
-
-        if obs_df.empty and ref_df.empty:
-            return pd.DataFrame()
-        elif obs_df.empty:
+        _deprecated("wells_summary()", "model.wells.to_dataframe()")
+        obs_df = self.wells.obs().to_dataframe()
+        ref_df = self.wells.ref().to_dataframe()
+        if obs_df.empty:
             return ref_df
-        elif ref_df.empty:
+        if ref_df.empty:
             return obs_df
-        else:
-            # Combine both DataFrames
-            return pd.concat([obs_df, ref_df], ignore_index=True)
+        return pd.concat([obs_df, ref_df], ignore_index=True)
 
     def fits_summary(self) -> pd.DataFrame:
         """
         Get a summary DataFrame of all fit results in the model.
+
+        .. deprecated:: 1.1.0
+            Use ``model.fits.to_dataframe()`` instead.
 
         Returns
         -------
@@ -266,48 +208,8 @@ class Model(FitBase, Plotter):
             rmse, etc.) and method-specific columns with appropriate prefixes
             (e.g., linreg_slope, linreg_intercept)
         """
-        if not self.fits:
-            return pd.DataFrame()
-
-        data = []
-        for fit in self.fits:
-            # Common columns from FitResultData attributes
-            row = {
-                "ref_well_name": fit.ref_well.name,
-                "obs_well_name": fit.obs_well.name,
-                "method": fit.fit_method.__class__.__name__,
-                "rmse": fit.rmse,
-                "n_points": fit.n,
-                "stderr": fit.stderr,
-                "confidence_level": fit.p,
-                "calibration_start": fit.tmin,
-                "calibration_end": fit.tmax,
-                "time_offset": str(fit.offset),
-                "t_a": fit.t_a,
-                "pred_const": fit.pred_const,
-            }
-
-            # Method-specific columns with prefixes
-            if isinstance(fit.fit_method, LinRegResult):
-                row.update(
-                    {
-                        "linreg_slope": fit.fit_method.slope,
-                        "linreg_intercept": fit.fit_method.intercept,
-                        "linreg_rvalue": fit.fit_method.rvalue,
-                        "linreg_pvalue": fit.fit_method.pvalue,
-                        "linreg_stderr": fit.fit_method.stderr,
-                    }
-                )
-            # Future fitting methods would be added here as elif branches
-
-            data.append(row)
-
-        return pd.DataFrame(data)
-
-    @property
-    def well_names(self) -> list[str]:
-        """List of all well names in the model."""
-        return [well.name for well in self.wells]
+        _deprecated("fits_summary()", "model.fits.to_dataframe()")
+        return self.fits.to_dataframe()
 
     def add_well(self, well: Well | list[Well]):
         """
@@ -363,12 +265,12 @@ class Model(FitBase, Plotter):
             raise ValueError(f"Well '{well.name}' is already in the model.")
 
         # Check if the well name already exists in the model
-        if well.name in self.well_names:
+        if well.name in self.wells:
             logger.error(f"Well name '{well.name}' already exists in the model.")
             raise ValueError(f"Well name '{well.name}' already exists in the model.")
 
         # Add the well to the model
-        self.wells.append(well)
+        self.wells._add(well)
         well.model.append(self)
         logger.debug(f"Well '{well.name}' added to model '{self.name}'.")
 
@@ -376,66 +278,39 @@ class Model(FitBase, Plotter):
         """
         Delete a well or a list of wells from the model.
 
+        .. deprecated:: 1.1.0
+            Use ``model.wells.remove(...)`` instead.
+
+        The fits that use the deleted wells are deleted too.
+
         Parameters
         ----------
         well : Well or list of Wells
-            The well or list of wells to add to the model.
+            The well or list of wells to delete from the model.
 
         Returns
         -------
         None
             This method modifies the model in place.
         """
-        if isinstance(well, list):
-            for w in well:
-                self._delete_well(w)
-            logger.debug(f"Deleted {len(well)} wells from model '{self.name}'.")
-        else:
-            self._delete_well(well)
-
-    def _delete_well(self, well):
-        """
-        The internal method to delete a well from the model.
-
-        Parameters
-        ----------
-        well : Well
-            The well to delete from the model.
-
-        Raises
-        ------
-        TypeError
-            If the well is not an instance of WellBase.
-        ValueError
-             If the well is not part of the model.
-
-        Returns
-        -------
-        None
-            This method modifies the model in place.
-        """
-
-        # Check if the well is an instance of Well
-        if not isinstance(well, Well):
-            logger.error("Only Well instances can be deleted from the model.")
-            raise TypeError("Only Well instances can be deleted from the model.")
-
-        # Check if the well is already in the model
-        if well not in self.wells:
-            logger.error(f"Well '{getattr(well, 'name', well)}' is not in the model.")
-            raise ValueError(
-                f"Well '{getattr(well, 'name', well)}' is not in the model."
-            )
-
-        self.wells.remove(well)
-        if hasattr(well, "model") and self in well.model:
-            well.model.remove(self)
-
-        logger.debug(f"Well '{well.name}' deleted from model '{self.name}'.")
+        _deprecated("delete_well()", "model.wells.remove(...)")
+        wells = well if isinstance(well, list) else [well]
+        for w in wells:
+            if not isinstance(w, Well):
+                logger.error("Only Well instances can be deleted from the model.")
+                raise TypeError("Only Well instances can be deleted from the model.")
+            if w not in self.wells:
+                logger.error(f"Well '{w.name}' is not in the model.")
+                raise ValueError(f"Well '{w.name}' is not in the model.")
+        self.wells.remove(wells)
 
     def get_wells(self, names: list[str] | str) -> Well | list[Well]:
         """
         Get wells from the model by their names.
+
+        .. deprecated:: 1.1.0
+            Use ``model.wells["name"]`` or ``model.wells.filter(name=[...])``
+            instead.
 
         Parameters
         ----------
@@ -452,18 +327,35 @@ class Model(FitBase, Plotter):
         ValueError
             If any of the specified well names are not found in the model.
         """
+        _deprecated("get_wells()", 'model.wells["name"]')
         if isinstance(names, str):
             names = [names]
-
-        found_wells = []
-        for name in names:
-            if name in self.well_names:
-                found_wells.append(self.wells[self.well_names.index(name)])
-            else:
-                logger.error(f"Well name '{name}' not found in the model.")
-                raise ValueError(f"Well name '{name}' not found in the model.")
-
+        found_wells = [self._get_well(name) for name in names]
         return found_wells if len(found_wells) > 1 else found_wells[0]
+
+    def _get_well(self, name: str) -> Well:
+        """
+        Get a well by name, raising ValueError if it is not in the model.
+
+        Parameters
+        ----------
+        name : str
+            The name of the well.
+
+        Returns
+        -------
+        Well
+            The well with the given name.
+
+        Raises
+        ------
+        ValueError
+            If no well with that name is in the model.
+        """
+        if name not in self.wells:
+            logger.error(f"Well name '{name}' not found in the model.")
+            raise ValueError(f"Well name '{name}' not found in the model.")
+        return self.wells[name]
 
     # ============================== Fit methods ==============================
 
@@ -495,7 +387,7 @@ class Model(FitBase, Plotter):
 
     def _resolve_wells(self, wells: Well | list[Well] | str | list[str]) -> list[Well]:
         """
-        Resolve well names to Well objects using get_wells().
+        Resolve well names to Well objects.
 
         Parameters
         ----------
@@ -515,9 +407,7 @@ class Model(FitBase, Plotter):
         for well in wells:
             if isinstance(well, str):
                 # Convert string name to Well object
-                resolved_well = self.get_wells(well)
-                # get_wells returns single Well for single string input
-                resolved_wells.append(resolved_well)
+                resolved_wells.append(self._get_well(well))
             elif isinstance(well, Well):
                 resolved_wells.append(well)
             else:
@@ -593,31 +483,11 @@ class Model(FitBase, Plotter):
         # Unpack fits
         fits_list = data.get("fits", [])
         for fit_data in fits_list:
-            pred_const = fit_data.get("pred_const", None)
-            if isinstance(pred_const, list):
-                pred_const_index = fit_data.get("pred_const_index")
-                if pred_const_index is not None:
-                    pred_const_index = [
-                        float_to_datetime(timestamp) for timestamp in pred_const_index
-                    ]
-                else:
-                    ref_index = self.wells[
-                        self.well_names.index(fit_data["ref_well"])
-                    ].timeseries.index
-                    pred_const_index = ref_index[: len(pred_const)]
-                pred_const = pd.Series(pred_const, index=pred_const_index)
             fit = FitResultData(
-                ref_well=self.wells[self.well_names.index(fit_data["ref_well"])],
-                obs_well=self.wells[self.well_names.index(fit_data["obs_well"])],
-                rmse=fit_data.get("rmse", None),
+                ref_well=self.wells[fit_data["ref_well"]],
+                obs_well=self.wells[fit_data["obs_well"]],
                 n=fit_data.get("n", None),
                 fit_method=_unpack_dict_fit_method(fit_data),
-                t_a=fit_data.get("t_a", None),
-                stderr=fit_data.get("stderr", None),
-                pred_const=pred_const,
-                prediction_leverage_matrix=fit_data.get(
-                    "prediction_leverage_matrix", None
-                ),
                 p=fit_data.get("p", None),
                 offset=fit_data.get("offset", None),
                 aggregation=fit_data.get("aggregation", "mean"),
@@ -627,7 +497,7 @@ class Model(FitBase, Plotter):
                 shift=fit_data.get("shift", None),
                 name=fit_data.get("name", None),
             )
-            self.fits.append(fit)
+            self.fits._add_renaming(fit)
 
     def save_project(self, filename=None, overwrite=False):
         """

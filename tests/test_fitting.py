@@ -3,8 +3,8 @@ import pandas as pd
 import pytest
 import scipy as sp
 
-from gwrefpy import Well
-from gwrefpy.fitresults import FitResultData, NPolyFitResult
+from gwrefpy import Chebyshev, FitCollection, NPoly, Well
+from gwrefpy.fitresults import FitResultData
 from gwrefpy.methods.timeseries import groupby_time_equivalents
 
 
@@ -25,7 +25,7 @@ def test_strandangers_model_basic_fit(strandangers_model) -> None:
 
 def test_strandangers_model_best_fit_by_names(strandangers_model) -> None:
     # introduce a second reference well
-    ref = strandangers_model.get_wells("ref")  # type: Well
+    ref = strandangers_model.wells["ref"]
     ts2 = ref.timeseries + 0.5
     ref2 = Well("ref2", is_reference=True, timeseries=ts2)
     strandangers_model.add_well(ref2)
@@ -33,15 +33,15 @@ def test_strandangers_model_best_fit_by_names(strandangers_model) -> None:
     best_fit = strandangers_model.best_fit("obs", ["ref", "ref2"], offset="3.5D")
     assert isinstance(best_fit, FitResultData)
 
-    model_fits = strandangers_model.get_fits("obs")
+    model_fits = strandangers_model.fits.filter(obs="obs")
     assert len(model_fits) == 2
 
-    assert best_fit == min(model_fits, key=lambda x: x.rmse)
+    assert best_fit == min(model_fits, key=lambda x: x.fit_method.rmse)
 
 
 def test_strandangers_model_best_fit_by_objects(strandangers_model) -> None:
     # introduce a second reference well
-    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+    obs, ref = strandangers_model.wells["obs"], strandangers_model.wells["ref"]
     ts2 = ref.timeseries + 0.5
     ref2 = Well("ref2", is_reference=True, timeseries=ts2)
     strandangers_model.add_well(ref2)
@@ -49,13 +49,13 @@ def test_strandangers_model_best_fit_by_objects(strandangers_model) -> None:
     best_fit = strandangers_model.best_fit(obs, [ref, ref2], offset="3.5D")
     assert isinstance(best_fit, FitResultData)
 
-    model_fits = strandangers_model.get_fits(obs)
+    model_fits = strandangers_model.fits.filter(obs=obs)
     assert len(model_fits) == 2
 
 
 def test_strandangers_model_fit_multiple_wells(strandangers_model) -> None:
     # Create additional wells for testing list functionality
-    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+    obs, ref = strandangers_model.wells["obs"], strandangers_model.wells["ref"]
 
     # Create second observation well
     ts_obs2 = obs.timeseries + 1.0
@@ -72,8 +72,8 @@ def test_strandangers_model_fit_multiple_wells(strandangers_model) -> None:
         [obs, obs2], [ref, ref2], offset="3.5D", name=["test1", "test2"]
     )
 
-    # Verify we get a list of results
-    assert isinstance(results, list)
+    # Verify we get a collection of results
+    assert isinstance(results, FitCollection)
     assert len(results) == 2
 
     # Verify each result is a FitResultData instance
@@ -97,16 +97,14 @@ def test_strandangers_model_fit_multiple_wells(strandangers_model) -> None:
     # Test fitting with lists of wells with no names
     results2 = strandangers_model.fit([obs, obs2], [ref, ref2], offset="3.5D")
 
-    # verify that the names are auto-generated and are of type str(uuid4)
-    assert results2[0].name is not None
-    assert results2[1].name is not None
-    assert isinstance(results2[0].name, str)
-    assert isinstance(results2[1].name, str)
+    # verify that the names are auto-generated from the wells and method
+    assert results2[0].name == "obs~ref:Linear"
+    assert results2[1].name == "obs2~ref2:Linear"
 
 
 def test_strandangers_model_fit_mismatched_lists(strandangers_model) -> None:
     # Test error handling for mismatched list lengths
-    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+    obs, ref = strandangers_model.wells["obs"], strandangers_model.wells["ref"]
 
     # Create second observation well
     ts_obs2 = obs.timeseries + 1.0
@@ -120,7 +118,7 @@ def test_strandangers_model_fit_mismatched_lists(strandangers_model) -> None:
 
 def test_strandangers_model_fit_string_names(strandangers_model) -> None:
     # Test fitting using string well names instead of Well objects
-    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+    obs, ref = strandangers_model.wells["obs"], strandangers_model.wells["ref"]
 
     # Create additional wells
     ts_obs2 = obs.timeseries + 1.0
@@ -141,7 +139,7 @@ def test_strandangers_model_fit_string_names(strandangers_model) -> None:
     results_list = strandangers_model.fit(
         ["obs", "obs2"], ["ref", "ref2"], offset="3.5D"
     )
-    assert isinstance(results_list, list)
+    assert isinstance(results_list, FitCollection)
     assert len(results_list) == 2
     assert results_list[0].obs_well.name == "obs"
     assert results_list[0].ref_well.name == "ref"
@@ -150,7 +148,7 @@ def test_strandangers_model_fit_string_names(strandangers_model) -> None:
 
     # Test mixed Well objects and strings
     result_mixed = strandangers_model.fit([obs, "obs2"], ["ref", ref2], offset="3.5D")
-    assert isinstance(result_mixed, list)
+    assert isinstance(result_mixed, FitCollection)
     assert len(result_mixed) == 2
     assert result_mixed[0].obs_well == obs
     assert result_mixed[0].ref_well.name == "ref"
@@ -167,9 +165,9 @@ def test_strandangers_model_fit_invalid_well_name(strandangers_model) -> None:
         strandangers_model.fit("obs", "nonexistent", offset="3.5D")
 
 
-def test_strandangers_model_remove_fits_by_n(strandangers_model) -> None:
+def test_strandangers_model_keep_best(strandangers_model) -> None:
     # introduce a second reference well
-    ref = strandangers_model.get_wells("ref")  # type: Well
+    ref = strandangers_model.wells["ref"]
     for i in range(10):
         ts2 = ref.timeseries * np.random.rand(*ref.timeseries.shape) + 10
         ref2 = Well(f"ref{i + 2}", is_reference=True, timeseries=ts2)
@@ -177,7 +175,7 @@ def test_strandangers_model_remove_fits_by_n(strandangers_model) -> None:
 
     # Add another observation well to make sure it remains intact when removing from
     # the other, and add a perfect fit reference well to make sure it remains intact
-    obs = strandangers_model.get_wells("obs")  # type: Well
+    obs = strandangers_model.wells["obs"]
     # distort one value to make sure they are not identical
     ts_obs2 = obs.timeseries.copy()
     ts_obs2.iloc[0] += 1e-5
@@ -195,38 +193,19 @@ def test_strandangers_model_remove_fits_by_n(strandangers_model) -> None:
     assert initial_fit_count == 12
 
     # Test the n input validation
-    with pytest.raises(ValueError, match="Parameter 'n' must be a positive integer."):
-        strandangers_model.remove_fits_by_n("obs", 0)
-    with pytest.raises(ValueError, match="Parameter 'n' must be a positive integer."):
-        strandangers_model.remove_fits_by_n("obs", -3)
-    with pytest.raises(ValueError, match="Parameter 'n' must be a positive integer."):
-        strandangers_model.remove_fits_by_n("obs", 2.5)
-    with pytest.raises(ValueError, match="Parameter 'n' must be a positive integer."):
-        strandangers_model.remove_fits_by_n("obs", "three")
+    for n in [0, -3, 2.5, "three"]:
+        with pytest.raises(
+            ValueError, match="Parameter 'n' must be a positive integer."
+        ):
+            strandangers_model.fits.keep_best(n, by="obs")
 
-    # test that observation well is an observation well
-    with pytest.raises(ValueError, match="The well 'ref' is not an observation well."):
-        strandangers_model.remove_fits_by_n("ref", 3)
-
-    # Test passing somthing else as a obs_well
-    with pytest.raises(
-        TypeError, match="Parameter 'obs_well' must be a Well instance or a string."
-    ):
-        strandangers_model.remove_fits_by_n(5, 3)
-    with pytest.raises(
-        TypeError, match="Parameter 'obs_well' must be a Well instance or a string."
-    ):
-        strandangers_model.remove_fits_by_n(strandangers_model.fits[0], 3)
-
-    # Test that nothing happens if there are fewer fits than n
-    strandangers_model.remove_fits_by_n("obs2", 300)
-    assert len(strandangers_model.fits) == initial_fit_count
-
-    # Remove fits by observation well name
-    strandangers_model.remove_fits_by_n("obs", 3)
+    # Keep the best 3 fits per observation well; obs2 has only one fit
+    strandangers_model.fits.keep_best(3, by="obs")
     assert any(
-        fit.ref_well.name == "ref_perfect" for fit in strandangers_model.get_fits("obs")
+        fit.ref_well.name == "ref_perfect"
+        for fit in strandangers_model.fits.filter(obs="obs")
     )
+    assert len(strandangers_model.fits.filter(obs="obs2")) == 1
 
     new_fit_count = len(strandangers_model.fits)
     assert new_fit_count == 4
@@ -234,7 +213,7 @@ def test_strandangers_model_remove_fits_by_n(strandangers_model) -> None:
 
 def test_fit_result_get_fit_timeseries(strandangers_model) -> None:
     # Test the get_fit_timeseries method
-    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+    obs, ref = strandangers_model.wells["obs"], strandangers_model.wells["ref"]
 
     # Perform a fit
     fit_result = strandangers_model.fit(obs, ref, offset="3.5D")
@@ -254,7 +233,7 @@ def test_fit_result_get_fit_timeseries(strandangers_model) -> None:
 
 def test_fit_result_get_upper_confidence_bound(strandangers_model) -> None:
     # Test the get_upper_confidence_bound method
-    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+    obs, ref = strandangers_model.wells["obs"], strandangers_model.wells["ref"]
 
     # Perform a fit
     fit_result = strandangers_model.fit(obs, ref, offset="3.5D")
@@ -267,13 +246,13 @@ def test_fit_result_get_upper_confidence_bound(strandangers_model) -> None:
 
     # Verify the upper bound is fitted values + pred_const
     fitted_series = fit_result.get_fit_timeseries()
-    expected_upper = fitted_series + fit_result.pred_const
+    expected_upper = fitted_series + fit_result.fit_method.pred_const
     assert upper_bound.equals(expected_upper)
 
 
 def test_fit_result_get_lower_confidence_bound(strandangers_model) -> None:
     # Test the get_lower_confidence_bound method
-    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+    obs, ref = strandangers_model.wells["obs"], strandangers_model.wells["ref"]
 
     # Perform a fit
     fit_result = strandangers_model.fit(obs, ref, offset="3.5D")
@@ -286,13 +265,13 @@ def test_fit_result_get_lower_confidence_bound(strandangers_model) -> None:
 
     # Verify the lower bound is fitted values - pred_const
     fitted_series = fit_result.get_fit_timeseries()
-    expected_lower = fitted_series - fit_result.pred_const
+    expected_lower = fitted_series - fit_result.fit_method.pred_const
     assert lower_bound.equals(expected_lower)
 
 
 def test_fit_result_confidence_bounds_relationship(strandangers_model) -> None:
     # Test the relationship between upper and lower confidence bounds
-    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+    obs, ref = strandangers_model.wells["obs"], strandangers_model.wells["ref"]
 
     # Perform a fit
     fit_result = strandangers_model.fit(obs, ref, offset="3.5D")
@@ -308,7 +287,7 @@ def test_fit_result_confidence_bounds_relationship(strandangers_model) -> None:
 
     # Verify the width of the confidence interval is 2 * pred_const
     interval_width = upper_bound - lower_bound
-    expected_width = 2 * fit_result.pred_const
+    expected_width = 2 * fit_result.fit_method.pred_const
     assert (
         abs(interval_width - expected_width) < 1e-10
     ).all()  # Allow for small floating point errors
@@ -316,7 +295,7 @@ def test_fit_result_confidence_bounds_relationship(strandangers_model) -> None:
 
 def test_fit_result_test_fit(strandangers_model) -> None:
     # Test the test_fit method
-    [obs, ref] = strandangers_model.get_wells(["obs", "ref"])
+    obs, ref = strandangers_model.wells["obs"], strandangers_model.wells["ref"]
 
     # Perform a fit
     fit_result = strandangers_model.fit(obs, ref, offset="4D")
@@ -325,22 +304,22 @@ def test_fit_result_test_fit(strandangers_model) -> None:
     stderr, rmse = fit_result.test_fit(ref.timeseries, offset="4D")
 
     # Verify the test, allow for small floating point errors
-    assert abs(fit_result.rmse - rmse) < 1e-10
-    assert abs(fit_result.stderr - stderr) < 1e-10
+    assert abs(fit_result.fit_method.rmse - rmse) < 1e-10
+    assert abs(fit_result.fit_method.stderr - stderr) < 1e-10
     result = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="npolyfit", degree=1
+        obs_well="obs", ref_well="ref", offset="3.5D", method=NPoly(degree=1)
     )
 
     # Get the statistical test result
     stderr_nploy, rmse_npoly = result.test_fit(ref.timeseries, offset="3.5D")
 
     # Verify the test, allow for small floating point errors
-    assert abs(result.rmse - rmse_npoly) < 1e-10
-    assert abs(result.stderr - stderr_nploy) < 1e-10
+    assert abs(result.fit_method.rmse - rmse_npoly) < 1e-10
+    assert abs(result.fit_method.stderr - stderr_nploy) < 1e-10
 
     # Test chebyshev method
     result_chebyshev = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="chebyshev", degree=1
+        obs_well="obs", ref_well="ref", offset="3.5D", method=Chebyshev(degree=1)
     )
 
     # Get the statistical test result
@@ -349,8 +328,8 @@ def test_fit_result_test_fit(strandangers_model) -> None:
     )
 
     # Verify the test, allow for small floating point errors
-    assert abs(result_chebyshev.rmse - rmse_chebyshev) < 1e-10
-    assert abs(result_chebyshev.stderr - stderr_chebyshev) < 1e-10
+    assert abs(result_chebyshev.fit_method.rmse - rmse_chebyshev) < 1e-10
+    assert abs(result_chebyshev.fit_method.stderr - stderr_chebyshev) < 1e-10
 
 
 def test_fit_with_aggregation_parameter(strandangers_model):
@@ -396,28 +375,28 @@ def test_fit_with_aggregation_parameter(strandangers_model):
 
 def test_fit_npolyfit_basic(strandangers_model) -> None:
     result = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="npolyfit", degree=1
+        obs_well="obs", ref_well="ref", offset="3.5D", method=NPoly(degree=1)
     )
-    assert isinstance(result.fit_method, NPolyFitResult)
+    assert isinstance(result.fit_method, NPoly)
     assert result.n == 3
     assert result.fit_method.degree == 1
 
 
 def test_fit_chebyshev_basic(strandangers_model) -> None:
     result = strandangers_model.fit(
-        obs_well="obs", ref_well="ref", offset="3.5D", method="chebyshev", degree=1
+        obs_well="obs", ref_well="ref", offset="3.5D", method=Chebyshev(degree=1)
     )
     assert result.n == 3
     assert result.fit_method.degree == 1
 
 
-@pytest.mark.parametrize("method", ["npolyfit", "chebyshev"])
+@pytest.mark.parametrize("method", [NPoly, Chebyshev])
 def test_polynomial_prediction_constant_uses_leverage(small_example_model, method):
-    [obs, ref] = small_example_model.get_wells(["obs", "ref"])
-    result = small_example_model.fit(obs, ref, offset="3.5D", method=method, degree=1)
+    obs, ref = small_example_model.wells["obs"], small_example_model.wells["ref"]
+    result = small_example_model.fit(obs, ref, offset="3.5D", method=method(degree=1))
 
-    assert isinstance(result.pred_const, pd.Series)
-    assert result.pred_const.index.equals(ref.timeseries.index)
+    assert isinstance(result.get_prediction_constant(), pd.Series)
+    assert result.get_prediction_constant().index.equals(ref.timeseries.index)
 
     training_x, training_y, n = groupby_time_equivalents(
         obs.timeseries,
@@ -426,7 +405,7 @@ def test_polynomial_prediction_constant_uses_leverage(small_example_model, metho
         aggregation="mean",
         method="anchor",
     )
-    if method == "npolyfit":
+    if method is NPoly:
         training_matrix = np.vander(training_x.values, 2)
         prediction_matrix = np.vander(ref.timeseries.values, 2)
     else:
@@ -436,7 +415,7 @@ def test_polynomial_prediction_constant_uses_leverage(small_example_model, metho
             training_x.values, result.fit_method.coefficients
         )
 
-    if method == "npolyfit":
+    if method is NPoly:
         fitted_training_values = np.polyval(
             result.fit_method.coefficients, training_x.values
         )
@@ -445,25 +424,25 @@ def test_polynomial_prediction_constant_uses_leverage(small_example_model, metho
     leverage = np.einsum(
         "ij,jk,ik->i", prediction_matrix, covariance, prediction_matrix
     )
-    expected = result.t_a * result.stderr * np.sqrt(1 + leverage)
+    expected = result.fit_method.t_a * result.fit_method.stderr * np.sqrt(1 + leverage)
     expected_stderr = np.sqrt(
         np.sum((training_y.values - fitted_training_values) ** 2) / (n - 2)
     )
     expected_t = -sp.stats.t.ppf((1 - result.p) / 2, n - 2)
 
-    np.testing.assert_allclose(result.pred_const.values, expected)
-    np.testing.assert_allclose(result.stderr, expected_stderr)
-    np.testing.assert_allclose(result.t_a, expected_t)
-    assert np.ptp(result.pred_const.values) > 0
+    np.testing.assert_allclose(result.get_prediction_constant().values, expected)
+    np.testing.assert_allclose(result.fit_method.stderr, expected_stderr)
+    np.testing.assert_allclose(result.fit_method.t_a, expected_t)
+    assert np.ptp(result.get_prediction_constant().values) > 0
     np.testing.assert_allclose(
         (result.get_upper_confidence_bound() - result.get_fit_timeseries()).values,
-        result.pred_const.values,
+        result.get_prediction_constant().values,
         rtol=1e-10,
         atol=1e-12,
     )
     pd.testing.assert_series_equal(
         result.get_upper_confidence_bound() - result.get_fit_timeseries(),
-        result.pred_const,
+        result.get_prediction_constant(),
         check_names=False,
         check_exact=False,
         atol=1e-12,
@@ -471,12 +450,12 @@ def test_polynomial_prediction_constant_uses_leverage(small_example_model, metho
     )
 
 
-@pytest.mark.parametrize("method", ["npolyfit", "chebyshev"])
+@pytest.mark.parametrize("method", [NPoly, Chebyshev])
 def test_polynomial_prediction_width_for_appended_reference_data(
     small_example_model, method
 ):
-    [obs, ref] = small_example_model.get_wells(["obs", "ref"])
-    result = small_example_model.fit(obs, ref, offset="3.5D", method=method, degree=3)
+    obs, ref = small_example_model.wells["obs"], small_example_model.wells["ref"]
+    result = small_example_model.fit(obs, ref, offset="3.5D", method=method(degree=3))
 
     new_index = ref.timeseries.index.max() + pd.Timedelta(days=30)
     new_reference = pd.Series([0.0], index=[new_index], name="ref")
@@ -497,9 +476,9 @@ def test_polynomial_prediction_width_for_appended_reference_data(
     )
 
 
-@pytest.mark.parametrize("method", ["npolyfit", "chebyshev"])
+@pytest.mark.parametrize("method", [NPoly, Chebyshev])
 def test_polynomial_fit_rejects_rank_deficient_reference(small_example_model, method):
-    [obs, ref] = small_example_model.get_wells(["obs", "ref"])
+    obs, ref = small_example_model.wells["obs"], small_example_model.wells["ref"]
     index = pd.date_range("2023-01-01", periods=5, freq="D")
     ref.replace_timeseries(pd.Series(np.ones(5), index=index, name="ref"))
     obs.replace_timeseries(
@@ -507,15 +486,15 @@ def test_polynomial_fit_rejects_rank_deficient_reference(small_example_model, me
     )
 
     with pytest.raises(ValueError, match="design matrix is rank deficient"):
-        small_example_model.fit(obs, ref, offset="0D", method=method, degree=1)
+        small_example_model.fit(obs, ref, offset="0D", method=method(degree=1))
 
 
 def test_fit_timeseries_validation(small_example_model) -> None:
-    [obs, ref] = small_example_model.get_wells(["obs", "ref"])
+    obs, ref = small_example_model.wells["obs"], small_example_model.wells["ref"]
 
     # Test with valid timeseries
     result = small_example_model.fit(
-        obs_well=obs, ref_well=ref, offset="3.5D", method="npolyfit", degree=1
+        obs_well=obs, ref_well=ref, offset="3.5D", method=NPoly(degree=1)
     )
     assert isinstance(result, FitResultData)
 
@@ -529,8 +508,7 @@ def test_fit_timeseries_validation(small_example_model) -> None:
             obs_well=obs_invalid,
             ref_well=ref,
             offset="3.5D",
-            method="npolyfit",
-            degree=2,
+            method=NPoly(degree=2),
         )
 
     ref_invalid = Well("ref_invalid", is_reference=True, timeseries=ref.timeseries)
@@ -542,8 +520,7 @@ def test_fit_timeseries_validation(small_example_model) -> None:
             obs_well=obs,
             ref_well=ref_invalid,
             offset="3.5D",
-            method="npolyfit",
-            degree=2,
+            method=NPoly(degree=2),
         )
 
     # Test identical timeseries (should raise ValueError)
@@ -557,20 +534,19 @@ def test_fit_timeseries_validation(small_example_model) -> None:
             obs_well=obs_identical,
             ref_well=ref,
             offset="3.5D",
-            method="npolyfit",
-            degree=2,
+            method=NPoly(degree=2),
         )
 
 
 def test_strandangers_model_skip_raise_error(strandangers_model) -> None:
     # introduce a second reference well
-    ref = strandangers_model.get_wells("ref")  # type: Well
+    ref = strandangers_model.wells["ref"]
     for i in range(10):
         ts2 = ref.timeseries * np.random.rand(*ref.timeseries.shape) + 10
         ref2 = Well(f"ref{i + 2}", is_reference=True, timeseries=ts2)
         strandangers_model.add_well(ref2)
 
-    obs = strandangers_model.obs_wells[0]
+    obs = strandangers_model.wells.obs()[0]
 
     # Make ref empty to force a fit failure
     ref.timeseries = pd.Series([], dtype=float, name="obs")
@@ -578,7 +554,7 @@ def test_strandangers_model_skip_raise_error(strandangers_model) -> None:
     # Test that skip_raise_error=True allows the process to continue even if a fit fails
     best_fit = strandangers_model.best_fit(
         obs_well=obs,
-        ref_wells=[ref] + strandangers_model.ref_wells[1:],
+        ref_wells=[ref, *strandangers_model.wells.ref()[1:]],
         offset="3.5D",
         skip_raise_error=True,
     )
@@ -588,7 +564,7 @@ def test_strandangers_model_skip_raise_error(strandangers_model) -> None:
     with pytest.raises(ValueError, match="The reference time series is empty."):
         strandangers_model.best_fit(
             obs_well=obs,
-            ref_wells=[ref] + strandangers_model.ref_wells[1:],
+            ref_wells=[ref, *strandangers_model.wells.ref()[1:]],
             offset="3.5D",
             skip_raise_error=False,
         )
