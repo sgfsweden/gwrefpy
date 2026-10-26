@@ -1,9 +1,15 @@
 import logging
+from typing import TYPE_CHECKING
 
 import pandas as pd
 
 from .constants import DEFAULT_PLOT_ATTRIBUTES
 from .utils.conversions import datetime_to_float, float_to_datetime
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+
+    from .plots import WellPlots
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +103,32 @@ class Well:
 
     def __repr__(self):
         return f"Well(name={self.name})"
+
+    @property
+    def plots(self) -> "WellPlots":
+        """Plots for this well, e.g. ``well.plots.plot()``."""
+        from .plots import WellPlots
+
+        return WellPlots(self)
+
+    def plot(
+        self,
+        *,
+        tmin: str | pd.Timestamp | None = None,
+        tmax: str | pd.Timestamp | None = None,
+        ax: "Axes | None" = None,
+        figsize: tuple[float, float] | None = None,
+    ) -> "Axes":
+        """Plot the well's time series.
+
+        A shortcut for :meth:`gwrefpy.plots.WellPlots.plot`, see there for the
+        parameters.
+
+        Returns
+        -------
+        matplotlib.axes.Axes
+        """
+        return self.plots.plot(tmin=tmin, tmax=tmax, ax=ax, figsize=figsize)
 
     def __str__(self):
         return f"Well: {self.name}"

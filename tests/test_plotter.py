@@ -37,7 +37,8 @@ def test_plot_fits(strandangers_model) -> None:
     """Test that plot_fits works."""
     fit = strandangers_model.best_fit(strandangers_model.wells.obs()[0], offset="3.5D")
 
-    fig, ax = strandangers_model.plot_fits(fit)
+    with pytest.deprecated_call():
+        fig, ax = strandangers_model.plot_fits(fit)
     assert isinstance(fig, Figure)
     assert isinstance(ax, Axes)
     plt.close(fig)
@@ -210,8 +211,17 @@ def test_plot_wells_ax_with_plot_separately_raises_error(timeseries):
     plt.close(fig)
 
 
-def test_fit_result_data_plot(timeseries):
-    """Test that FitResultData.plot() returns Figure and Axes."""
+@pytest.mark.parametrize(
+    "tmin, tmax",
+    [
+        (None, None),
+        ("2024-11-01", "2024-12-31"),
+        ("2024-12-01", None),
+        (None, "2025-01-01"),
+    ],
+)
+def test_fit_result_data_plot(timeseries, tmin, tmax):
+    """A fit rebuilt from a dict (as when loaded from a file) can be plotted."""
     from gwrefpy import Linear
     from gwrefpy.fitresults import FitResultData
 
@@ -244,134 +254,7 @@ def test_fit_result_data_plot(timeseries):
         tmax=timeseries.index[-1],
     )
 
-    fig, ax = fit.plot()
+    ax = fit.plot(tmin=tmin, tmax=tmax)
 
-    assert isinstance(fig, Figure)
     assert isinstance(ax, Axes)
-    plt.close(fig)
-
-
-def test_fit_result_data_plot_with_tmin_tmax(timeseries):
-    """Test that FitResultData.plot() works with tmin and tmax arguments."""
-    from gwrefpy import Linear
-    from gwrefpy.fitresults import FitResultData
-
-    ref_well = Well("ref", is_reference=True, timeseries=timeseries)
-    obs_well = Well("obs", is_reference=False, timeseries=timeseries)
-
-    fit_method = Linear.from_dict(
-        {
-            "slope": 1.0,
-            "intercept": 0.0,
-            "rvalue": 0.99,
-            "pvalue": 0.001,
-            "slope_stderr": 0.01,
-            "stderr": 0.01,
-            "pred_const": 0.05,
-            "t_a": 2.0,
-            "rmse": 0.1,
-        }
-    )
-    fit = FitResultData(
-        obs_well=obs_well,
-        ref_well=ref_well,
-        n=10,
-        fit_method=fit_method,
-        p=0.95,
-        offset="1D",
-        aggregation="mean",
-        shift=None,
-        tmin=timeseries.index[0],
-        tmax=timeseries.index[-1],
-    )
-
-    # Test with string tmin/tmax
-    fig, ax = fit.plot(tmin="2024-11-01", tmax="2024-12-31")
-
-    assert isinstance(fig, Figure)
-    assert isinstance(ax, Axes)
-    plt.close(fig)
-
-
-def test_fit_result_data_plot_with_tmin_only(timeseries):
-    """Test that FitResultData.plot() works with only tmin argument."""
-    from gwrefpy import Linear
-    from gwrefpy.fitresults import FitResultData
-
-    ref_well = Well("ref", is_reference=True, timeseries=timeseries)
-    obs_well = Well("obs", is_reference=False, timeseries=timeseries)
-
-    fit_method = Linear.from_dict(
-        {
-            "slope": 1.0,
-            "intercept": 0.0,
-            "rvalue": 0.99,
-            "pvalue": 0.001,
-            "slope_stderr": 0.01,
-            "stderr": 0.01,
-            "pred_const": 0.05,
-            "t_a": 2.0,
-            "rmse": 0.1,
-        }
-    )
-    fit = FitResultData(
-        obs_well=obs_well,
-        ref_well=ref_well,
-        n=10,
-        fit_method=fit_method,
-        p=0.95,
-        offset="1D",
-        aggregation="mean",
-        shift=None,
-        tmin=timeseries.index[0],
-        tmax=timeseries.index[-1],
-    )
-
-    # Test with only tmin
-    fig, ax = fit.plot(tmin="2024-12-01")
-
-    assert isinstance(fig, Figure)
-    assert isinstance(ax, Axes)
-    plt.close(fig)
-
-
-def test_fit_result_data_plot_with_tmax_only(timeseries):
-    """Test that FitResultData.plot() works with only tmax argument."""
-    from gwrefpy import Linear
-    from gwrefpy.fitresults import FitResultData
-
-    ref_well = Well("ref", is_reference=True, timeseries=timeseries)
-    obs_well = Well("obs", is_reference=False, timeseries=timeseries)
-
-    fit_method = Linear.from_dict(
-        {
-            "slope": 1.0,
-            "intercept": 0.0,
-            "rvalue": 0.99,
-            "pvalue": 0.001,
-            "slope_stderr": 0.01,
-            "stderr": 0.01,
-            "pred_const": 0.05,
-            "t_a": 2.0,
-            "rmse": 0.1,
-        }
-    )
-    fit = FitResultData(
-        obs_well=obs_well,
-        ref_well=ref_well,
-        n=10,
-        fit_method=fit_method,
-        p=0.95,
-        offset="1D",
-        aggregation="mean",
-        shift=None,
-        tmin=timeseries.index[0],
-        tmax=timeseries.index[-1],
-    )
-
-    # Test with only tmax
-    fig, ax = fit.plot(tmax="2025-01-01")
-
-    assert isinstance(fig, Figure)
-    assert isinstance(ax, Axes)
-    plt.close(fig)
+    plt.close(ax.figure)

@@ -81,10 +81,10 @@ Quick Example
             model = gr.Model(name="Small Example")
             model.add_well([obs, ref])
 
-            model.fit(obs_well=obs, ref_well=ref, offset="0D", tmin="2020-01-01", tmax="2020-03-23")
+            fit = model.fit(obs_well=obs, ref_well=ref, offset="0D", tmin="2020-01-01", tmax="2020-03-23")
 
             # Plot the results
-            model.plot_fits(plot_style="fancy", color_style="color", show_initiation_period=True)
+            fit.plot(outliers=True, calibration_period=True)
 
     .. tab-item:: Result
 

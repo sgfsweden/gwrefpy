@@ -27,17 +27,20 @@ LEGACY_METHOD_NAMES = {
 }
 
 
+def _method_label(method: FitMethodBase) -> str:
+    """Short readable label for a fit method, e.g. ``"Linear"`` or ``"NPoly(4)"``."""
+    if isinstance(method, NPoly):
+        return f"NPoly({method.degree})"
+    if isinstance(method, Chebyshev):
+        return f"Chebyshev({method.degree})"
+    if isinstance(method, Linear):
+        return "Linear"
+    return method.__class__.__name__.lower()
+
+
 def _default_fit_name(obs_well: Well, ref_well: Well, method: FitMethodBase) -> str:
     """Readable default fit name, e.g. ``"obs~ref:NPoly(4)"``."""
-    if isinstance(method, NPoly):
-        label = f"NPoly({method.degree})"
-    elif isinstance(method, Chebyshev):
-        label = f"Chebyshev({method.degree})"
-    elif isinstance(method, Linear):
-        label = "Linear"
-    else:
-        label = method.__class__.__name__.lower()
-    return f"{obs_well.name}~{ref_well.name}:{label}"
+    return f"{obs_well.name}~{ref_well.name}:{_method_label(method)}"
 
 
 class FitBase:

@@ -342,8 +342,9 @@ def test_model_internals_do_not_use_deprecated_api(model, tmp_path) -> None:
 def test_plot_wells_accepts_a_collection(model) -> None:
     import matplotlib.pyplot as plt
 
-    fig, ax = model.plot_wells(model.wells.obs())
-    _, default_ax = model.plot_wells()
+    with pytest.deprecated_call():
+        fig, ax = model.plot_wells(model.wells.obs())
+        _, default_ax = model.plot_wells()
 
     assert {line.get_label() for line in ax.get_lines()} >= {"obsA", "obsB"}
     assert {line.get_label() for line in default_ax.get_lines()} >= {

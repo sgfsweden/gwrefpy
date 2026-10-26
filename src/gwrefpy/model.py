@@ -1,6 +1,7 @@
 import logging
 import warnings
 
+import matplotlib.pyplot as plt
 import pandas as pd
 
 from . import __version__
@@ -25,7 +26,7 @@ def _deprecated(old: str, new: str) -> None:
     )
 
 
-class Model(FitBase, Plotter):
+class Model(FitBase):
     """
     A class representing a groundwater model that can contain multiple wells.
 
@@ -37,9 +38,8 @@ class Model(FitBase, Plotter):
     """
 
     def __init__(self, name: str):
-        super(FitBase, self).__init__()
-        super(Plotter, self).__init__()
         self.name = name
+        self._plotter: Plotter | None = None  # TODO: remove in v2 (legacy plots)
 
         # Well attributes
         self.wells: WellCollection = WellCollection._root(self)
@@ -547,3 +547,60 @@ class Model(FitBase, Plotter):
         data = load(filepath)
         self._unpack_dict(data)
         logger.info(f"Model '{self.name}' loaded from '{filepath}'.")
+
+    # Deprecated plotting, kept working until 2.0.
+    # TODO: remove these methods, _legacy_plotter and plotter.py in v2.
+
+    def _legacy_plotter(self) -> Plotter:
+        """The old plotter, kept per model so its colour assignments persist."""
+        if self._plotter is None:
+            self._plotter = Plotter()
+        self._plotter.wells = self.wells
+        self._plotter.fits = list(self.fits)
+        return self._plotter
+
+    def plot_wells(self, *args, **kwargs):
+        """Plot wells (deprecated).
+
+        .. deprecated:: 1.1
+            Use ``well.plot()`` or ``gwrefpy.plots.compare(wells)`` instead. This
+            method will be removed in 2.0. It takes the same arguments as before
+            and returns ``(fig, ax)``.
+        """
+        _deprecated("model.plot_wells()", "well.plot() or gwrefpy.plots.compare()")
+        return self._legacy_plotter().plot_wells(*args, **kwargs)
+
+    def plot_fits(self, *args, **kwargs):
+        """Plot fits as time series (deprecated).
+
+        .. deprecated:: 1.1
+            Use ``fit.plot()`` instead. This method will be removed in 2.0. It
+            takes the same arguments as before and returns ``(fig, ax)``.
+        """
+        _deprecated("model.plot_fits()", "fit.plot()")
+        return self._legacy_plotter().plot_fits(*args, **kwargs)
+
+    def plot_fitmethod(self, *args, **kwargs):
+        """Cross-plot fits (deprecated).
+
+        .. deprecated:: 1.1
+            Use ``fit.plots.diagnostics()`` or ``gwrefpy.plots.compare(fits)``
+            instead. This method will be removed in 2.0. It takes the same
+            arguments as before and returns ``(fig, ax)``.
+        """
+        _deprecated(
+            "model.plot_fitmethod()",
+            "fit.plots.diagnostics() or gwrefpy.plots.compare()",
+        )
+        return self._legacy_plotter().plot_fitmethod(*args, **kwargs)
+
+    @staticmethod
+    def show_plots():
+        """Show all open figures (deprecated).
+
+        .. deprecated:: 1.1
+            Use ``matplotlib.pyplot.show()`` instead. This method will be removed
+            in 2.0.
+        """
+        _deprecated("model.show_plots()", "matplotlib.pyplot.show()")
+        plt.show()

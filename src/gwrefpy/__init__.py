@@ -1,6 +1,7 @@
 __name__ = "gwrefpy"
 __version__ = "1.0.1"
 
+from . import plots
 from .constants import print_constants
 from .fitcollection import FitCollection
 from .methods.chebyshev import Chebyshev
@@ -31,4 +32,5 @@ __all__ = [
     "Linear",
     "NPoly",
     "Chebyshev",
+    "plots",
 ]
