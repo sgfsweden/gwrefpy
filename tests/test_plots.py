@@ -132,6 +132,7 @@ def test_fit_plot_shortcut_is_the_new_plot_without_warnings(fit):
         ((), {"mark_outliers": False}),
         ((), {"plot_style": "fancy", "tmin": "2020-02-01"}),
         (("My title",), {}),
+        ((), {"dpi": 80}),  # old fit.plot() passed extra kwargs to matplotlib
     ],
 )
 def test_fit_plot_with_old_arguments_warns_and_returns_fig_and_ax(fit, args, kwargs):
@@ -149,8 +150,9 @@ def test_fit_plot_rejects_mixing_old_and_new_arguments(fit):
         fit.plot(mark_outliers=True, outliers=True)
 
 
-def test_fit_plot_rejects_unknown_arguments(fit):
-    with pytest.raises(TypeError, match="unexpected keyword"):
+def test_fit_plot_with_a_misspelled_argument_still_fails(fit):
+    # Unknown arguments go to the old API, which hands them to matplotlib.
+    with pytest.raises((TypeError, AttributeError)), pytest.deprecated_call():
         fit.plot(outlier=True)
 
 

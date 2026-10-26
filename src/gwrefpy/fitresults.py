@@ -459,26 +459,25 @@ class FitResultData:
         .. deprecated:: 1.1
             The old arguments (``title``, ``xlabel``, ``ylabel``, ``mark_outliers``,
             ``show_initiation_period``, ``plot_ref_well``, ``plot_style``,
-            ``color_style``, ``save_path``, ``num``, ``offset_text`` and positional
-            arguments) still work but warn, and then return ``(fig, ax)`` as before.
-            They will be removed in 2.0.
+            ``color_style``, ``save_path``, ``num``, ``offset_text``, extra
+            matplotlib keyword arguments such as ``dpi``, and positional
+            arguments) still work but warn, and then return ``(fig, ax)`` as
+            before. They will be removed in 2.0.
 
         Returns
         -------
         matplotlib.axes.Axes
         """
         new_args = {"tmin": tmin, "tmax": tmax, "ax": ax, "figsize": figsize}
-        if args or any(key in _LEGACY_PLOT_ARGS for key in kwargs):
+        # Any other argument belongs to the old API, which also passed extra
+        # keyword arguments on to matplotlib (e.g. dpi).
+        if args or kwargs:
             if outliers or calibration_period or ref:
                 raise TypeError(
                     "Cannot mix the old fit.plot() arguments with outliers, "
                     "calibration_period or ref."
                 )
             return self._legacy_plot(args, kwargs, new_args)
-        if kwargs:
-            raise TypeError(
-                f"plot() got an unexpected keyword argument {next(iter(kwargs))!r}"
-            )
         return self.plots.plot(
             outliers=outliers,
             calibration_period=calibration_period,

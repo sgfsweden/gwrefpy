@@ -81,7 +81,7 @@ def _fit_label(fit: FitResultData, stats: bool) -> str:
     )
 
 
-def _group(fit: FitResultData, obs: pd.Series, ref: pd.Series):
+def _matched_pairs(fit: FitResultData, obs: pd.Series, ref: pd.Series):
     """Time-matched (ref, obs) value pairs, grouped the way the fit grouped them."""
     if obs.empty or ref.empty:
         return np.array([]), np.array([])
@@ -102,7 +102,7 @@ def _cross_plot_pairs(fit: FitResultData, tmin: TimeLike, tmax: TimeLike):
     start, end = _calibration_window(fit)
 
     def part(keep):
-        return _group(fit, obs[keep(obs.index)], ref[keep(ref.index)])
+        return _matched_pairs(fit, obs[keep(obs.index)], ref[keep(ref.index)])
 
     calibration = part(lambda idx: (idx >= start) & (idx <= end))
     before = part(lambda idx: idx < start)
