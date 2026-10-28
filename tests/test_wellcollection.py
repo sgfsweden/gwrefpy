@@ -330,7 +330,7 @@ def test_model_internals_do_not_use_deprecated_api(model, tmp_path) -> None:
         warnings.simplefilter("error", DeprecationWarning)
         fit(model, "obsA", "refA")
         model.fit(["obsA", "obsB"], ["refA", "refB"], offset="3.5D", report=False)
-        model.best_fit("obsB", offset="3.5D", report=False)
+        model.fit("obsB", ["refA", "refB"], offset="3.5D", report=False).best()
         str(model)
         model.save_project(str(tmp_path / "project"))
         Model(name=str(tmp_path / "project.gwref"))

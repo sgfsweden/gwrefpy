@@ -1,6 +1,7 @@
 import copy
 import logging
 import warnings
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, Literal
 
 import pandas as pd
@@ -53,8 +54,8 @@ class FitBase:
 
     def fit(
         self,
-        obs_well: Well | list[Well] | str | list[str],
-        ref_well: Well | list[Well] | str | list[str],
+        obs_well: Well | str | Iterable[Well | str],
+        ref_well: Well | str | Iterable[Well | str],
         offset: pd.DateOffset | pd.Timedelta | str,
         aggregation: Literal["mean", "median", "min", "max"] = "mean",
         p: float = 0.95,
@@ -64,21 +65,26 @@ class FitBase:
         shift: pd.Timedelta | str | None = None,
         name: str | list[str] | None = None,
         report: bool = True,
+        skip_raise_error: bool = False,
         **kwargs,
     ) -> FitResultData | FitCollection:
         """
         Fit reference well(s) to observation well(s) using regression.
 
+        Wells are paired up as follows: a single well on one side is paired with
+        every well on the other side, and two lists of the same length are paired
+        by index. For example, ``model.fit("obs", model.wells.ref(), offset="0D")``
+        fits ``obs`` against every reference well, and ``.best()`` on the result
+        picks the fit with the lowest RMSE.
+
         Parameters
         ----------
-        obs_well : Well | list[Well] | str | list[str]
+        obs_well : Well | str | Iterable[Well | str]
             The observation well(s) to use for fitting. Can be Well objects,
-            well names (strings), or lists of either. If a list is provided,
-            each well will be paired with the corresponding reference well by index.
-        ref_well : Well | list[Well] | str | list[str]
+            well names (strings), or a list or WellCollection of either.
+        ref_well : Well | str | Iterable[Well | str]
             The reference well(s) to use for fitting. Can be Well objects,
-            well names (strings), or lists of either. If a list is provided,
-            each well will be paired with the corresponding observation well by index.
+            well names (strings), or a list or WellCollection of either.
         offset: pd.DateOffset | pd.Timedelta | str
             The offset to apply to the time series when grouping within time
             equivalents.
@@ -100,11 +106,15 @@ class FitBase:
             fitting.
         name : str | list[str] | None, optional
             An optional name or list of names for the fit result(s). If lists of
-            wells are provided, names must be a list matching in length. If None,
+            wells are provided, names must be a list with one name per pair. If None,
             default names like ``"obs~ref:Linear"`` or ``"obs~ref:NPoly(4)"`` are
             assigned. A fit replaces any existing fit with the same name.
         report: bool, optional
             Whether to print fit results summary (default is True).
+        skip_raise_error: bool, optional
+            When fitting lists of wells, skip (and log) pairs that fail instead of
+            raising. Has no effect when two single wells are given (default is
+            False).
         **kwargs
             Additional keyword arguments, e.g. ``te_method`` ("anchor" or
             "consecutive") for grouping the time equivalents.
@@ -112,41 +122,33 @@ class FitBase:
         Returns
         -------
         FitResultData | FitCollection
-            If single wells are provided, returns a single FitResultData object.
-            If lists of wells are provided, returns a detached FitCollection with
-            the fit for each obs_well/ref_well pair.
+            If two single wells are provided, returns a single FitResultData object.
+            If a list or collection is provided for either argument, returns a
+            detached FitCollection with the fit for each obs_well/ref_well pair,
+            even when there is only one pair.
 
         Raises
         ------
         ValueError
-            If lists are provided but have different lengths.
+            If a well list is empty, if two lists longer than one have different
+            lengths, or if ``skip_raise_error`` is True and every pair fails.
         """
+        # Two single wells give a single fit, anything list-like gives a collection
+        single = isinstance(obs_well, str | Well) and isinstance(ref_well, str | Well)
+
         # Resolve wells (convert strings to Well objects and normalize to lists)
         obs_wells = self._resolve_wells(obs_well)
         ref_wells = self._resolve_wells(ref_well)
+        if not obs_wells or not ref_wells:
+            error_msg = "obs_well and ref_well cannot be empty."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
-        # Handle single well case
-        if len(obs_wells) == 1 and len(ref_wells) == 1:
-            result = self._fit(
-                obs_wells[0],
-                ref_wells[0],
-                offset,
-                p,
-                method,
-                tmin,
-                tmax,
-                shift,
-                name,
-                aggregation,
-                **kwargs,
-            )
-            logger.info(
-                f"Fitting model '{self.name}' using reference well "
-                f"'{ref_wells[0].name}' and observation well '{obs_wells[0].name}'."
-            )
-            if report:
-                self._display_result(result)
-            return result
+        # Pair a single well on either side with every well on the other side
+        if len(obs_wells) == 1:
+            obs_wells = obs_wells * len(ref_wells)
+        elif len(ref_wells) == 1:
+            ref_wells = ref_wells * len(obs_wells)
 
         # Validate that lists have the same length
         if len(obs_wells) != len(ref_wells):
@@ -157,19 +159,10 @@ class FitBase:
             logger.error(error_msg)
             raise ValueError(error_msg)
 
-        # Validate the name parameter if provided as a list
-        if isinstance(name, list):
-            if len(name) != len(obs_wells):
-                error_msg = (
-                    f"name list length ({len(name)}) must match "
-                    f"obs_well/ref_well list length ({len(obs_wells)})"
-                )
-                logger.error(error_msg)
-                raise ValueError(error_msg)
-
-        # Perform fitting for each pair
-        results = []
-        if isinstance(name, str):
+        # Validate the name parameter
+        if single:
+            names = [name]
+        elif isinstance(name, str):
             # Fit names are unique, so one name would make each fit replace the last
             error_msg = (
                 "When fitting lists of wells, pass a list of names (one per pair) "
@@ -177,22 +170,43 @@ class FitBase:
             )
             logger.error(error_msg)
             raise ValueError(error_msg)
-        if name is None:
-            name = [None] * len(obs_wells)
-        for obs_w, ref_w, fit_name in zip(obs_wells, ref_wells, name, strict=True):
-            result = self._fit(
-                obs_w,
-                ref_w,
-                offset,
-                p,
-                method,
-                tmin,
-                tmax,
-                shift,
-                fit_name,
-                aggregation,
-                **kwargs,
+        elif name is None:
+            names = [None] * len(obs_wells)
+        elif len(name) != len(obs_wells):
+            error_msg = (
+                f"name list length ({len(name)}) must match "
+                f"the number of obs_well/ref_well pairs ({len(obs_wells)})"
             )
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+        else:
+            names = name
+
+        # Perform fitting for each pair
+        results = []
+        for obs_w, ref_w, fit_name in zip(obs_wells, ref_wells, names, strict=True):
+            try:
+                result = self._fit(
+                    obs_w,
+                    ref_w,
+                    offset,
+                    p,
+                    method,
+                    tmin,
+                    tmax,
+                    shift,
+                    fit_name,
+                    aggregation,
+                    **kwargs,
+                )
+            except Exception as e:
+                if single or not skip_raise_error:
+                    raise
+                logger.warning(
+                    f"Skipping fit of observation well '{obs_w.name}' and "
+                    f"reference well '{ref_w.name}': {e}"
+                )
+                continue
             results.append(result)
             logger.info(
                 f"Fitting model '{self.name}' using reference well '{ref_w.name}' "
@@ -201,6 +215,12 @@ class FitBase:
             if report:
                 self._display_result(result)
 
+        if not results:
+            error_msg = "No successful fits for the given obs_well/ref_well pairs."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+        if single:
+            return results[0]
         return FitCollection(results)
 
     def _fit(
@@ -297,15 +317,17 @@ class FitBase:
         **kwargs,
     ) -> FitResultData:
         """
-        Find the best fit for the model using the provided wells.
-        Note that all successful fits will be stored in the model's `fits` attribute.
-        The best fit is determined by the lowest RMSE value.
+        Fit an observation well against several reference wells and return the
+        fit with the lowest RMSE. All successful fits are added to ``model.fits``.
+
+        .. deprecated:: 1.1.0
+            Use ``model.fit(obs_well, ref_wells, ...).best()`` instead.
 
         Parameters
         ----------
-        obs_well : Well or list of Well or None, optional
+        obs_well : str | Well
             The observation well to use for fitting.
-        ref_wells : Well or list of Well or None, optional
+        ref_wells : list[str | Well] | None, optional
             The reference wells to test. If None, all reference wells in the
             model will be used (default is None).
         method : FitMethodBase | None, optional
@@ -315,126 +337,33 @@ class FitBase:
             If True, will skip wells that raise exceptions during fitting and continue.
             If False, will raise the exception and stop execution (default is False).
         **kwargs
-            Keyword arguments to pass to the fitting method. For example, you can use
-            `offset`, `p`, `tmin`, `tmax`, and `aggregation` to control the fitting
+            Keyword arguments to pass to ``fit()``, e.g. ``offset``, ``p``, ``tmin``,
+            ``tmax`` and ``aggregation``.
 
         Returns
         -------
         FitResultData
             Returns the best fit for the given observation well.
         """
-        return self._best_fit(
-            obs_well, ref_wells, method, skip_raise_error=skip_raise_error, **kwargs
+        # TODO: remove in v2
+        warnings.warn(
+            "best_fit() is deprecated and will be removed in 2.0. "
+            "Use model.fit(obs_well, ref_wells, ...).best() instead.",
+            DeprecationWarning,
+            stacklevel=2,
         )
-
-    def _best_fit(
-        self,
-        obs_well: str | Well,
-        ref_wells: list[str | Well] | None = None,
-        method: FitMethodBase | None = None,
-        skip_raise_error: bool = False,
-        **kwargs,
-    ) -> FitResultData:
-        """
-        The internal method to find the best fit.
-
-        Parameters
-        ----------
-        obs_well : Well or list of Well or None, optional
-            The observation well to use for fitting.
-        ref_wells : Well or list of Well or None, optional
-            The reference wells to test. If None, all reference wells in the
-            model will be used (default is None).
-        method : FitMethodBase | None, optional
-            Method with which to perform regression, e.g. ``NPoly(degree=2)``
-            (default is ``Linear()``).
-        skip_raise_error: bool, optional
-            If True, will skip wells that raise exceptions during fitting and continue.
-            If False, will raise the exception and stop execution (default is False).
-        **kwargs
-            Keyword arguments to pass to the fitting method. For example, you can use
-            `offset`, `p`, `tmin`, `tmax`, and `aggregation` to control the fitting
-
-        Returns
-        -------
-        FitResultData
-            Returns the best fit for the given arguments.
-        """
-        if isinstance(ref_wells, list) and len(ref_wells) < 1:
-            logger.error("ref_wells list cannot be empty.")
-            raise ValueError("ref_wells list cannot be empty.")
-
-        target_obs_well: Well
-        if isinstance(obs_well, str):
-            target_obs_well = self._get_well(obs_well)
-        elif isinstance(obs_well, Well):
-            target_obs_well = obs_well
         if ref_wells is None:
-            target_ref_wells = list(self.wells.ref())
-            if len(target_ref_wells) < 1:
-                logger.error("No reference wells available in the model.")
-                raise ValueError("No reference wells available in the model.")
-        else:
-            target_ref_wells: list[Well] = []
-            for rw in ref_wells:
-                if isinstance(rw, str):
-                    target_ref_wells.append(self._get_well(rw))
-                elif isinstance(rw, Well):
-                    target_ref_wells.append(rw)
-                else:
-                    logger.error(
-                        f"Unsupported type for {rw}. Supported types are Well or str"
-                    )
-                    raise TypeError(
-                        f"Unsupported type for {rw}. Supported types are Well or str"
-                    )
-
-        local_fits: list[FitResultData] = []
-        if skip_raise_error:
-            for ref_well in target_ref_wells:
-                logger.debug(
-                    f"Testing fit for observation well '{target_obs_well.name}' "
-                    f"and reference well '{ref_well.name}'."
-                )
-                try:
-                    fit = self._fit(target_obs_well, ref_well, method=method, **kwargs)
-                    local_fits.append(fit)
-                    logger.debug(
-                        f"Fit result for observation well '{target_obs_well.name}' and"
-                        f"reference well '{ref_well.name}': RMSE={fit.fit_method.rmse}"
-                    )
-                except Exception as e:
-                    logger.error(
-                        f"Error occurred while fitting observation well "
-                        f"'{target_obs_well.name}' "
-                        f"and reference well '{ref_well.name}': {e}"
-                    )
-        else:
-            for ref_well in target_ref_wells:
-                logger.debug(
-                    f"Testing fit for observation well '{target_obs_well.name}' "
-                    f"and reference well '{ref_well.name}'."
-                )
-                fit = self._fit(target_obs_well, ref_well, method=method, **kwargs)
-                local_fits.append(fit)
-                logger.debug(
-                    f"Fit result for observation well '{target_obs_well.name}' and"
-                    f"reference well '{ref_well.name}': RMSE={fit.fit_method.rmse}"
-                )
-
-        if not local_fits:
-            logger.error(
-                f"No successful fits found for observation well "
-                f"'{target_obs_well.name}' "
-                f"with the provided reference wells."
-            )
-            raise ValueError(
-                f"No successful fits found for observation well "
-                f"'{target_obs_well.name}' "
-                f"with the provided reference wells."
-            )
-
-        return min(local_fits, key=lambda x: x.fit_method.rmse)
+            ref_wells = list(self.wells.ref())
+        # best_fit never printed reports, so a passed report argument is ignored
+        kwargs.pop("report", None)
+        return self.fit(
+            obs_well,
+            ref_wells,
+            method=method,
+            report=False,
+            skip_raise_error=skip_raise_error,
+            **kwargs,
+        ).best()
 
     def get_fits(
         self, well: Well | str, method: str | None = None

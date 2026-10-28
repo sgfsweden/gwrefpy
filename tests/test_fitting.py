@@ -8,6 +8,16 @@ from gwrefpy.fitresults import FitResultData
 from gwrefpy.methods.timeseries import groupby_time_equivalents
 
 
+def _add_second_wells(model) -> tuple[Well, Well, Well, Well]:
+    """Add obs2 and ref2 to the Strandangers model and return all four wells."""
+    obs, ref = model.wells["obs"], model.wells["ref"]
+    obs2 = Well("obs2", is_reference=False, timeseries=obs.timeseries + 1.0)
+    ref2 = Well("ref2", is_reference=True, timeseries=ref.timeseries + 0.5)
+    model.add_well(obs2)
+    model.add_well(ref2)
+    return obs, obs2, ref, ref2
+
+
 def test_strandangers_model_basic_fit(strandangers_model) -> None:
     assert strandangers_model.name == "Strandangers"
     assert len(strandangers_model.wells) == 2
@@ -30,7 +40,8 @@ def test_strandangers_model_best_fit_by_names(strandangers_model) -> None:
     ref2 = Well("ref2", is_reference=True, timeseries=ts2)
     strandangers_model.add_well(ref2)
 
-    best_fit = strandangers_model.best_fit("obs", ["ref", "ref2"], offset="3.5D")
+    with pytest.deprecated_call():
+        best_fit = strandangers_model.best_fit("obs", ["ref", "ref2"], offset="3.5D")
     assert isinstance(best_fit, FitResultData)
 
     model_fits = strandangers_model.fits.filter(obs="obs")
@@ -46,7 +57,8 @@ def test_strandangers_model_best_fit_by_objects(strandangers_model) -> None:
     ref2 = Well("ref2", is_reference=True, timeseries=ts2)
     strandangers_model.add_well(ref2)
 
-    best_fit = strandangers_model.best_fit(obs, [ref, ref2], offset="3.5D")
+    with pytest.deprecated_call():
+        best_fit = strandangers_model.best_fit(obs, [ref, ref2], offset="3.5D")
     assert isinstance(best_fit, FitResultData)
 
     model_fits = strandangers_model.fits.filter(obs=obs)
@@ -104,16 +116,13 @@ def test_strandangers_model_fit_multiple_wells(strandangers_model) -> None:
 
 def test_strandangers_model_fit_mismatched_lists(strandangers_model) -> None:
     # Test error handling for mismatched list lengths
-    obs, ref = strandangers_model.wells["obs"], strandangers_model.wells["ref"]
+    obs, obs2, ref, ref2 = _add_second_wells(strandangers_model)
+    ref3 = Well("ref3", is_reference=True, timeseries=ref.timeseries + 0.2)
+    strandangers_model.add_well(ref3)
 
-    # Create second observation well
-    ts_obs2 = obs.timeseries + 1.0
-    obs2 = Well("obs2", is_reference=False, timeseries=ts_obs2)
-    strandangers_model.add_well(obs2)
-
-    # Try to fit with mismatched list lengths (should raise ValueError)
-    with pytest.raises(ValueError):
-        strandangers_model.fit([obs, obs2], [ref], offset="3.5D")
+    # Lists longer than one must match in length
+    with pytest.raises(ValueError, match="must match"):
+        strandangers_model.fit([obs, obs2], [ref, ref2, ref3], offset="3.5D")
 
 
 def test_strandangers_model_fit_string_names(strandangers_model) -> None:
@@ -552,19 +561,140 @@ def test_strandangers_model_skip_raise_error(strandangers_model) -> None:
     ref.timeseries = pd.Series([], dtype=float, name="obs")
 
     # Test that skip_raise_error=True allows the process to continue even if a fit fails
-    best_fit = strandangers_model.best_fit(
-        obs_well=obs,
-        ref_wells=[ref, *strandangers_model.wells.ref()[1:]],
-        offset="3.5D",
-        skip_raise_error=True,
-    )
+    with pytest.deprecated_call():
+        best_fit = strandangers_model.best_fit(
+            obs_well=obs,
+            ref_wells=[ref, *strandangers_model.wells.ref()[1:]],
+            offset="3.5D",
+            skip_raise_error=True,
+        )
     assert best_fit is not None
 
     # Test that skip_raise_error=False raises an error when a fit fails
-    with pytest.raises(ValueError, match="The reference time series is empty."):
+    with (
+        pytest.deprecated_call(),
+        pytest.raises(ValueError, match="The reference time series is empty."),
+    ):
         strandangers_model.best_fit(
             obs_well=obs,
             ref_wells=[ref, *strandangers_model.wells.ref()[1:]],
             offset="3.5D",
             skip_raise_error=False,
         )
+
+
+def test_fit_one_obs_against_many_refs(strandangers_model) -> None:
+    obs, _, ref, ref2 = _add_second_wells(strandangers_model)
+
+    fits = strandangers_model.fit(obs, [ref, ref2], offset="3.5D", report=False)
+
+    assert isinstance(fits, FitCollection)
+    assert [(f.obs_well.name, f.ref_well.name) for f in fits] == [
+        ("obs", "ref"),
+        ("obs", "ref2"),
+    ]
+    assert len(strandangers_model.fits) == 2
+
+
+def test_fit_many_obs_against_one_ref(strandangers_model) -> None:
+    obs, obs2, ref, _ = _add_second_wells(strandangers_model)
+
+    fits = strandangers_model.fit([obs, obs2], ref, offset="3.5D", report=False)
+
+    assert [(f.obs_well.name, f.ref_well.name) for f in fits] == [
+        ("obs", "ref"),
+        ("obs2", "ref"),
+    ]
+
+
+def test_fit_with_single_item_list_returns_collection(strandangers_model) -> None:
+    # The model has exactly one ref well, so .best() must still work
+    fits = strandangers_model.fit(
+        "obs", strandangers_model.wells.ref(), offset="3.5D", report=False
+    )
+    assert isinstance(fits, FitCollection)
+    assert fits.best().ref_well.name == "ref"
+
+    assert isinstance(
+        strandangers_model.fit(["obs"], ["ref"], offset="3.5D", report=False),
+        FitCollection,
+    )
+
+
+def test_fit_with_two_single_wells_returns_fit(strandangers_model) -> None:
+    fit = strandangers_model.fit("obs", "ref", offset="3.5D", report=False)
+    assert isinstance(fit, FitResultData)
+
+
+def test_fit_skip_raise_error_skips_failed_pairs(strandangers_model) -> None:
+    obs, _, ref, ref2 = _add_second_wells(strandangers_model)
+    ref.timeseries = pd.Series([], dtype=float, name="ref")  # this fit fails
+
+    fits = strandangers_model.fit(
+        obs, [ref, ref2], offset="3.5D", report=False, skip_raise_error=True
+    )
+
+    assert [f.ref_well.name for f in fits] == ["ref2"]
+    assert [f.ref_well.name for f in strandangers_model.fits] == ["ref2"]
+
+    with pytest.raises(ValueError, match="The reference time series is empty."):
+        strandangers_model.fit(obs, [ref, ref2], offset="3.5D", report=False)
+
+
+def test_fit_skip_raise_error_raises_when_every_pair_fails(strandangers_model) -> None:
+    obs, _, ref, ref2 = _add_second_wells(strandangers_model)
+    ref.timeseries = pd.Series([], dtype=float, name="ref")
+    ref2.timeseries = pd.Series([], dtype=float, name="ref2")
+
+    with pytest.raises(ValueError, match="No successful fits"):
+        strandangers_model.fit(
+            obs, [ref, ref2], offset="3.5D", report=False, skip_raise_error=True
+        )
+
+
+def test_fit_skip_raise_error_does_not_apply_to_single_wells(
+    strandangers_model,
+) -> None:
+    strandangers_model.wells["ref"].timeseries = pd.Series([], dtype=float)
+
+    with pytest.raises(ValueError, match="The reference time series is empty."):
+        strandangers_model.fit(
+            "obs", "ref", offset="3.5D", report=False, skip_raise_error=True
+        )
+
+
+def test_fit_names_must_match_number_of_pairs(strandangers_model) -> None:
+    obs, _, ref, ref2 = _add_second_wells(strandangers_model)
+
+    fits = strandangers_model.fit(
+        obs, [ref, ref2], offset="3.5D", name=["a", "b"], report=False
+    )
+    assert [f.name for f in fits] == ["a", "b"]
+
+    with pytest.raises(ValueError, match="number of obs_well/ref_well pairs"):
+        strandangers_model.fit(obs, [ref, ref2], offset="3.5D", name=["a"])
+
+
+def test_best_fit_is_deprecated_and_matches_fit_best(strandangers_model) -> None:
+    ref = strandangers_model.wells["ref"]
+    noisy_ts = ref.timeseries.copy()
+    noisy_ts.iloc[::2] += 0.3
+    noisy = Well("noisy", is_reference=True, timeseries=noisy_ts)
+    strandangers_model.add_well(noisy)
+
+    with pytest.deprecated_call(match="best_fit"):
+        best = strandangers_model.best_fit("obs", offset="3.5D", report=True)
+    assert best.ref_well.name == "ref"
+
+    new_best = strandangers_model.fit(
+        "obs", [ref, noisy], offset="3.5D", report=False
+    ).best()
+    assert (best.name, best.fit_method.rmse) == (
+        new_best.name,
+        new_best.fit_method.rmse,
+    )
+
+
+def test_fit_with_empty_well_list_raises(strandangers_model) -> None:
+    with pytest.raises(ValueError, match="cannot be empty"):
+        strandangers_model.fit("obs", [], offset="3.5D")
