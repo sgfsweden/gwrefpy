@@ -14,6 +14,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -31,12 +32,23 @@ TimeLike = str | pd.Timestamp | None
 # Marker per fit in cross-plots; matplotlib has no default marker cycle.
 MARKERS = ("o", "s", "^", "D", "v", "P", "X")
 
+# Colour of points shared by several fits in a cross-plot.
+SHARED_POINTS = "0.6"
+
 
 def _get_ax(ax: Axes | None, figsize: tuple[float, float] | None) -> Axes:
     """Return ``ax``, or the Axes of a new figure when it is None."""
     if ax is None:
         _, ax = plt.subplots(figsize=figsize)
     return ax
+
+
+def _concise_dates(ax: Axes) -> None:
+    """Use short date labels ("Apr", "Jul", the year where it changes) so they
+    don't overlap at the default figure size. A formatter the user set is kept."""
+    if isinstance(ax.xaxis.get_major_formatter(), mdates.AutoDateFormatter):
+        locator = ax.xaxis.get_major_locator()
+        ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(locator))
 
 
 def _obs_series(fit: FitResultData) -> pd.Series:
@@ -47,19 +59,20 @@ def _obs_series(fit: FitResultData) -> pd.Series:
 
 
 def _calibration_window(fit: FitResultData) -> tuple[pd.Timestamp, pd.Timestamp]:
-    """Start and end of the calibration period, defaulting to the obs series ends.
+    """First and last time stamp of the data the fit was calibrated on.
 
-    Fits grouped with ``te_method="consecutive"`` and no calibration bounds store
-    group numbers as ``tmin``/``tmax``; those count as no bound.
+    The bounds are sliced the way the fit sliced them, so a partial date such as
+    ``tmax="2022"`` covers all of 2022. Fits grouped with
+    ``te_method="consecutive"`` and no calibration bounds store group numbers as
+    ``tmin``/``tmax``; those count as no bound.
     """
-    obs = _obs_series(fit)
+    times = _obs_series(fit).index.union(fit.ref_well.timeseries.index)
 
-    def as_time(value, default):
-        if value is None or isinstance(value, int | np.integer):
-            return default
-        return pd.Timestamp(value)
+    def bound(value):
+        return None if isinstance(value, int | np.integer) else value
 
-    return as_time(fit.tmin, obs.index[0]), as_time(fit.tmax, obs.index[-1])
+    window = times[times.slice_indexer(bound(fit.tmin), bound(fit.tmax))]
+    return window[0], window[-1]
 
 
 def _r_squared(fit: FitResultData) -> float:
@@ -111,6 +124,26 @@ def _cross_plot_pairs(fit: FitResultData, tmin: TimeLike, tmax: TimeLike):
     return calibration, other
 
 
+def _same_points(a, b) -> bool:
+    """Whether two results of :func:`_cross_plot_pairs` hold the same points."""
+    arrays_a = [arr for pair in a for arr in pair]
+    arrays_b = [arr for pair in b for arr in pair]
+    return all(np.array_equal(x, y) for x, y in zip(arrays_a, arrays_b, strict=True))
+
+
+def _group_by_points(points: list) -> list[list[int]]:
+    """Group the indices of fits that have exactly the same points."""
+    groups: list[list[int]] = []
+    for i, pts in enumerate(points):
+        for group in groups:
+            if _same_points(points[group[0]], pts):
+                group.append(i)
+                break
+        else:
+            groups.append([i])
+    return groups
+
+
 def _draw_fit_cross_plots(
     fits: list[FitResultData],
     ax: Axes,
@@ -118,12 +151,22 @@ def _draw_fit_cross_plots(
     tmax: TimeLike,
     stats: bool,
 ) -> None:
-    """Draw each fit's points, regression curve and prediction interval on ``ax``."""
-    any_other = False
-    for i, fit in enumerate(fits):
-        color, marker = f"C{i % 10}", MARKERS[i % len(MARKERS)]
-        (cal_ref, cal_obs), (other_ref, other_obs) = _cross_plot_pairs(fit, tmin, tmax)
+    """Draw each fit's points, regression curve and prediction interval on ``ax``.
 
+    Fits with exactly the same points (e.g. several methods fitted to one well
+    pair) share them: the points are drawn once in grey, and only the curves
+    are coloured per fit.
+    """
+    points = [_cross_plot_pairs(fit, tmin, tmax) for fit in fits]
+    groups = _group_by_points(points)
+    shared = {i for group in groups if len(group) > 1 for i in group}
+
+    any_other = False
+    for group in groups:
+        first = group[0]
+        color = SHARED_POINTS if first in shared else f"C{first % 10}"
+        marker = MARKERS[first % len(MARKERS)]
+        (cal_ref, cal_obs), (other_ref, other_obs) = points[first]
         ax.scatter(cal_ref, cal_obs, marker=marker, color=color, s=14)
         if other_ref.size:
             any_other = True
@@ -136,6 +179,10 @@ def _draw_fit_cross_plots(
                 s=14,
             )
 
+    for i, fit in enumerate(fits):
+        color = f"C{i % 10}"
+        (cal_ref, _), (other_ref, _) = points[i]
+
         # The curve only spans the points on display, so slicing zooms the axes.
         visible = np.concatenate([cal_ref, other_ref])
         if visible.size:
@@ -146,8 +193,21 @@ def _draw_fit_cross_plots(
             ax.plot(x, y - width, color=color, linestyle="--", linewidth=0.8)
             ax.plot(x, y + width, color=color, linestyle="--", linewidth=0.8)
 
-        # Legend-only handle that shows both the fit's colour and its marker.
+        # Legend-only handle: the fit's colour, plus its marker when the points
+        # are the fit's own.
+        marker = None if i in shared else MARKERS[i % len(MARKERS)]
         ax.plot([], [], color=color, marker=marker, label=_fit_label(fit, stats))
+
+    for group in groups:
+        if len(group) > 1:
+            fit = fits[group[0]]
+            ax.scatter(
+                [],
+                [],
+                marker=MARKERS[group[0] % len(MARKERS)],
+                color=SHARED_POINTS,
+                label=f"{fit.obs_well.name}~{fit.ref_well.name} data",
+            )
 
     if any_other:
         ax.scatter(
@@ -180,7 +240,10 @@ def compare(
     Fits are drawn as a cross-plot (ref levels on x, obs levels on y), each fit in
     its own colour and marker. Points inside the fit's calibration period are
     filled and points outside it are hollow. Each fit's regression curve and its
-    prediction interval (dashed) span the points on display.
+    prediction interval (dashed) span the points on display. Fits with exactly
+    the same points, e.g. several methods fitted to the same wells and
+    calibration period, share them: the points are drawn once in grey and only
+    the curves are coloured per fit.
 
     Wells are drawn as overlaid time series.
 
@@ -216,6 +279,7 @@ def compare(
         ax = _get_ax(ax, figsize)
         for well in items:
             _draw_well(well, ax, tmin, tmax)
+        _concise_dates(ax)
         ax.legend()
         return ax
     raise TypeError("compare() takes only fits or only wells, not a mix.")
@@ -320,6 +384,7 @@ class FitPlots:
                     label="calibration period",
                 )
 
+        _concise_dates(ax)
         ax.legend()
         return ax
 
@@ -390,5 +455,6 @@ class WellPlots:
         """
         ax = _get_ax(ax, figsize)
         _draw_well(self._well, ax, tmin, tmax)
+        _concise_dates(ax)
         ax.legend()
         return ax

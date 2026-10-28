@@ -248,6 +248,55 @@ def test_compare_fits_gives_each_fit_its_own_colour_and_marker(model, fit):
     assert ax.get_ylabel() == "obs"
 
 
+def test_compare_draws_points_shared_by_fits_once_in_grey(model, fit):
+    from matplotlib.colors import to_rgba
+
+    import gwrefpy as gr
+
+    npoly = model.fit(
+        "obs",
+        "ref1",
+        offset="0D",
+        tmin="2020-03-01",
+        tmax="2020-09-30",
+        method=NPoly(degree=3),
+        report=False,
+    )
+    ax = gr.plots.compare([fit, npoly], stats=False)
+
+    (filled,), (hollow,) = scatters(ax)
+    assert len(filled.get_offsets()) == fit.n
+    assert tuple(filled.get_facecolors()[0]) == to_rgba(gr.plots.SHARED_POINTS)
+    assert tuple(hollow.get_edgecolors()[0]) == to_rgba(gr.plots.SHARED_POINTS)
+    curves = [
+        line
+        for line in ax.lines
+        if line.get_linestyle() == "-" and line.get_xdata().size
+    ]
+    assert [line.get_color() for line in curves] == ["C0", "C1"]
+    assert legend_texts(ax) == [
+        "obs~ref1:Linear",
+        "obs~ref1:NPoly(3)",
+        "obs~ref1 data",
+        "outside calibration period",
+    ]
+
+
+def test_compare_fits_of_the_same_wells_with_other_calibration_keep_own_points(
+    model, fit
+):
+    import gwrefpy as gr
+
+    other = model.fit(
+        "obs", "ref1", offset="0D", tmax="2020-06-30", name="early", report=False
+    )
+    ax = gr.plots.compare([fit, other], stats=False)
+
+    filled, _ = scatters(ax)
+    assert [marker_of(c) for c in filled] == ["o", "s"]
+    assert "obs~ref1 data" not in legend_texts(ax)
+
+
 def test_compare_accepts_a_fit_collection(model, fit):
     import gwrefpy as gr
 
@@ -317,6 +366,36 @@ def test_compare_wells_overlays_their_series(model):
     assert line_dates(ax).min() == pd.Timestamp("2020-05-01")
 
 
+@pytest.mark.parametrize(
+    "draw",
+    [
+        lambda model, fit: fit.plot(),
+        lambda model, fit: model.wells["obs"].plot(),
+        lambda model, fit: __import__("gwrefpy").plots.compare(model.wells.ref()),
+    ],
+    ids=["fit.plot", "well.plot", "compare wells"],
+)
+def test_time_series_plots_use_concise_date_labels(model, fit, draw):
+    import matplotlib.dates as mdates
+
+    ax = draw(model, fit)
+
+    assert isinstance(ax.xaxis.get_major_formatter(), mdates.ConciseDateFormatter)
+
+
+def test_time_series_plots_keep_a_date_formatter_set_by_the_user(model):
+    import matplotlib.dates as mdates
+
+    _, given = plt.subplots()
+    given.plot(pd.date_range("2020-01-01", periods=2), [0, 1])
+    own = mdates.DateFormatter("%Y")
+    given.xaxis.set_major_formatter(own)
+
+    ax = model.wells["obs"].plot(ax=given)
+
+    assert ax.xaxis.get_major_formatter() is own
+
+
 def test_compare_accepts_a_well_collection(model):
     import gwrefpy as gr
 
@@ -378,6 +457,22 @@ def test_diagnostics_calibration_points_are_the_ones_the_fit_used(model, fit_kwa
 
     (filled,), _ = scatters(ax)
     assert len(filled.get_offsets()) == fit.n
+
+
+def test_partial_date_bounds_cover_the_whole_period_the_fit_used(model):
+    # "2020-09" as tmax includes all of September when the fit slices the data
+    fit = model.fit("obs", "ref1", offset="0D", tmin="2020-03", tmax="2020-09")
+
+    (filled,), _ = scatters(fit.plots.diagnostics())
+    ax = fit.plot(calibration_period=True)
+
+    assert len(filled.get_offsets()) == fit.n
+    (span,) = [p for p in ax.patches if p.get_label() == "calibration period"]
+    import matplotlib.dates as mdates
+
+    assert mdates.num2date(span.get_x() + span.get_width()).date() == (
+        pd.Timestamp("2020-09-30").date()
+    )
 
 
 def test_diagnostics_consecutive_fit_without_calibration_bounds(model):
