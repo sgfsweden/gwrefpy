@@ -8,6 +8,16 @@ from gwrefpy.fitresults import FitResultData
 from gwrefpy.methods.timeseries import groupby_time_equivalents
 
 
+def _add_second_wells(model) -> tuple[Well, Well, Well, Well]:
+    """Add obs2 and ref2 to the Strandangers model and return all four wells."""
+    obs, ref = model.wells["obs"], model.wells["ref"]
+    obs2 = Well("obs2", is_reference=False, timeseries=obs.timeseries + 1.0)
+    ref2 = Well("ref2", is_reference=True, timeseries=ref.timeseries + 0.5)
+    model.add_well(obs2)
+    model.add_well(ref2)
+    return obs, obs2, ref, ref2
+
+
 def test_strandangers_model_basic_fit(strandangers_model) -> None:
     assert strandangers_model.name == "Strandangers"
     assert len(strandangers_model.wells) == 2
@@ -571,16 +581,6 @@ def test_strandangers_model_skip_raise_error(strandangers_model) -> None:
             offset="3.5D",
             skip_raise_error=False,
         )
-
-
-def _add_second_wells(model) -> tuple[Well, Well, Well, Well]:
-    """Add obs2 and ref2 to the Strandangers model and return all four wells."""
-    obs, ref = model.wells["obs"], model.wells["ref"]
-    obs2 = Well("obs2", is_reference=False, timeseries=obs.timeseries + 1.0)
-    ref2 = Well("ref2", is_reference=True, timeseries=ref.timeseries + 0.5)
-    model.add_well(obs2)
-    model.add_well(ref2)
-    return obs, obs2, ref, ref2
 
 
 def test_fit_one_obs_against_many_refs(strandangers_model) -> None:

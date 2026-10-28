@@ -1,5 +1,6 @@
 import logging
 import warnings
+from collections.abc import Iterable
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -385,14 +386,14 @@ class Model(FitBase):
         # Not in Jupyter or IPython not available, use regular print
         logger.info(result)
 
-    def _resolve_wells(self, wells: Well | list[Well] | str | list[str]) -> list[Well]:
+    def _resolve_wells(self, wells: Well | str | Iterable[Well | str]) -> list[Well]:
         """
         Resolve well names to Well objects.
 
         Parameters
         ----------
-        wells : Well | list[Well] | str | list[str]
-            Well objects, well names, or lists of either.
+        wells : Well | str | Iterable[Well | str]
+            Well objects, well names, or a list or WellCollection of either.
 
         Returns
         -------
