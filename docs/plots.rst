@@ -30,6 +30,15 @@ done on the returned Axes, e.g. ``ax.set_title(...)`` or
 In cross-plots each fit has its own colour and marker. Points inside the fit's
 calibration period are filled and points outside it are hollow. ``tmin`` and
 ``tmax`` select which points are shown, and the regression curve spans them.
+Fits with exactly the same points, e.g. several methods fitted to the same wells
+and calibration period, share them: the points are drawn once in grey and only
+the curves are coloured per fit.
+
+.. code-block:: python
+
+    linear = model.fit(obs, ref, offset="0D", tmax="2022")
+    npoly = model.fit(obs, ref, offset="0D", tmax="2022", method=gr.NPoly(degree=3))
+    gr.plots.compare([linear, npoly])                  # shared points in grey
 
 .. note::
 
