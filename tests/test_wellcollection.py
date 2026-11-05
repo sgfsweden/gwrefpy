@@ -330,7 +330,7 @@ def test_model_internals_do_not_use_deprecated_api(model, tmp_path) -> None:
         warnings.simplefilter("error", DeprecationWarning)
         fit(model, "obsA", "refA")
         model.fit(["obsA", "obsB"], ["refA", "refB"], offset="3.5D", report=False)
-        model.best_fit("obsB", offset="3.5D", report=False)
+        model.fit("obsB", ["refA", "refB"], offset="3.5D", report=False).best()
         str(model)
         model.save_project(str(tmp_path / "project"))
         Model(name=str(tmp_path / "project.gwref"))
@@ -342,8 +342,9 @@ def test_model_internals_do_not_use_deprecated_api(model, tmp_path) -> None:
 def test_plot_wells_accepts_a_collection(model) -> None:
     import matplotlib.pyplot as plt
 
-    fig, ax = model.plot_wells(model.wells.obs())
-    _, default_ax = model.plot_wells()
+    with pytest.deprecated_call():
+        fig, ax = model.plot_wells(model.wells.obs())
+        _, default_ax = model.plot_wells()
 
     assert {line.get_label() for line in ax.get_lines()} >= {"obsA", "obsB"}
     assert {line.get_label() for line in default_ax.get_lines()} >= {

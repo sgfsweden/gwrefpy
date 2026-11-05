@@ -1,3 +1,9 @@
+"""Pre-1.1 plotting, kept only for the deprecated model.plot_* methods and the old
+fit.plot() arguments.
+
+TODO: remove this module in v2. New plotting lives in ``gwrefpy.plots``.
+"""
+
 import logging
 
 import matplotlib.pyplot as plt
@@ -32,7 +38,7 @@ class Plotter:
     """
 
     def __init__(self):
-        self.wells = None
+        self.wells: list[Well] | WellCollection | None = None
         self._cnt_colors = 0
         self._cnt_linestyles = 0
         self._cnt_markers = 0
@@ -118,8 +124,8 @@ class Plotter:
         ax : matplotlib.axes.Axes
             The axes object of the plot.
         """
-        # TODO: minimal fix so a WellCollection can be plotted. The plotter still
-        # needs a proper rework for WellCollection/FitCollection (plotting issue).
+        # Minimal fix so a WellCollection can be plotted. No rework planned: this
+        # module is superseded by gwrefpy.plots and goes away in v2.
         if wells is not None and not (
             isinstance(wells, Well | WellCollection)
             or (isinstance(wells, list) and all(isinstance(w, Well) for w in wells))
