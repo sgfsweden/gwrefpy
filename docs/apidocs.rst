@@ -10,4 +10,5 @@ This page contains the API reference for the gwrefpy package.
     fitcollection
     wellcollection
     well
+    plots
     constants
