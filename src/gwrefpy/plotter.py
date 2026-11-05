@@ -1,3 +1,9 @@
+"""Pre-1.1 plotting, kept only for the deprecated model.plot_* methods and the old
+fit.plot() arguments.
+
+TODO: remove this module in v2. New plotting lives in ``gwrefpy.plots``.
+"""
+
 import logging
 
 import matplotlib.pyplot as plt
@@ -17,9 +23,11 @@ from .constants import (
     tfont,
     tifont,
 )
-from .fitresults import ChebyshevFitResult, FitResultData, LinRegResult, NPolyFitResult
+from .fitresults import Chebyshev, FitResultData, NPoly
+from .methods.linregressfit import Linear
 from .methods.timeseries import groupby_time_equivalents
 from .well import Well
+from .wellcollection import WellCollection
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +38,7 @@ class Plotter:
     """
 
     def __init__(self):
-        self.wells = None
+        self.wells: list[Well] | WellCollection | None = None
         self._cnt_colors = 0
         self._cnt_linestyles = 0
         self._cnt_markers = 0
@@ -53,7 +61,7 @@ class Plotter:
 
     def plot_wells(
         self,
-        wells: Well | list[Well] | None = None,
+        wells: Well | list[Well] | WellCollection | None = None,
         title: str = "Wells Plot",
         xlabel: str = "Time",
         ylabel: str = "Measurement",
@@ -71,9 +79,9 @@ class Plotter:
 
         Parameters
         ----------
-        wells : Well | list[Well]
-            A Well instance or a list of Well instances containing the wells to be
-            plotted. If None, all wells will be plotted.
+        wells : Well | list[Well] | WellCollection
+            A Well instance, a list of Well instances or a WellCollection containing
+            the wells to be plotted. If None, all wells will be plotted.
         title : str
             The title of the plot.
         xlabel : str
@@ -116,8 +124,10 @@ class Plotter:
         ax : matplotlib.axes.Axes
             The axes object of the plot.
         """
+        # Minimal fix so a WellCollection can be plotted. No rework planned: this
+        # module is superseded by gwrefpy.plots and goes away in v2.
         if wells is not None and not (
-            isinstance(wells, Well)
+            isinstance(wells, Well | WellCollection)
             or (isinstance(wells, list) and all(isinstance(w, Well) for w in wells))
         ):
             logger.error(
@@ -759,7 +769,7 @@ class Plotter:
     def _plot_fitmethod(self, fit, ax):
         """Plot the fit method for a single fit."""
         fm = fit.fit_method
-        if isinstance(fm, LinRegResult):
+        if isinstance(fm, Linear):
             slope = fm.slope
             intercept = fm.intercept
             x = fit.ref_well.timeseries.values
@@ -772,11 +782,11 @@ class Plotter:
                 color="white",
                 linestyle=None,
                 marker=None,
-                label=f"RMSE = {fit.rmse:.4f}\n"
+                label=f"RMSE = {fm.rmse:.4f}\n"
                 f"R$^2$ = {fm.rvalue**2:.4f}\n"
                 f"y = {slope:.4f}x + {intercept:.4f}",
             )
-        elif isinstance(fm, NPolyFitResult):
+        elif isinstance(fm, NPoly):
             coeffs = fm.coefficients
             x = fit.ref_well.timeseries.values
             x = np.linspace(np.min(x), np.max(x), 100)
@@ -796,9 +806,9 @@ class Plotter:
                 color="white",
                 linestyle=None,
                 marker=None,
-                label=f"RMSE = {fit.rmse:.4f}\ny = {equation}",
+                label=f"RMSE = {fit.fit_method.rmse:.4f}\ny = {equation}",
             )
-        elif isinstance(fm, ChebyshevFitResult):
+        elif isinstance(fm, Chebyshev):
             coeffs = fm.coefficients
             x = fit.ref_well.timeseries.values
             x_plot = np.linspace(np.min(x), np.max(x), 100)
@@ -820,7 +830,7 @@ class Plotter:
                 color="white",
                 linestyle=None,
                 marker=None,
-                label=f"RMSE = {fit.rmse:.4f}\ny = {equation}",
+                label=f"RMSE = {fit.fit_method.rmse:.4f}\ny = {equation}",
             )
         else:
             logger.error("Fit method not recognized for plotting.")
