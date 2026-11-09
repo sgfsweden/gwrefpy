@@ -85,22 +85,20 @@ def _anchor_method(
             0,
         )
 
-    obs_arr = obs_timeseries.index.values.astype("int64")
-    ref_arr = ref_timeseries.index.values.astype("int64")
+    # Since pandas 3.0 the series can have different time units (e.g. "us" and
+    # "ns"), so compare both as nanoseconds
+    ref_sorted = ref_timeseries.sort_index(kind="stable")
+    obs_arr = obs_timeseries.index.as_unit("ns").asi8
+    ref_arr = ref_sorted.index.as_unit("ns").asi8
+    offset_ns = pd.Timedelta(offset_td).value
 
-    # Detect timestamp unit (nanoseconds or microseconds) and convert offset accordingly
-    ts_unit = obs_timeseries.index.unit  # "ns" or "us"
-    if ts_unit == "us":
-        # Convert to microseconds
-        offset_converted = int(offset_td.total_seconds() * 1e6)
-    else:
-        offset_converted = int(offset_td.total_seconds() * 1e9)
+    # Each obs time matches the sorted ref points in [lo, hi), i.e. within ±offset.
+    # Looking up the window keeps memory linear instead of building an obs × ref
+    # matrix, which needs several GB for long daily series.
+    lo = np.searchsorted(ref_arr, obs_arr - offset_ns, side="left")
+    hi = np.searchsorted(ref_arr, obs_arr + offset_ns, side="right")
 
-    # (n_obs × n_ref) boolean mask of matching pairs
-    diff = np.abs(obs_arr[:, None] - ref_arr[None, :])
-    mask = diff <= offset_converted
-
-    valid = mask.any(axis=1)
+    valid = hi > lo
     if not valid.any():
         return (
             pd.Series([], dtype=float, name="ref"),
@@ -108,16 +106,17 @@ def _anchor_method(
             0,
         )
 
-    # Replace non-matching ref values with NaN, then aggregate only matched rows
-    ref_vals = ref_timeseries.values[None, :].astype(float)
-    masked_valid = np.where(mask[valid], ref_vals, np.nan)
+    ref_vals = ref_sorted.to_numpy(dtype=float)
     agg_fn = {
         "mean": np.nanmean,
         "median": np.nanmedian,
         "min": np.nanmin,
         "max": np.nanmax,
     }[aggregation]
-    agg_vals = agg_fn(masked_valid, axis=1)
+    agg_vals = np.array(
+        [agg_fn(ref_vals[a:b]) for a, b in zip(lo[valid], hi[valid], strict=True)],
+        dtype=float,
+    )
 
     ref_series = pd.Series(agg_vals, index=obs_timeseries.index[valid], name="ref")
     obs_series = obs_timeseries.iloc[np.where(valid)[0]].rename("obs")
