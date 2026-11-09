@@ -1,6 +1,7 @@
 import pandas as pd
 
 import gwrefpy as gr
+from gwrefpy import NPoly
 
 
 def test_datetime_to_float():
@@ -27,16 +28,15 @@ def test_save_load_project(tmp_path, strandangers_model):
     assert len(loaded_project.wells) == len(strandangers_model.wells)
     assert str(loaded_project) == model_str
     for well in strandangers_model.wells:
-        loaded_well = loaded_project.get_wells(well.name)
+        loaded_well = loaded_project.wells[well.name]
         assert well.name == loaded_well.name
         assert well.is_reference == loaded_well.is_reference
         pd.testing.assert_series_equal(well.timeseries, loaded_well.timeseries)
 
 
 def test_save_load_polynomial_prediction_constants(tmp_path, strandangers_model):
-    strandangers_model.fit("obs", "ref", offset="3.5D", method="npolyfit", degree=1)
-    expected = strandangers_model.fits[0].pred_const
-    ref = strandangers_model.get_wells("ref")
+    strandangers_model.fit("obs", "ref", offset="3.5D", method=NPoly(degree=1))
+    ref = strandangers_model.wells["ref"]
     new_index = ref.timeseries.index.max() + pd.Timedelta(days=30)
     ref.append_timeseries(pd.Series([12.0], index=[new_index], name="ref"))
 
@@ -45,7 +45,10 @@ def test_save_load_polynomial_prediction_constants(tmp_path, strandangers_model)
     loaded_project = gr.Model(name="temp")
     loaded_project.open_project(project_path)
 
-    actual = loaded_project.fits[0].pred_const
+    # The widths are calculated for the reference well's current data, including
+    # values appended after the fit
+    expected = strandangers_model.fits[0].get_prediction_constant()
+    actual = loaded_project.fits[0].get_prediction_constant()
     assert isinstance(actual, pd.Series)
     actual.index = actual.index.astype(expected.index.dtype)
     pd.testing.assert_series_equal(actual, expected)
