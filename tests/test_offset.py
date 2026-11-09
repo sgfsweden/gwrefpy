@@ -218,7 +218,69 @@ def test_default_method_is_anchor():
     pd.testing.assert_series_equal(obs_default, obs_anchor)
 
 
-# ---------------------------------------------------------------------------
+@pytest.mark.parametrize(("obs_unit", "ref_unit"), [("us", "ns"), ("ns", "us")])
+def test_anchor_method_mixed_timestamp_units(obs_unit, ref_unit):
+    """Series with different time units (us vs ns) still pair up (#156)."""
+    index = pd.date_range("2020-01-01", periods=5, freq="D")
+    obs = pd.Series(range(5), index=index.as_unit(obs_unit), dtype=float)
+    ref = pd.Series(range(10, 15), index=index.as_unit(ref_unit), dtype=float)
+
+    ref_te, obs_te, n = groupby_time_equivalents(obs, ref, "0D", method="anchor")
+
+    assert n == 5
+    assert ref_te.tolist() == [10.0, 11.0, 12.0, 13.0, 14.0]
+    assert obs_te.tolist() == [0.0, 1.0, 2.0, 3.0, 4.0]
+
+
+def _anchor_brute_force(obs, ref, offset, aggregation):
+    """The original obs × ref matrix implementation, kept as a reference."""
+    obs_arr = obs.index.as_unit("ns").asi8
+    ref_arr = ref.index.as_unit("ns").asi8
+    mask = np.abs(obs_arr[:, None] - ref_arr[None, :]) <= pd.Timedelta(offset).value
+    valid = mask.any(axis=1)
+    agg_fn = {
+        "mean": np.nanmean,
+        "median": np.nanmedian,
+        "min": np.nanmin,
+        "max": np.nanmax,
+    }[aggregation]
+    agg = agg_fn(np.where(mask[valid], ref.to_numpy(float)[None, :], np.nan), axis=1)
+    return agg, obs.to_numpy()[valid], int(valid.sum())
+
+
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")  # all-NaN windows
+@pytest.mark.parametrize("aggregation", ["mean", "median", "min", "max"])
+@pytest.mark.parametrize("offset", ["0D", "6h", "1D", "3.5D"])
+def test_anchor_method_matches_brute_force(aggregation, offset):
+    """Window lookup gives the same pairs as comparing every obs/ref pair."""
+    rng = np.random.default_rng(42)
+    start = pd.Timestamp("2020-01-01").value
+    span = pd.Timedelta("120D").value
+
+    # Irregular, unsorted ref times with gaps, duplicates and NaN values
+    obs_times = np.sort(rng.integers(start, start + span, 200))
+    obs_times[:20] = pd.date_range("2020-01-01", periods=20, freq="D").asi8
+    ref_times = rng.integers(start, start + span, 300)
+    ref_times[:20] = obs_times[:20]
+    ref_times[20:25] = ref_times[0]
+    ref_values = rng.normal(size=300)
+    ref_values[rng.choice(300, 40, replace=False)] = np.nan
+
+    obs = pd.Series(rng.normal(size=200), index=pd.DatetimeIndex(obs_times))
+    ref = pd.Series(ref_values, index=pd.DatetimeIndex(ref_times))
+
+    expected_ref, expected_obs, expected_n = _anchor_brute_force(
+        obs, ref, offset, aggregation
+    )
+    ref_te, obs_te, n = groupby_time_equivalents(
+        obs, ref, offset, aggregation=aggregation, method="anchor"
+    )
+
+    assert n == expected_n
+    np.testing.assert_array_equal(obs_te.to_numpy(), expected_obs)
+    np.testing.assert_allclose(ref_te.to_numpy(), expected_ref, equal_nan=True)
+
+
 # Shared behaviour tests
 # ---------------------------------------------------------------------------
 
