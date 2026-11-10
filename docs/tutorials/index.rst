@@ -17,14 +17,6 @@ This section contains step-by-step tutorials to help you get started with gwrefp
 
         A tutorial on how to work with live data.
 
-.. grid::
-
-    .. grid-item-card:: Exercises
-        :link: exercises/index
-        :link-type: doc
-
-        A collection of exercises for the ``gwrefpy`` package.
-
 
 .. toctree::
    :maxdepth: 2
@@ -33,4 +25,3 @@ This section contains step-by-step tutorials to help you get started with gwrefp
 
    quickstart.ipynb
    livedata.ipynb
-   exercises/index

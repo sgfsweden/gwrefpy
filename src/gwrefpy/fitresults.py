@@ -332,7 +332,8 @@ class FitResultData:
             else:
                 obs_timeseries = self.obs_well.timeseries
             outliers = pd.Series(
-                abs(obs_timeseries - fitted_values) > prediction_constant,
+                # .gt() aligns on dates; NPoly/Chebyshev give a per-date Series
+                abs(obs_timeseries - fitted_values).gt(prediction_constant),
                 index=obs_timeseries.index,
             )
             return outliers

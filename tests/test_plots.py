@@ -92,6 +92,17 @@ def test_fit_plot_marks_outliers(fit):
     assert pd.Timestamp("2020-11-15", tz="UTC") in dates
 
 
+@pytest.mark.parametrize("method", [NPoly(degree=2), Chebyshev(degree=2)])
+def test_fit_plot_marks_outliers_when_ref_lacks_obs_dates(model, method):
+    ref = model.wells["ref1"]
+    ref.timeseries = ref.timeseries.drop(pd.Timestamp("2020-06-01"))
+    fit = model.fit("obs", "ref1", offset="0D", method=method, report=False)
+
+    ax = fit.plots.plot(outliers=True)
+
+    assert "outliers" in legend_texts(ax)
+
+
 def test_fit_plot_shades_calibration_period(fit):
     import matplotlib.dates as mdates
 

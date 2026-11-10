@@ -418,10 +418,18 @@ def test_polynomial_prediction_constant_uses_leverage(small_example_model, metho
         training_matrix = np.vander(training_x.values, 2)
         prediction_matrix = np.vander(ref.timeseries.values, 2)
     else:
-        training_matrix = np.polynomial.chebyshev.chebvander(training_x.values, 1)
-        prediction_matrix = np.polynomial.chebyshev.chebvander(ref.timeseries.values, 1)
+        domain_min = result.fit_method.domain_min
+        domain_max = result.fit_method.domain_max
+        scaled_training_x = (
+            2 * (training_x.values - domain_min) / (domain_max - domain_min) - 1
+        )
+        scaled_prediction_x = (
+            2 * (ref.timeseries.values - domain_min) / (domain_max - domain_min) - 1
+        )
+        training_matrix = np.polynomial.chebyshev.chebvander(scaled_training_x, 1)
+        prediction_matrix = np.polynomial.chebyshev.chebvander(scaled_prediction_x, 1)
         fitted_training_values = np.polynomial.chebyshev.chebval(
-            training_x.values, result.fit_method.coefficients
+            scaled_training_x, result.fit_method.coefficients
         )
 
     if method is NPoly:
@@ -457,6 +465,70 @@ def test_polynomial_prediction_constant_uses_leverage(small_example_model, metho
         atol=1e-12,
         rtol=1e-10,
     )
+
+
+def test_chebyshev_scales_reference_values_and_serializes_domain():
+    index = pd.date_range("2024-01-01", periods=6, freq="D")
+    ref_values = np.array([100.0, 110.0, 120.0, 130.0, 140.0, 150.0])
+    scaled_ref_values = 2 * (ref_values - ref_values.min()) / np.ptp(ref_values) - 1
+    obs_values = (
+        2
+        + 4 * scaled_ref_values
+        + 1.5 * (2 * scaled_ref_values**2 - 1)
+        + np.array([0.1, -0.2, 0.1, 0.2, -0.1, -0.1])
+    )
+    ref_series = pd.Series(ref_values, index=index, name="ref")
+    obs_series = pd.Series(obs_values, index=index, name="obs")
+
+    fit_method = Chebyshev(degree=2)
+    fit_method.fit(obs_series, ref_series)
+
+    np.testing.assert_allclose(
+        fit_method.fit_timeseries(ref_series).to_numpy(),
+        np.polynomial.chebyshev.chebval(scaled_ref_values, fit_method.coefficients),
+    )
+    assert fit_method.domain_min == ref_values.min()
+    assert fit_method.domain_max == ref_values.max()
+
+    training_matrix = np.polynomial.chebyshev.chebvander(scaled_ref_values, 2)
+    expected_leverage = np.einsum(
+        "ij,jk,ik->i",
+        training_matrix,
+        fit_method.leverage_operator,
+        training_matrix,
+    )
+    expected_widths = (
+        fit_method.t_a * fit_method.stderr * np.sqrt(1 + expected_leverage)
+    )
+    np.testing.assert_allclose(
+        fit_method.get_prediction_constant(ref_series).to_numpy(), expected_widths
+    )
+
+    restored_method = Chebyshev.from_dict(fit_method.to_dict())
+    pd.testing.assert_series_equal(
+        restored_method.fit_timeseries(ref_series),
+        fit_method.fit_timeseries(ref_series),
+    )
+    pd.testing.assert_series_equal(
+        restored_method.get_prediction_constant(ref_series),
+        fit_method.get_prediction_constant(ref_series),
+    )
+
+
+def test_chebyshev_warns_when_predicting_outside_fitted_domain(caplog):
+    index = pd.date_range("2024-01-01", periods=5, freq="D")
+    ref_series = pd.Series(np.arange(5, dtype=float) + 10, index=index, name="ref")
+    obs_series = pd.Series(np.arange(5, dtype=float), index=index, name="obs")
+    fit_method = Chebyshev(degree=2)
+    fit_method.fit(obs_series, ref_series)
+    outside_domain = pd.Series([16.0], index=[index[-1] + pd.Timedelta(days=1)])
+
+    fit_method.fit_timeseries(outside_domain)
+    assert "extrapolating beyond the fitted reference domain" in caplog.text
+
+    caplog.clear()
+    fit_method.get_prediction_constant(outside_domain)
+    assert "extrapolating beyond the fitted reference domain" in caplog.text
 
 
 @pytest.mark.parametrize("method", [NPoly, Chebyshev])
