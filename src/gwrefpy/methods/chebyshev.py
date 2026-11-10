@@ -15,7 +15,15 @@ logger = logging.getLogger(__name__)
 
 
 class Chebyshev(FitMethodBase):
-    _scalar_keys = ("degree", "rank", "stderr", "t_a", "rmse")
+    _scalar_keys = (
+        "degree",
+        "rank",
+        "stderr",
+        "t_a",
+        "rmse",
+        "domain_min",
+        "domain_max",
+    )
     _array_keys = ("coefficients", "rvalue", "leverage_operator")
 
     def __init__(self, degree: int = 4):
@@ -24,6 +32,8 @@ class Chebyshev(FitMethodBase):
         self.degree = degree
         self.rank = None
         self.leverage_operator = None
+        self.domain_min = None
+        self.domain_max = None
 
     def __str__(self):
         return f"Chebyshev(degree={self.degree}, coefficients={self.coefficients})"
@@ -62,6 +72,30 @@ class Chebyshev(FitMethodBase):
         }
                 """
 
+    @staticmethod
+    def _scale_values(values, domain_min, domain_max):
+        values = np.asarray(values)
+        if domain_min is None or domain_max is None:
+            return values
+        if domain_min == domain_max:
+            return np.zeros_like(values, dtype=float)
+        return 2 * (values - domain_min) / (domain_max - domain_min) - 1
+
+    def _warn_if_outside_domain(self, values):
+        if self.domain_min is None or self.domain_max is None:
+            return
+        values = np.asarray(values)
+        outside_domain = (values < self.domain_min) | (values > self.domain_max)
+        if outside_domain.any():
+            logger.warning(
+                "Chebyshev prediction is extrapolating beyond the fitted reference "
+                "domain [%s, %s]; input values range from %s to %s.",
+                self.domain_min,
+                self.domain_max,
+                np.min(values[outside_domain]),
+                np.max(values[outside_domain]),
+            )
+
     def fit_timeseries(self, timeseries: pd.Series) -> pd.Series:
         """
         Apply the Chebyshev polynomial fit to a given series.
@@ -76,11 +110,13 @@ class Chebyshev(FitMethodBase):
         pd.Series
             The fitted values based on the input series.
         """
-        return timeseries.apply(
-            lambda x: np.polynomial.chebyshev.chebval(
-                x, self.coefficients, tensor=False
-            )
+        values = timeseries.to_numpy()
+        self._warn_if_outside_domain(values)
+        scaled_values = self._scale_values(values, self.domain_min, self.domain_max)
+        fitted_values = np.polynomial.chebyshev.chebval(
+            scaled_values, self.coefficients, tensor=False
         )
+        return pd.Series(fitted_values, index=timeseries.index, name=timeseries.name)
 
     def fit(
         self,
@@ -116,9 +152,14 @@ class Chebyshev(FitMethodBase):
         n = len(obs_timeseries)
         _validate_timeseries_len(n, self.degree, "Chebyshev")
 
+        ref_values = ref_timeseries.to_numpy()
+        domain_min = float(np.min(ref_values))
+        domain_max = float(np.max(ref_values))
+        scaled_ref_values = self._scale_values(ref_values, domain_min, domain_max)
+
         # Perform Nth degree polynomial fit
         coefficients, res_list = np.polynomial.chebyshev.chebfit(
-            ref_timeseries.values, obs_timeseries.values, self.degree, full=True
+            scaled_ref_values, obs_timeseries.values, self.degree, full=True
         )
         residuals, rank, singular_values, rcond = res_list
         _validate_fit_rank(rank, self.degree, "Chebyshev")
@@ -126,12 +167,12 @@ class Chebyshev(FitMethodBase):
         # Compute residual standard error
         stderr = compute_polyfit_residual_std_error(
             obs_timeseries.values,
-            np.polynomial.chebyshev.chebval(ref_timeseries.values, coefficients),
+            np.polynomial.chebyshev.chebval(scaled_ref_values, coefficients),
             n,
             self.degree,
         )
         training_matrix = np.polynomial.chebyshev.chebvander(
-            ref_timeseries.values, self.degree
+            scaled_ref_values, self.degree
         )
         t_a, leverage_operator = _get_gwrefs_polyfit_stats(p, n, training_matrix)
 
@@ -139,9 +180,7 @@ class Chebyshev(FitMethodBase):
             np.mean(
                 (
                     obs_timeseries.values
-                    - np.polynomial.chebyshev.chebval(
-                        ref_timeseries.values, coefficients
-                    )
+                    - np.polynomial.chebyshev.chebval(scaled_ref_values, coefficients)
                 )
                 ** 2
             )
@@ -153,6 +192,8 @@ class Chebyshev(FitMethodBase):
         self.coefficients = coefficients
         self.rvalue = r_squared
         self.rank = rank
+        self.domain_min = domain_min
+        self.domain_max = domain_max
         self.stderr = stderr
         self.leverage_operator = leverage_operator
         self.t_a = t_a
@@ -161,9 +202,10 @@ class Chebyshev(FitMethodBase):
     def get_prediction_constant(self, ref_series: pd.Series) -> float | pd.Series:
         """Calculate prediction widths using the fit's original training data."""
 
-        design_matrix = np.polynomial.chebyshev.chebvander(
-            ref_series.to_numpy(), self.degree
-        )
+        values = ref_series.to_numpy()
+        self._warn_if_outside_domain(values)
+        scaled_values = self._scale_values(values, self.domain_min, self.domain_max)
+        design_matrix = np.polynomial.chebyshev.chebvander(scaled_values, self.degree)
 
         leverage = np.einsum(
             "ij,jk,ik->i",
