@@ -27,8 +27,8 @@ def test_add_well_to_model() -> None:
 def test_strandangers_model(strandangers_model) -> None:
     assert strandangers_model.name == "Strandangers"
     assert len(strandangers_model.wells) == 2
-    obs = strandangers_model.get_wells("obs")
-    ref = strandangers_model.get_wells("ref")
+    obs = strandangers_model.wells["obs"]
+    ref = strandangers_model.wells["ref"]
 
     assert isinstance(obs, Well)
     assert isinstance(ref, Well)
@@ -36,16 +36,16 @@ def test_strandangers_model(strandangers_model) -> None:
     assert ref.name == "ref"
 
 
-def test_obs_wells_summary_empty() -> None:
-    """Test obs_wells_summary with no observation wells."""
+def test_obs_wells_to_dataframe_empty() -> None:
+    """Test wells.obs().to_dataframe() with no observation wells."""
     model = Model("Test Model")
-    summary = model.obs_wells_summary()
+    summary = model.wells.obs().to_dataframe()
     assert isinstance(summary, pd.DataFrame)
     assert summary.empty
 
 
-def test_obs_wells_summary_with_data() -> None:
-    """Test obs_wells_summary with observation wells containing data."""
+def test_obs_wells_to_dataframe_with_data() -> None:
+    """Test wells.obs().to_dataframe() with observation wells containing data."""
     model = Model("Test Model")
 
     # Create timeseries data
@@ -62,7 +62,7 @@ def test_obs_wells_summary_with_data() -> None:
 
     model.add_well(obs_well)
 
-    summary = model.obs_wells_summary()
+    summary = model.wells.obs().to_dataframe()
     assert len(summary) == 1
     assert summary.iloc[0]["name"] == "OBS001"
     assert summary.iloc[0]["well_type"] == "observation"
@@ -76,13 +76,13 @@ def test_obs_wells_summary_with_data() -> None:
     assert pd.isna(summary.iloc[0]["best_rmse"])
 
 
-def test_obs_wells_summary_without_timeseries() -> None:
-    """Test obs_wells_summary with observation wells without timeseries."""
+def test_obs_wells_to_dataframe_without_timeseries() -> None:
+    """Test wells.obs().to_dataframe() with observation wells without timeseries."""
     model = Model("Test Model")
     obs_well = Well("OBS001", is_reference=False)
     model.add_well(obs_well)
 
-    summary = model.obs_wells_summary()
+    summary = model.wells.obs().to_dataframe()
     assert len(summary) == 1
     assert summary.iloc[0]["name"] == "OBS001"
     assert summary.iloc[0]["data_points"] == 0
@@ -91,16 +91,16 @@ def test_obs_wells_summary_without_timeseries() -> None:
     assert pd.isna(summary.iloc[0]["mean_level"])
 
 
-def test_ref_wells_summary_empty() -> None:
-    """Test ref_wells_summary with no reference wells."""
+def test_ref_wells_to_dataframe_empty() -> None:
+    """Test wells.ref().to_dataframe() with no reference wells."""
     model = Model("Test Model")
-    summary = model.ref_wells_summary()
+    summary = model.wells.ref().to_dataframe()
     assert isinstance(summary, pd.DataFrame)
     assert summary.empty
 
 
-def test_ref_wells_summary_with_data() -> None:
-    """Test ref_wells_summary with reference wells containing data."""
+def test_ref_wells_to_dataframe_with_data() -> None:
+    """Test wells.ref().to_dataframe() with reference wells containing data."""
     model = Model("Test Model")
 
     # Create timeseries data
@@ -117,7 +117,7 @@ def test_ref_wells_summary_with_data() -> None:
 
     model.add_well(ref_well)
 
-    summary = model.ref_wells_summary()
+    summary = model.wells.ref().to_dataframe()
     assert len(summary) == 1
     assert summary.iloc[0]["name"] == "REF001"
     assert summary.iloc[0]["well_type"] == "reference"
@@ -131,13 +131,13 @@ def test_ref_wells_summary_with_data() -> None:
     assert pd.isna(summary.iloc[0]["avg_rmse"])
 
 
-def test_ref_wells_summary_without_timeseries() -> None:
-    """Test ref_wells_summary with reference wells without timeseries."""
+def test_ref_wells_to_dataframe_without_timeseries() -> None:
+    """Test wells.ref().to_dataframe() with reference wells without timeseries."""
     model = Model("Test Model")
     ref_well = Well("REF001", is_reference=True)
     model.add_well(ref_well)
 
-    summary = model.ref_wells_summary()
+    summary = model.wells.ref().to_dataframe()
     assert len(summary) == 1
     assert summary.iloc[0]["name"] == "REF001"
     assert summary.iloc[0]["data_points"] == 0
@@ -146,16 +146,16 @@ def test_ref_wells_summary_without_timeseries() -> None:
     assert pd.isna(summary.iloc[0]["mean_level"])
 
 
-def test_wells_summary_empty() -> None:
-    """Test wells_summary with no wells."""
+def test_wells_to_dataframe_empty() -> None:
+    """Test wells.to_dataframe() with no wells."""
     model = Model("Test Model")
-    summary = model.wells_summary()
+    summary = model.wells.to_dataframe()
     assert isinstance(summary, pd.DataFrame)
     assert summary.empty
 
 
-def test_wells_summary_only_obs() -> None:
-    """Test wells_summary with only observation wells."""
+def test_wells_to_dataframe_only_obs() -> None:
+    """Test wells.to_dataframe() with only observation wells."""
     model = Model("Test Model")
 
     dates = pd.date_range("2020-01-01", periods=5, freq="D")
@@ -164,14 +164,14 @@ def test_wells_summary_only_obs() -> None:
 
     model.add_well(obs_well)
 
-    summary = model.wells_summary()
+    summary = model.wells.to_dataframe()
     assert len(summary) == 1
     assert summary.iloc[0]["name"] == "OBS001"
     assert summary.iloc[0]["well_type"] == "observation"
 
 
-def test_wells_summary_only_ref() -> None:
-    """Test wells_summary with only reference wells."""
+def test_wells_to_dataframe_only_ref() -> None:
+    """Test wells.to_dataframe() with only reference wells."""
     model = Model("Test Model")
 
     dates = pd.date_range("2020-01-01", periods=5, freq="D")
@@ -180,14 +180,14 @@ def test_wells_summary_only_ref() -> None:
 
     model.add_well(ref_well)
 
-    summary = model.wells_summary()
+    summary = model.wells.to_dataframe()
     assert len(summary) == 1
     assert summary.iloc[0]["name"] == "REF001"
     assert summary.iloc[0]["well_type"] == "reference"
 
 
-def test_wells_summary_combined() -> None:
-    """Test wells_summary with both observation and reference wells."""
+def test_wells_to_dataframe_combined() -> None:
+    """Test wells.to_dataframe() with both observation and reference wells."""
     model = Model("Test Model")
 
     dates = pd.date_range("2020-01-01", periods=5, freq="D")
@@ -199,7 +199,7 @@ def test_wells_summary_combined() -> None:
 
     model.add_well([obs_well, ref_well])
 
-    summary = model.wells_summary()
+    summary = model.wells.to_dataframe()
     assert len(summary) == 2
 
     # Check that both well types are present
@@ -220,31 +220,31 @@ def test_wells_summary_combined() -> None:
     assert ref_row["mean_level"] == 12.0
 
 
-def test_fits_summary_empty() -> None:
-    """Test fits_summary with no fits."""
+def test_fits_to_dataframe_empty() -> None:
+    """Test fits.to_dataframe with no fits."""
     model = Model(name="test_model")
-    summary = model.fits_summary()
+    summary = model.fits.to_dataframe()
     assert summary.empty
     assert isinstance(summary, pd.DataFrame)
 
 
-def test_fits_summary_with_fits(strandangers_model) -> None:
-    """Test fits_summary with actual fit results using the Strandangers example."""
+def test_fits_to_dataframe_with_fits(strandangers_model) -> None:
+    """Test fits.to_dataframe with actual fit results using the Strandangers example."""
     # Use the existing fixture that has working data
     [obs, ref] = strandangers_model.wells
 
     # Perform a fit to generate FitResultData
     strandangers_model.fit(obs, ref, offset="3.5D")
 
-    # Test fits_summary
-    summary = strandangers_model.fits_summary()
+    # Test fits.to_dataframe
+    summary = strandangers_model.fits.to_dataframe()
     assert len(summary) == 1
 
     # Check common columns
     row = summary.iloc[0]
     assert row["ref_well_name"] == "ref"
     assert row["obs_well_name"] == "obs"
-    assert row["method"] == "LinRegResult"
+    assert row["method"] == "Linear"
     assert "rmse" in row
     assert "n_points" in row
     assert "stderr" in row
@@ -255,7 +255,7 @@ def test_fits_summary_with_fits(strandangers_model) -> None:
     assert "t_a" in row
     assert "pred_const" in row
 
-    # Check LinRegResult-specific columns with prefix
+    # Check Linear-specific columns with prefix
     assert "linreg_slope" in row
     assert "linreg_intercept" in row
     assert "linreg_rvalue" in row
@@ -268,8 +268,8 @@ def test_fits_summary_with_fits(strandangers_model) -> None:
     assert row["confidence_level"] == 0.95  # Default confidence level
 
 
-def test_fits_summary_multiple_fits(strandangers_model) -> None:
-    """Test fits_summary with multiple fit results using the Strandangers example."""
+def test_fits_to_dataframe_multiple_fits(strandangers_model) -> None:
+    """Test fits.to_dataframe with multiple fits using the Strandangers example."""
     # Use the existing fixture and add another reference well
     [obs, ref] = strandangers_model.wells
 
@@ -282,8 +282,8 @@ def test_fits_summary_multiple_fits(strandangers_model) -> None:
     strandangers_model.fit(obs, ref, offset="3.5D")
     strandangers_model.fit(obs, ref2, offset="3.5D")
 
-    # Test fits_summary
-    summary = strandangers_model.fits_summary()
+    # Test fits.to_dataframe
+    summary = strandangers_model.fits.to_dataframe()
     assert len(summary) == 2
 
     # Check that both fits are represented
@@ -294,8 +294,8 @@ def test_fits_summary_multiple_fits(strandangers_model) -> None:
     # All obs_well_name should be the same
     assert all(name == "obs" for name in summary["obs_well_name"])
 
-    # All methods should be LinRegResult for now
-    assert all(method == "LinRegResult" for method in summary["method"])
+    # All methods should be Linear for now
+    assert all(method == "Linear" for method in summary["method"])
 
     # Check that both have the expected number of points and offset
     assert all(row == 3 for row in summary["n_points"])  # From fixture data

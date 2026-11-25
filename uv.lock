@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -678,7 +678,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.24.4" },
     { name = "pandas", specifier = ">=2.2.1" },
     { name = "scipy", specifier = ">=1.10.1" },
-    { name = "sgu-client", marker = "extra == 'recommended'" },
+    { name = "sgu-client", marker = "extra == 'recommended'", specifier = ">=0.8.0,<0.9" },
 ]
 provides-extras = ["recommended"]
 
@@ -689,7 +689,7 @@ dev = [
     { name = "pydata-sphinx-theme" },
     { name = "pytest", specifier = ">=8.4.1" },
     { name = "ruff", specifier = ">=0.12.10" },
-    { name = "sgu-client" },
+    { name = "sgu-client", specifier = ">=0.8.0,<0.9" },
     { name = "sphinx" },
     { name = "sphinx-autobuild" },
     { name = "sphinx-copybutton" },
@@ -2582,15 +2582,15 @@ wheels = [
 
 [[package]]
 name = "sgu-client"
-version = "0.4.2"
+version = "0.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f8/0a/f506405f400d83cf88ede7e85a02df071af6f9494ea202eac2170bafab2b/sgu_client-0.4.2.tar.gz", hash = "sha256:da9f33a0eb79c8990e32b4cb665b1a5247c00a833b4d6b6de0213dfe3a8fb123", size = 25036, upload-time = "2025-12-16T09:04:45.151Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ff/7e/1113f3f783f05f78ac11416f25b36bfc2a48784e07766adc8a7fd69bf162/sgu_client-0.8.0.tar.gz", hash = "sha256:35d94697cc22675a7ef23a9c34cef94090ea4916ca21fceece61db865e070fa3", size = 29733, upload-time = "2026-10-21T20:29:59.057Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ba/26/d715621853d7f78d1e42575b288ac58044207a9bd78f47edc14c8d0ab740/sgu_client-0.4.2-py3-none-any.whl", hash = "sha256:8ee4e2e82afd86c324a55430d454d7be9199c7c19e722ce8c942c87d0d43f2d5", size = 36446, upload-time = "2025-12-16T09:04:43.665Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/83/320509115051146b1d8cc7bb286a34d93e3d26f60f02b9c11479add9600d/sgu_client-0.8.0-py3-none-any.whl", hash = "sha256:9cb69cc4dea04c1a302cdfb14aa449c2b62197f11db3a460c547c8a45aaa6ec3", size = 40312, upload-time = "2026-10-21T20:29:57.55Z" },
 ]
 
 [[package]]
